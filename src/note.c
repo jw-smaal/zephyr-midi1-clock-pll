@@ -50,81 +50,75 @@ int noteToOct(uint8_t midinote) {
 }
 
 
-#if 0
+#if TODO_USING_MATH
 /*
- * This function converts a MIDI note to a frequency 
- */ 
-float noteToFreq(uint8_t midinote, int base_a4_note_freq) {
+ * This function converts a MIDI note to a frequency
+ * it can use a custom pitch for the A4 note.
+ */
+float noteToFreqCustomA4(uint8_t midinote, int base_a4_note_freq) {
     return base_a4_note_freq * pow(2, (midinote - 69) / 12.0);
 }
+#endif
 
-#endif 
-
-/*
- * This function converts a frequency to a MIDI note 
- * this will be slow as we have to iterate over all 128 notes.
- * There are faster ways to do this. 
+/**
+ * In this case on my embedded system I don't want to run the
+ * pow() match functions I use a precomputed lookup table.
+ * A=440Hz is a given then.
+ * TODO: possibly create multiple tables with some
+ * TODO: variation in pitch of A4.
  */
-uint8_t freqToMidiNoteSlow(float freq) {
-    uint8_t midinote = 0;
-
-    for (int i = 0; i < 128; i++) {
-        if (freq >= noteToFreq(i, BASE_A4_NOTE_FREQUENCY)) {
-            midinote = i;
-        } else {
-            break;
-        }
-    }
-    return midinote;
+#include "midi_freq_table.h"
+float noteToFreq(uint8_t midinote) {
+	return midi_freq_table[midinote];
 }
 
 
-/* 
- * This is a binary search version of the frequency to MIDI note conversion.
- */
-uint8_t freqToMidiNoteFaster(float freq) {
-    /* Perform a binary search on the MIDI notes */
-    int min = 0;
-    int max = 127;
-    while (min <= max) {
-        int mid = (min + max) / 2;
-        if (freq == noteToFreq(mid, BASE_A4_NOTE_FREQUENCY)) {
-            return mid;
-        } else if (freq < noteToFreq(mid, BASE_A4_NOTE_FREQUENCY)) {
-            max = mid - 1;
-        } else {
-            min = mid + 1;
-        }
-    }
-    return 0; /* No match found, return the first MIDI note (C-1) */
+#if TODO_USING_MATH
+uint8_t freqToMidiNote(float freq) {
+	/* Fast inverse using log2f */
+	float n = 69.0f + 12.0f * log2f(freq / BASE_A4_NOTE_FREQ);
+	if (n < 0) n = 0;
+	if (n > 127) n = 127;
+	return (uint8_t)(n + 0.5f);
 }
+#endif
 
 
-/* 
- * Use a binary search algorithm to find the MIDI note corresponding 
- * to the given frequency value. Start by setting the minimum and maximum values of the search range to 
- * the first and last MIDI notes, respectively. Then, in each iteration of the while loop, calculate the 
- * midpoint between the minimum and maximum values, and compare it to the given frequency value. If the 
- * frequency value is equal or greater than the midpoint, set the minimum value to the midpoint plus one, 
- * and repeat the search. If the frequency value is less than the midpoint, set the maximum value to the 
- * midpoint minus one, and repeat the search. In the end return the minimum value which corresponds to 
- * the MIDI note that best matches the given frequency value.
+/**
+ * Convert a frequency value to the nearest MIDI note number.
+ *
+ * This function uses a binary search over the precomputed MIDI note
+ * frequency table (0–127).
+ *
+ * @param freq  Input frequency in Hz
+ * @return      MIDI note number (0–127) that best matches the frequency
+ *
+ * TODO update for MIDI 2.0 to include per note offsets.
  */
 uint8_t freqToMidiNote(float freq) {
-    /* Use a binary search to find the MIDI note corresponding to the given frequency value */
-    int min = 0;
-    int max = 127;
-    while (min < max) {
-        int mid = (min + max) / 2;
-        if (freq >= noteToFreq(mid, BASE_A4_NOTE_FREQUENCY)) {
-            min = mid + 1;
-        } else {
-            max = mid - 1;
-        }
-    }
-
-    /* Return the MIDI note corresponding to the given frequency value */
-    return min; 
+	int min = 0;      /* Lower bound of search range (C-1) */
+	int max = 127;    /* Upper bound of search range (G9) */
+	
+	/* Binary search loop: narrow down until min and max converge */
+	while (min < max) {
+		int mid = (min + max) / 2;  /* Midpoint index */
+		
+		/* Compare input frequency against the midpoint note frequency */
+		if (freq >= midi_freq_table[mid]) {
+			/* If freq is higher or equal, search the upper half */
+			min = mid + 1;
+		} else {
+			/* If freq is lower, search the lower half */
+			max = mid - 1;
+		}
+	}
+	
+	/* Clamp result to valid MIDI note range */
+	if (min < 0) return 0;
+	if (min > 127) return 127;
+	
+	/* Return the closest MIDI note index */
+	return (uint8_t)min;
 }
 
 /* EOF */

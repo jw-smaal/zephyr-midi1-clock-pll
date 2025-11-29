@@ -1,3 +1,13 @@
+/**
+ * midi_freq_table.h
+ * Precomputed frequencies for MIDI notes 0–127
+ * used for embedded systems.  Based op A4 = 440Hz.
+ *
+ * @author Jan-Willem Smaal <usenet@gispen.org>
+ * @license SPDX-License-Identifier: Apache-2.0
+ */
+
+
 #ifndef MIDI_FREQ_TABLE_H
 #define MIDI_FREQ_TABLE_H
 
@@ -7,7 +17,7 @@
 #define BASE_A4_NOTE_FREQ 440.0f
 
 /* Precomputed frequencies for MIDI notes 0–127 (C-1 to G9) */
-static const float midi_note_freq[128] = {
+static const float midi_freq_table[128] = {
     8.1757989156f,   /* 0: C-1 */
     8.6619572180f,   /* 1: C#-1/Db-1 */
     9.1770239974f,   /* 2: D-1 */

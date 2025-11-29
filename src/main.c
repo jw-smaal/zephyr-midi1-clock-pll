@@ -19,7 +19,7 @@
 #include <ump_stream_responder.h>
 #include <zephyr/logging/log.h>
 
-#include "midifreqtable.h"
+#include "midi1.h"
 
 LOG_MODULE_REGISTER(sample_usb_midi, LOG_LEVEL_INF);
 #define USB_MIDI_DT_NODE DT_NODELABEL(usb_midi)
@@ -144,6 +144,8 @@ int main(void)
 									  channel,
 									  controller,
 									  value);
+		
+		ump = Midi1ControlChange(channel, controller, value);
 		
 		/* Send it over USB-MIDI */
 		usbd_midi_send(midi, ump);

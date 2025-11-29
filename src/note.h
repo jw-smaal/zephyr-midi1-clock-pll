@@ -9,12 +9,17 @@
  * @updated 20241224
  * @license SPDX-License-Identifier: Apache-2.0
  */
-#ifndef _HARMONY_NOTE
-#define _HARMONY_NOTE
+#ifndef _HARMONY_NOTE_H
+#define _HARMONY_NOTE_H
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+
+/*
+ * Pre computed values for the note frequencies
+ */
+#include "midi_freq_table.h"
 
 /* 440 Hz for the A4 note */
 #define BASE_A4_NOTE_FREQUENCY 440
