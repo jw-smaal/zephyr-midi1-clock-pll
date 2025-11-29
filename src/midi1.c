@@ -53,7 +53,8 @@ struct midi_ump Midi1ControlChange(uint8_t channel,
 struct midi_ump Midi1ChannelAfterTouch(uint8_t channel, uint8_t val)
 {
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
-								   /* command nibble: Control change. */
+								   /* command
+									nibble: Control change. */
 								   (C_CHANNEL_AFTERTOUCH  >> 4) ,
 								   channel,    	/* channel number */
 								   (C_CHANNEL_AFTERTOUCH  >> 4) ,
@@ -64,7 +65,6 @@ struct midi_ump Midi1ChannelAfterTouch(uint8_t channel, uint8_t val)
 struct midi_ump Midi1ModWheel(uint8_t channel, uint16_t val){
 	//Midi1ControlChange(channel, CTL_MSB_MODWHEEL,  ~(CHANNEL_VOICE_MASK) & (val>>7));
 	//Midi1ControlChange(channel, CTL_LSB_MODWHEEL,  ~(CHANNEL_VOICE_MASK) & val);
-	
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
 								   (C_PITCH_WHEEL >> 4),
 								   channel & 0x0F,

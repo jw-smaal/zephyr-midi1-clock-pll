@@ -122,7 +122,7 @@ int main(void)
 	uint8_t group      = 0;   /* UMP group (usually 0 unless multi‑group setup) */
 	uint8_t command    = UMP_MIDI_CONTROL_CHANGE;
 	uint8_t channel    = 0;   /* Channel 1 → zero‑based index 0 */
-	uint8_t controller = 1;   /* CC number 1 = Modulation Wheel */
+	uint8_t controller = 2;   /*  */
 	uint8_t value      = 64;  /* CC value (0–127) */
 	
 	struct midi_ump ump1 = UMP_MIDI1_CHANNEL_VOICE(group,
@@ -132,6 +132,7 @@ int main(void)
 												  value);
 	struct midi_ump ump2;
 	struct midi_ump ump3;
+	struct midi_ump ump4;
 	
 
 
@@ -149,11 +150,18 @@ int main(void)
 		
 		ump2 = Midi1ControlChange(channel, controller, value);
 		ump3 = Midi1ModWheel(channel, value);
+		ump4 = Midi1PitchWheel(channel, value);
+		
 		
 		/* Send it over USB-MIDI */
-		usbd_midi_send(midi, ump1);
-		usbd_midi_send(midi, ump2);
-		usbd_midi_send(midi, ump2);
+		usbd_midi_send(midi, UMP_MIDI1_CHANNEL_VOICE(group,
+													 command,
+													 channel,
+													 controller,
+													 value));
+		usbd_midi_send(midi, Midi1ControlChange(channel, controller, value));
+		usbd_midi_send(midi, Midi1ModWheel(channel, value));
+		usbd_midi_send(midi, Midi1PitchWheel(channel, value));
 		if (value >= 127) {
 			value = 0;
 		} else {
