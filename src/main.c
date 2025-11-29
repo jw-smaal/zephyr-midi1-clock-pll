@@ -125,11 +125,13 @@ int main(void)
 	uint8_t controller = 1;   /* CC number 1 = Modulation Wheel */
 	uint8_t value      = 64;  /* CC value (0–127) */
 	
-	struct midi_ump ump = UMP_MIDI1_CHANNEL_VOICE(group,
+	struct midi_ump ump1 = UMP_MIDI1_CHANNEL_VOICE(group,
 												  command,
 												  channel,
 												  controller,
 												  value);
+	struct midi_ump ump2;
+	struct midi_ump ump3;
 	
 
 
@@ -139,16 +141,19 @@ int main(void)
 		LOG_INF("main: sleeping for 1 second");
 		k_msleep(1000);
 		
-		ump = UMP_MIDI1_CHANNEL_VOICE(group,
+		ump1 = UMP_MIDI1_CHANNEL_VOICE(group,
 									  command,
 									  channel,
 									  controller,
 									  value);
 		
-		ump = Midi1ControlChange(channel, controller, value);
+		ump2 = Midi1ControlChange(channel, controller, value);
+		ump3 = Midi1ModWheel(channel, value);
 		
 		/* Send it over USB-MIDI */
-		usbd_midi_send(midi, ump);
+		usbd_midi_send(midi, ump1);
+		usbd_midi_send(midi, ump2);
+		usbd_midi_send(midi, ump2);
 		if (value >= 127) {
 			value = 0;
 		} else {
