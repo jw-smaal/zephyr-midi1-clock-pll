@@ -1,0 +1,30 @@
+/**
+ *  note.h 
+ * 
+ * @brief generic MIDI and harmony related functions 
+ * implemented in support of embedded systems in c. 
+ * tested on Zephyr RTOS.
+ *
+ * @author Jan-Willem Smaal <usenet@gispen.org> 
+ * @updated 20241224
+ * @license SPDX-License-Identifier: Apache-2.0
+ */
+#ifndef _HARMONY_NOTE
+#define _HARMONY_NOTE
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+
+/* 440 Hz for the A4 note */
+#define BASE_A4_NOTE_FREQUENCY 440
+
+
+char *noteToText(uint8_t midinote, bool flats);
+char *noteToTextWithOctave(uint8_t midinote, bool flats);
+int noteToOct(uint8_t midinote);
+//float noteToFreq(uint8_t midinote, int base_a4_note_freq); 
+uint8_t freqToMidiNote(float freq); 
+
+#endif /* _HARMONY_NOTE */
+/* EOF */
