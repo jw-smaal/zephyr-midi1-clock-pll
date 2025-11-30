@@ -85,11 +85,11 @@ static const struct usbd_midi_ops ops = {
 	.ready_cb = on_device_ready,
 };
 
+
 int main(void)
 {
 	struct usbd_context *sample_usbd;
 	
-
 	if (!device_is_ready(midi)) {
 		LOG_ERR("MIDI device not ready");
 		return -1;
@@ -101,7 +101,6 @@ int main(void)
 			memset(&led, 0, sizeof(led));
 		}
 	}
-
 	usbd_midi_set_ops(midi, &ops);
 
 	sample_usbd = sample_usbd_init_device(NULL);
@@ -135,8 +134,6 @@ int main(void)
 	struct midi_ump ump4;
 	
 
-
-	/* Start a timer that sends a control change message */ 
 	while (1) {
 		//usbd_midi_send(dev, ump);
 		LOG_INF("main: sleeping for 1 second");
@@ -155,18 +152,19 @@ int main(void)
 #endif
 		
 		/* Send it over USB-MIDI */
-		usbd_midi_send(midi, UMP_MIDI1_CHANNEL_VOICE(group,
-													 command,
-													 channel,
-													 controller,
-													 value));
-		usbd_midi_send(midi, Midi1ControlChange(channel,
-												controller,
-												value));
-		usbd_midi_send(midi, Midi1ModWheel(channel,
-										   value));
-		usbd_midi_send(midi, Midi1PitchWheel(channel,
-											 value));
+		//usbd_midi_send(midi, UMP_MIDI1_CHANNEL_VOICE(group,
+		//											 command,
+		//											 channel,
+		//											 controller,
+		//											 value));
+		//usbd_midi_send(midi, Midi1ControlChange(channel,
+		//										controller,
+		//										value));
+		//usbd_midi_send(midi, Midi1ModWheel(channel,
+		//								   value));
+		//usbd_midi_send(midi, Midi1PitchWheel(channel,
+		//									 value));
+		
 		usbd_midi_send(midi, Midi1NoteON(channel,
 										 key,
 										 velocity));
@@ -175,18 +173,27 @@ int main(void)
 		usbd_midi_send(midi, Midi1NoteOFF(channel,
 										  key,
 										  velocity));
-		usbd_midi_send(midi, Midi1ControlChange(channel,
-										   controller,
-										   val));
-		usbd_midi_send(midi, Midi1PitchWheel(channel,
-											 val));
-		usbd_midi_send(midi, Midi1ModWheel(channel,
-										   val));
-		usbd_midi_send(midi, Midi1PolyAfterTouch(channel,
-												 key,
-												 val));
-		usbd_midi_send(midi, Midi1ChannelAfterTouch(channel,
+		
+		/* Suspected bug in Korg Opsix in receiving some control change */
+#if OPSIX_BUG_TEST
+		controller = 0;
+		for (int i = 0; i < 127; i++) {
+			usbd_midi_send(midi, Midi1ControlChange(channel,
+													controller,
 													val));
+			controller++;
+			k_msleep(10);
+		}
+#endif
+		//usbd_midi_send(midi, Midi1PitchWheel(channel,
+		//									 val));
+		//usbd_midi_send(midi, Midi1ModWheel(channel,
+		//								   val));
+		//usbd_midi_send(midi, Midi1PolyAfterTouch(channel,
+		//										 key,
+		//										 val));
+		//usbd_midi_send(midi, Midi1ChannelAfterTouch(channel,
+		//											val));
 
 		
 		if (value >= 127) {

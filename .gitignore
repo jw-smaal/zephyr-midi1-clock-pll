@@ -1,1 +1,4 @@
 build
+XcodeWorkspace.xcworkspace
+.DS_Store
+.git
