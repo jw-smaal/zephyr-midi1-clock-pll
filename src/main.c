@@ -1,13 +1,14 @@
 /**
- * MIDI test by J-W Smaal
+ * MIDI 1.0 into Universal MIDI Packet over USB by J-W Smaal
+ * using a sensor value's to send MIDI1.0 encapsulated into UMP
+ * over USB.
+ * @author Jan-Willem Smaal <usenet@gispen.org>
  *
- * Adapted Original:
+ *
+ * Adapted Original: Sample application for USB MIDI 2.0 device class
  * Copyright (c) 2024 Titouan Christophe
  *
  * SPDX-License-Identifier: Apache-2.0
- *
- * @file
- * @brief Sample application for USB MIDI 2.0 device class
  */
 #include <sample_usbd.h>
 
@@ -116,15 +117,14 @@ int main(void)
 
 	LOG_INF("USB device support enabled");
 
-
-	
-	/* Example: CC1 (Mod Wheel) value = 64 on channel 1 */
 	uint8_t group      = 0;   /* UMP group (usually 0 unless multi‑group setup) */
 	uint8_t command    = UMP_MIDI_CONTROL_CHANGE;
-	uint8_t channel    = 0;   /* Channel 1 → zero‑based index 0 */
-	uint8_t controller = 2;   /*  */
-	uint8_t value      = 64;  /* CC value (0–127) */
-	
+	uint8_t channel    = 7;   /* Channel 8 → zero‑based index 0 */
+	uint8_t controller = 2;
+	uint8_t value      = 63;
+	uint8_t val		   = 32;
+	uint8_t key		   = 100;
+	uint8_t velocity   = 100;
 	struct midi_ump ump1 = UMP_MIDI1_CHANNEL_VOICE(group,
 												  command,
 												  channel,
@@ -142,6 +142,7 @@ int main(void)
 		LOG_INF("main: sleeping for 1 second");
 		k_msleep(1000);
 		
+#if 0
 		ump1 = UMP_MIDI1_CHANNEL_VOICE(group,
 									  command,
 									  channel,
@@ -151,7 +152,7 @@ int main(void)
 		ump2 = Midi1ControlChange(channel, controller, value);
 		ump3 = Midi1ModWheel(channel, value);
 		ump4 = Midi1PitchWheel(channel, value);
-		
+#endif
 		
 		/* Send it over USB-MIDI */
 		usbd_midi_send(midi, UMP_MIDI1_CHANNEL_VOICE(group,
@@ -159,13 +160,47 @@ int main(void)
 													 channel,
 													 controller,
 													 value));
-		usbd_midi_send(midi, Midi1ControlChange(channel, controller, value));
-		usbd_midi_send(midi, Midi1ModWheel(channel, value));
-		usbd_midi_send(midi, Midi1PitchWheel(channel, value));
+		usbd_midi_send(midi, Midi1ControlChange(channel,
+												controller,
+												value));
+		usbd_midi_send(midi, Midi1ModWheel(channel,
+										   value));
+		usbd_midi_send(midi, Midi1PitchWheel(channel,
+											 value));
+		usbd_midi_send(midi, Midi1NoteON(channel,
+										 key,
+										 velocity));
+		/* Leave some time in between the note on and off to test */
+		k_msleep(100);
+		usbd_midi_send(midi, Midi1NoteOFF(channel,
+										  key,
+										  velocity));
+		usbd_midi_send(midi, Midi1ControlChange(channel,
+										   controller,
+										   val));
+		usbd_midi_send(midi, Midi1PitchWheel(channel,
+											 val));
+		usbd_midi_send(midi, Midi1ModWheel(channel,
+										   val));
+		usbd_midi_send(midi, Midi1PolyAfterTouch(channel,
+												 key,
+												 val));
+		usbd_midi_send(midi, Midi1ChannelAfterTouch(channel,
+													val));
+
+		
 		if (value >= 127) {
 			value = 0;
+			val = 0;
+			key = 0;
+			velocity = 0;
+			controller = 0;	/* it's actually MSB select */
 		} else {
-			value = value + 1;
+			value++;
+			val++;
+			key++;
+			velocity++;
+			controller++;
 		}
 	}
 

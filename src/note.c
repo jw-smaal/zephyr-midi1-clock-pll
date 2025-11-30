@@ -13,7 +13,8 @@
 
 
 /* Return the note with the octave included. */
-char *noteToTextWithOctave(uint8_t midinote, bool flats) {
+char *noteToTextWithOctave(uint8_t midinote, bool flats)
+{
     static char notestring[4];
     snprintf(notestring,
              sizeof(notestring),
@@ -25,7 +26,8 @@ char *noteToTextWithOctave(uint8_t midinote, bool flats) {
 
 
 /* This function converts a MIDI note using a lookup table to a string */
-char *noteToText(uint8_t midinote, bool flats) {
+char *noteToText(uint8_t midinote, bool flats)
+{
     int octave = noteToOct(midinote);
     uint8_t note = midinote - ((octave + 2) * 12);
     static char *flatNotes[] =  { "C ", "Db", "D ", "Eb", "E ", "F ", "Gb", "G ", "Ab", "A ", "Bb", "B "};
@@ -45,7 +47,8 @@ char *noteToText(uint8_t midinote, bool flats) {
 /*
  * This function converts a MIDI note to an octave number 
  */
-int noteToOct(uint8_t midinote) {
+int noteToOct(uint8_t midinote)
+{
     return (midinote / 12) - 2;
 }
 
@@ -55,7 +58,8 @@ int noteToOct(uint8_t midinote) {
  * This function converts a MIDI note to a frequency
  * it can use a custom pitch for the A4 note.
  */
-float noteToFreqCustomA4(uint8_t midinote, int base_a4_note_freq) {
+float noteToFreqCustomA4(uint8_t midinote, int base_a4_note_freq)
+{
     return base_a4_note_freq * pow(2, (midinote - 69) / 12.0);
 }
 #endif
@@ -68,13 +72,15 @@ float noteToFreqCustomA4(uint8_t midinote, int base_a4_note_freq) {
  * TODO: variation in pitch of A4.
  */
 #include "midi_freq_table.h"
-float noteToFreq(uint8_t midinote) {
+float noteToFreq(uint8_t midinote)
+{
 	return midi_freq_table[midinote];
 }
 
 
 #if TODO_USING_MATH
-uint8_t freqToMidiNote(float freq) {
+uint8_t freqToMidiNote(float freq)
+{
 	/* Fast inverse using log2f */
 	float n = 69.0f + 12.0f * log2f(freq / BASE_A4_NOTE_FREQ);
 	if (n < 0) n = 0;
@@ -95,7 +101,8 @@ uint8_t freqToMidiNote(float freq) {
  *
  * TODO update for MIDI 2.0 to include per note offsets.
  */
-uint8_t freqToMidiNote(float freq) {
+uint8_t freqToMidiNote(float freq)
+{
 	int min = 0;      /* Lower bound of search range (C-1) */
 	int max = 127;    /* Upper bound of search range (G9) */
 	

@@ -1,8 +1,9 @@
 /**
  * midi1.h  
  *
- * Created in 2014 ported to Zephyr RTOS in 2024. 
- * @author Jan-Willem Smaal <usenet@gispen.org> 
+ * Created in 2014 for ATMEL AVR MCU's ported
+ * to Zephyr RTOS in 2024 mainly for ARM based MCU's. 
+ * @author Jan-Willem Smaal <usenet@gispen.org>
  * @updated 20241224
  * @updated 20252810  -> for Zephyr use with USB. 
  * @license SPDX-License-Identifier: Apache-2.0
@@ -136,8 +137,8 @@ enum midi_control_change {
  * TODO: these only make sense when using USART/UART maybe need
  * TODO: implement when creating a UMP bridge. 
  */
-static uint8_t global_running_status_tx;
-static uint8_t global_running_status_rx;
+//static uint8_t global_running_status_tx;
+//static uint8_t global_running_status_rx;
 
 /* Channel mode messages */
 struct midi_ump Midi1NoteON(uint8_t channel, uint8_t key, uint8_t velocity);
@@ -146,7 +147,8 @@ struct midi_ump Midi1ControlChange(uint8_t channel,
 								   uint8_t controller,
 								   uint8_t val);
 struct midi_ump Midi1PitchWheel(uint8_t channel, uint16_t val);
-struct midi_ump Midi1ModWheel(uint8_t channel, uint16_t val);
+struct midi_ump Midi1ModWheel(uint8_t channel, uint8_t val);
+struct midi_ump Midi1PolyAfterTouch(uint8_t channel, uint8_t key, uint8_t val);
 struct midi_ump Midi1ChannelAfterTouch(uint8_t channel, uint8_t val);
 
 /* System Common messages */
