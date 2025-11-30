@@ -10,6 +10,9 @@
 #include "midi1.h"
 
 
+/**
+ * -- == Channel messages == --
+ */
 struct midi_ump Midi1NoteON(uint8_t channel, uint8_t key, uint8_t velocity)
 {
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
@@ -59,7 +62,9 @@ struct midi_ump Midi1ChannelAfterTouch(uint8_t channel, uint8_t val)
  * Even though most keybeds don't send it; a lot of synths
  * can respond to polyphonic aftertouch.
  */
-struct midi_ump Midi1PolyAfterTouch(uint8_t channel, uint8_t key, uint8_t val)
+struct midi_ump Midi1PolyAfterTouch(uint8_t channel,
+									uint8_t key,
+									uint8_t val)
 {
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
 								   (C_POLYPHONIC_AFTERTOUCH >> 4) ,
@@ -105,7 +110,9 @@ struct midi_ump Midi1PitchWheel(uint8_t channel, uint16_t val)
 }
 
 
-//UMP_SYS_RT_COMMON
+/**
+ * -- == System realtime messages == --
+ */
 /* Timing Clock */
 struct midi_ump Midi1TimingClock(void)
 {
@@ -133,6 +140,11 @@ struct midi_ump Midi1Stop(void)
 	return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_STOP, 0, 0);
 }
 
+
+
+/**
+ * -- == System Common Messages == --
+ */
 
 /* Active Sensing */
 struct midi_ump Midi1ActiveSensing(void)

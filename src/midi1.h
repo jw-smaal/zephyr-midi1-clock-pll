@@ -140,7 +140,9 @@ enum midi_control_change {
 //static uint8_t global_running_status_tx;
 //static uint8_t global_running_status_rx;
 
-/* Channel mode messages */
+/**
+ * -- == Channel messages == --
+ */
 struct midi_ump Midi1NoteON(uint8_t channel, uint8_t key, uint8_t velocity);
 struct midi_ump Midi1NoteOFF(uint8_t channel, uint8_t key, uint8_t velocity);
 struct midi_ump Midi1ControlChange(uint8_t channel,
@@ -148,10 +150,15 @@ struct midi_ump Midi1ControlChange(uint8_t channel,
 								   uint8_t val);
 struct midi_ump Midi1PitchWheel(uint8_t channel, uint16_t val);
 struct midi_ump Midi1ModWheel(uint8_t channel, uint8_t val);
-struct midi_ump Midi1PolyAfterTouch(uint8_t channel, uint8_t key, uint8_t val);
+struct midi_ump Midi1PolyAfterTouch(uint8_t channel,
+									uint8_t key,
+									uint8_t val);
 struct midi_ump Midi1ChannelAfterTouch(uint8_t channel, uint8_t val);
 
-/* System Common messages */
+
+/**
+ * -- == System realtime messages == --
+ */
 struct midi_ump Midi1TimingClock(void);
 struct midi_ump Midi1Start(void);
 struct midi_ump Midi1Continue(void);

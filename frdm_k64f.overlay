@@ -1,0 +1,43 @@
+/*
+ * Test with the FRDM-K64F board.
+ * using the onboard fxos8700 accelerometer/magnetometer.
+ * The fxos8700 is connected via I2C.
+ */
+
+&i2c0 {
+    status = "okay";
+    /* clock-frequency = <100000>; */
+    /* Magneto/Accel example sensor shell output
+    uart:~$ sensor get fxos8700@1d magn_xyz 
+    channel type=11(magn_xyz) index=0 shift=0 num_samples=1 value=14300800000ns, (0.306999, -0.264999, 0.000000)  
+    */
+    fxos8700: fxos8700@1d {
+        compatible = "nxp,fxos8700";
+        reg = <0x1d>;
+        status = "okay";
+    };
+    /*
+    sht4x: sht4x@44 {
+        compatible = "sensirion,sht4x";
+        reg = <0x44>;
+        status = "okay";
+        repeatability = <2>;
+    };
+    */
+
+};
+
+&uart3 {
+    status = "okay";
+    /* Set it to the MIDI baud rate */
+    current-speed = <31250>;
+};
+
+
+ /{
+    aliases {
+        i2c0 = &i2c0;
+        midi = &uart3;
+    };
+
+ };
