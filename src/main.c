@@ -14,6 +14,7 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/input/input.h>
 #include <zephyr/logging/log.h>
+#include <stdio.h>
 
 /*
  * Sensor functions
@@ -38,6 +39,11 @@
 #include "midi1.h"
 
 /**
+ * Functions for the accelator/magnetometer sensor
+ */
+#include "orientation.h"
+
+/**
  * -- == Device Tree stuff == --
  */
 #define USB_MIDI_DT_NODE DT_NODELABEL(usb_midi)
@@ -46,10 +52,48 @@ static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led0),
 													 gpios,
 													 {0});
 
-
 /* We want logging */
 LOG_MODULE_REGISTER(sample_usb_midi, LOG_LEVEL_INF);
 
+
+
+/* Helper: scale float angle (degrees) into 7-bit MIDI CC value (0–127) */
+static inline uint8_t angle_to_cc(float angle, float min_deg, float max_deg)
+{
+	/* Clamp */
+	if (angle < min_deg) angle = min_deg;
+	if (angle > max_deg) angle = max_deg;
+	
+	/* Normalize to 0–127 */
+	float norm = (angle - min_deg) / (max_deg - min_deg);
+	int scaled = (int)(norm * 127.0f);
+	
+	if (scaled < 0) scaled = 0;
+	if (scaled > 127) scaled = 127;
+	
+	return (uint8_t)scaled;
+}
+
+void send_orientation_cc(const struct device *midi,
+						 uint8_t channel,
+						 struct orientation_angles angles)
+{
+	/* Map pitch, roll, heading to different CC numbers */
+	uint8_t pitch_val   = angle_to_cc(angles.pitch,  -90.0f,  90.0f);   // CC#2 Breath
+	uint8_t roll_val    = angle_to_cc(angles.roll, -180.0f, 180.0f);   // CC#3 Undefined
+	uint8_t heading_val = angle_to_cc(angles.heading,   0.0f, 360.0f); // CC#1 Mod Wheel
+	
+	/* Send CC messages */
+	usbd_midi_send(midi, Midi1ControlChange(channel,
+											CTL_MSB_MAIN_VOLUME,
+											pitch_val));
+	usbd_midi_send(midi, Midi1ControlChange(channel,
+											CTL_MSB_BALANCE,
+											roll_val));
+	usbd_midi_send(midi, Midi1ControlChange(channel,
+											CTL_MSB_MODWHEEL,
+											heading_val));
+}
 
 static void key_press(struct input_event *evt, void *user_data)
 {
@@ -108,20 +152,6 @@ static const struct usbd_midi_ops ops = {
 	.ready_cb = on_device_ready,
 };
 
-/*
- * Convert floating point number to MIDI 7 bit range.
- */
-uint8_t float_to_midi7(float value, float max_range)
-{
-	/* Scale into 0–127 range using integer math */
-	int scaled = (int)((value * 127.0f) / max_range);
-	
-	/* Clamp to valid MIDI 7‑bit range */
-	if (scaled < 0) scaled = 0;
-	if (scaled > 127) scaled = 127;
-	
-	return (uint8_t)scaled;
-}
 
 /**
  * Init all the USB MIDI stuff in main.
@@ -166,7 +196,7 @@ int main_midi_init(){
  */
 int main(void)
 {
-	uint8_t group      = 0;   // UMP group (usually 0 unless multi‑group setup)
+	//uint8_t group      = 0;   // UMP group (usually 0 unless multi‑group setup)
 	uint8_t channel    = 7;   // Channel 8 → zero‑based index 0
 	uint8_t controller = 2;
 	uint8_t value      = 63;
@@ -175,6 +205,7 @@ int main(void)
 	uint8_t velocity   = 100;
 	struct sensor_value mag[3];
 	struct sensor_value accel[3];
+	struct orientation_angles angles;
 	int ret;
 
 
@@ -196,9 +227,7 @@ int main(void)
 	LOG_INF("main: sensor and MIDI ready entering main() loop");
 	
 	while (1) {
-		//usbd_midi_send(dev, ump);
-		LOG_INF("main: sleeping for 0,9 second");
-		k_msleep(900);
+		k_msleep(80);
 		
 		/* Read some sensor */
 		ret = sensor_sample_fetch(dev);
@@ -218,11 +247,27 @@ int main(void)
 		sensor_channel_get(dev, SENSOR_CHAN_MAGN_Z, &mag[2]);
 		
 		/* Print values in microtesla (µT) */
-		LOG_INF("Magnetometer: X=%d.%06d µT, Y=%d.%06d µT, Z=%d.%06d µT\n",
-				mag[0].val1, mag[0].val2,
-				mag[1].val1, mag[1].val2,
-				mag[2].val1, mag[2].val2);
-	
+		//LOG_INF("Magnetometer: X=%d.%06d µT, Y=%d.%06d µT, Z=%d.%06d µT\n",
+		//		mag[0].val1, mag[0].val2,
+		//		mag[1].val1, mag[1].val2,
+		//		mag[2].val1, mag[2].val2);
+		/* Compute orientation */
+		angles = orientation_compute(accel, mag);
+		
+		printf("Pitch=%.2f°, Roll=%.2f°, Heading=%.2f°\n",
+			   (double)angles.pitch,
+			   (double)angles.roll,
+			   (double)angles.heading);
+#if 0
+		LOG_INF("LOG Pitch=%d.%02d°, Roll=%d.%02d°, Heading=%d.%02d°",
+				(int)angles.pitch,
+				abs((int)(angles.pitch * 100) % 100),
+				(int)angles.roll,
+				abs((int)(angles.roll * 100) % 100),
+				(int)angles.heading,
+				abs((int)(angles.heading * 100) % 100));
+#endif
+		
 		/* Send it over USB-MIDI */
 		//usbd_midi_send(midi, UMP_MIDI1_CHANNEL_VOICE(group,
 		//											 command,
@@ -237,16 +282,22 @@ int main(void)
 		//usbd_midi_send(midi, Midi1PitchWheel(channel,
 		//									 value));
 		
+		/* Send orientation mapped to MIDI CC */
+		send_orientation_cc(midi, 12, angles);
+#if MIDI_NOTES
 		usbd_midi_send(midi,
 					   Midi1NoteON(channel,
 									key,
 									velocity));
+
 		/* Leave some time in between the note on and off to test */
 		k_msleep(100);
+
 		usbd_midi_send(midi,
 					   Midi1NoteOFF(channel,
 									key,
 									velocity));
+#endif
 		
 		/* Test sending all control change messages */
 #if CONTROL_CHANGE_TEST

@@ -3,6 +3,10 @@
 
 #include <zephyr/drivers/sensor.h>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 struct orientation_angles {
     float pitch;   /* Tilt forward/backward (-90..+90) */
     float roll;    /* Tilt sideways (-180..+180) */

@@ -16,8 +16,8 @@ struct orientation_angles orientation_compute(struct sensor_value accel[3],
     float mz = sensor_value_to_float(&mag[2]);
 
     /* Roll and pitch from accelerometer */
-    out.roll  = atan2f(ay, az) * (180.0f / M_PI);
-    out.pitch = atan2f(-ax, sqrtf(ay*ay + az*az)) * (180.0f / M_PI);
+    out.roll  = atan2f(ay, az) * (180.0f / (float)M_PI);
+    out.pitch = atan2f(-ax, sqrtf(ay*ay + az*az)) * (180.0f / (float)M_PI);
 
     /* Tilt compensation for magnetometer */
     float roll_rad  = atan2f(ay, az);
@@ -28,7 +28,7 @@ struct orientation_angles orientation_compute(struct sensor_value accel[3],
                   + my * cosf(roll_rad)
                   - mz * sinf(roll_rad) * cosf(pitch_rad);
 
-    float heading = atan2f(-my_comp, mx_comp) * (180.0f / M_PI);
+    float heading = atan2f(-my_comp, mx_comp) * (180.0f / (float)M_PI);
     if (heading < 0) heading += 360.0f;
 
     out.heading = heading;
