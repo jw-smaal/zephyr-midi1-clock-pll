@@ -28,8 +28,9 @@
 char *noteToText(uint8_t midinote, bool flats);
 char *noteToTextWithOctave(uint8_t midinote, bool flats);
 int noteToOct(uint8_t midinote);
-//float noteToFreq(uint8_t midinote, int base_a4_note_freq); 
-uint8_t freqToMidiNote(float freq); 
+//float noteToFreq(uint8_t midinote, int base_a4_note_freq);
+float noteToFreq(uint8_t midinote);
+uint8_t freqToMidiNote(float freq);
 
 #endif /* _HARMONY_NOTE */
 /* EOF */

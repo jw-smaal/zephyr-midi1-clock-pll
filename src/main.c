@@ -10,13 +10,16 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include <sample_usbd.h>
-
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/input/input.h>
-#include <zephyr/usb/class/usbd_midi2.h>
 #include <zephyr/logging/log.h>
+
+/*
+ * Sensor functions
+ */
+#include <zephyr/drivers/sensor.h>
+
 
 /*
  * This is part of the MIDI2 library
@@ -24,6 +27,8 @@
  * /zephyr/lib/midi2/ump_stream_responder.h
  * it get's linked in.
  */
+#include <sample_usbd.h>
+#include <zephyr/usb/class/usbd_midi2.h>
 #include <ump_stream_responder.h>
 
 /**
@@ -37,7 +42,10 @@
  */
 #define USB_MIDI_DT_NODE DT_NODELABEL(usb_midi)
 static const struct device *const midi = DEVICE_DT_GET(USB_MIDI_DT_NODE);
-static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led0), gpios, {0});
+static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led0),
+													 gpios,
+													 {0});
+
 
 /* We want logging */
 LOG_MODULE_REGISTER(sample_usb_midi, LOG_LEVEL_INF);
@@ -100,6 +108,20 @@ static const struct usbd_midi_ops ops = {
 	.ready_cb = on_device_ready,
 };
 
+/*
+ * Convert floating point number to MIDI 7 bit range.
+ */
+uint8_t float_to_midi7(float value, float max_range)
+{
+	/* Scale into 0–127 range using integer math */
+	int scaled = (int)((value * 127.0f) / max_range);
+	
+	/* Clamp to valid MIDI 7‑bit range */
+	if (scaled < 0) scaled = 0;
+	if (scaled > 127) scaled = 127;
+	
+	return (uint8_t)scaled;
+}
 
 /**
  * Init all the USB MIDI stuff in main.
@@ -136,27 +158,70 @@ int main_midi_init(){
 }
 
 
+
+
+/**
+ * Main thread - this may actually terminate normally (code 0) in zephyr.
+ * and the rest of threads keeps running just fine.
+ */
 int main(void)
 {
-	if (main_midi_init()) {
-		LOG_ERR("Failed to main_midi_init()");
-		return -1;
-	}
-	
-	uint8_t group      = 0;   /* UMP group (usually 0 unless multi‑group setup) */
-	uint8_t channel    = 7;   /* Channel 8 → zero‑based index 0 */
+	uint8_t group      = 0;   // UMP group (usually 0 unless multi‑group setup)
+	uint8_t channel    = 7;   // Channel 8 → zero‑based index 0
 	uint8_t controller = 2;
 	uint8_t value      = 63;
 	uint8_t val		   = 32;
 	uint8_t key		   = 100;
 	uint8_t velocity   = 100;
+	struct sensor_value mag[3];
+	struct sensor_value accel[3];
+	int ret;
 
 
+	/* Init the USB MIDI */
+	if (main_midi_init()) {
+		LOG_ERR("Failed to main_midi_init()");
+		return -1;
+	}
+	
+	/*
+	 * Init sensor stuff
+	 */
+	const struct device *const dev = DEVICE_DT_GET_ONE(nxp_fxos8700);
+	
+	if (!device_is_ready(dev)) {
+		LOG_ERR("sensor: device not ready");
+		return -1;
+	}
+	LOG_INF("main: sensor and MIDI ready entering main() loop");
+	
 	while (1) {
 		//usbd_midi_send(dev, ump);
 		LOG_INF("main: sleeping for 0,9 second");
 		k_msleep(900);
 		
+		/* Read some sensor */
+		ret = sensor_sample_fetch(dev);
+		if (ret < 0) {
+			LOG_ERR("sensor_sample_fetch failed ret %d\n", ret);
+			return -1;
+		}
+		
+		/* read acceleration channels*/
+		sensor_channel_get(dev, SENSOR_CHAN_ACCEL_X, &accel[0]);
+		sensor_channel_get(dev, SENSOR_CHAN_ACCEL_Y, &accel[1]);
+		sensor_channel_get(dev, SENSOR_CHAN_ACCEL_Z, &accel[2]);
+		
+		/* Read magnetic field channels */
+		sensor_channel_get(dev, SENSOR_CHAN_MAGN_X, &mag[0]);
+		sensor_channel_get(dev, SENSOR_CHAN_MAGN_Y, &mag[1]);
+		sensor_channel_get(dev, SENSOR_CHAN_MAGN_Z, &mag[2]);
+		
+		/* Print values in microtesla (µT) */
+		LOG_INF("Magnetometer: X=%d.%06d µT, Y=%d.%06d µT, Z=%d.%06d µT\n",
+				mag[0].val1, mag[0].val2,
+				mag[1].val1, mag[1].val2,
+				mag[2].val1, mag[2].val2);
 	
 		/* Send it over USB-MIDI */
 		//usbd_midi_send(midi, UMP_MIDI1_CHANNEL_VOICE(group,
