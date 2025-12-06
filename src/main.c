@@ -39,6 +39,11 @@
 #include "midi1.h"
 
 /**
+ * Serial USART MIDI1.0 by Jan-Willem Smaal
+ */
+//#include "serial-usart-midi.h"
+
+/**
  * Functions for the accelator/magnetometer sensor
  */
 #include "orientation.h"
@@ -74,26 +79,32 @@ static inline uint8_t angle_to_cc(float angle, float min_deg, float max_deg)
 	return (uint8_t)scaled;
 }
 
+
 void send_orientation_cc(const struct device *midi,
 						 uint8_t channel,
 						 struct orientation_angles angles)
 {
+	static uint8_t previous_pitch_val;
 	/* Map pitch, roll, heading to different CC numbers */
 	uint8_t pitch_val   = angle_to_cc(angles.pitch,  -90.0f,  90.0f);   // CC#2 Breath
 	uint8_t roll_val    = angle_to_cc(angles.roll, -180.0f, 180.0f);   // CC#3 Undefined
 	uint8_t heading_val = angle_to_cc(angles.heading,   0.0f, 360.0f); // CC#1 Mod Wheel
 	
 	/* Send CC messages */
-	usbd_midi_send(midi, Midi1ControlChange(channel,
-											CTL_MSB_MAIN_VOLUME,
-											pitch_val));
-	usbd_midi_send(midi, Midi1ControlChange(channel,
-											CTL_MSB_BALANCE,
-											roll_val));
-	usbd_midi_send(midi, Midi1ControlChange(channel,
-											CTL_MSB_MODWHEEL,
-											heading_val));
+	if (pitch_val != previous_pitch_val) {
+		usbd_midi_send(midi, Midi1ControlChange(channel,
+												CTL_MSB_MODWHEEL,
+												pitch_val));
+		previous_pitch_val = pitch_val; 
+	}
+	//usbd_midi_send(midi, Midi1ControlChange(channel,
+	//										CTL_MSB_BALANCE,
+	//										roll_val));
+	//usbd_midi_send(midi, Midi1ControlChange(channel,
+	//										CTL_MSB_MODWHEEL,
+	//										heading_val));
 }
+
 
 static void key_press(struct input_event *evt, void *user_data)
 {
@@ -218,7 +229,8 @@ int main(void)
 	/*
 	 * Init sensor stuff
 	 */
-	const struct device *const dev = DEVICE_DT_GET_ONE(nxp_fxos8700);
+	//const struct device *const dev = DEVICE_DT_GET_ONE(nxp_fxos8700);
+	const struct device *const dev = DEVICE_DT_GET_ONE(nxp_fxls8974);
 	
 	if (!device_is_ready(dev)) {
 		LOG_ERR("sensor: device not ready");
@@ -227,7 +239,7 @@ int main(void)
 	LOG_INF("main: sensor and MIDI ready entering main() loop");
 	
 	while (1) {
-		k_msleep(80);
+		k_msleep(20);
 		
 		/* Read some sensor */
 		ret = sensor_sample_fetch(dev);
