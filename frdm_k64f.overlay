@@ -1,8 +1,4 @@
 /*
- * Overlay for FRDM-K64F with 
- * MIDI (USART) board.  
- * 
- * Original: 
  * Copyright (c) 2024 Titouan Christophe
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -18,6 +14,8 @@
 	usb_midi: usb_midi {
 		compatible = "zephyr,midi2-device";
 		status = "okay";
+		#address-cells = <1>;
+		#size-cells = <1>;
 		label = "Zephyr USB-MIDI Sample";
 
 		midi_in_out@0 {
@@ -28,7 +26,6 @@
 	};
     aliases {
         i2c0 = &i2c0;
-		/* This is the serial USART midi */ 
         midi = &uart3;
     };
 };
