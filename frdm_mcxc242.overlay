@@ -1,0 +1,28 @@
+/*
+ * Test with the FRDM-MCXW242 board and the VL53L0X sensor
+ * Overlay provided by Jan-Willem Smaal on 20250101
+ */
+
+&i2c1 {
+ 	status = "okay";
+	vl53l0x@29 {
+		compatible = "st,vl53l0x";
+		reg = <0x29>;
+	};
+};
+
+/ {
+	usb_midi: usb_midi {
+		compatible = "zephyr,midi2-device";
+		status = "okay";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		label = "Zephyr USB-MIDI Sample";
+
+		midi_in_out@0 {
+			reg = <0 1>;
+			protocol = "midi1-up-to-128b";
+			label = "MIDI-IN-OUT";
+		};
+	};
+};

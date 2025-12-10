@@ -12,15 +12,17 @@
 #include "note.h"
 
 
-/* Return the note with the octave included. */
+/*
+ * Return the note with the octave included.
+ * not thread safe. 
+ */
 char *noteToTextWithOctave(uint8_t midinote, bool flats)
 {
-    static char notestring[4];
+    static char notestring[5];
     snprintf(notestring,
              sizeof(notestring),
             "%s%d", 
             noteToText(midinote, flats), noteToOct(midinote));
-
     return &notestring[0];  
 }
 
@@ -30,8 +32,8 @@ char *noteToText(uint8_t midinote, bool flats)
 {
     int octave = noteToOct(midinote);
     uint8_t note = midinote - ((octave + 2) * 12);
-    static char *flatNotes[] =  { "C ", "Db", "D ", "Eb", "E ", "F ", "Gb", "G ", "Ab", "A ", "Bb", "B "};
-    static char *sharpNotes[] = { "C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "};
+    static const char *flatNotes[] =  { "C ", "Db", "D ", "Eb", "E ", "F ", "Gb", "G ", "Ab", "A ", "Bb", "B "};
+    static const char *sharpNotes[] = { "C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "};
 
     char *noteString;
     if (flats) {
