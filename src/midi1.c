@@ -13,7 +13,7 @@
 /**
  * -- == Channel messages == --
  */
-struct midi_ump Midi1NoteON(uint8_t channel, uint8_t key, uint8_t velocity)
+struct midi_ump midi1_note_on(uint8_t channel, uint8_t key, uint8_t velocity)
 {
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
 								   (C_NOTE_ON >> 4),
@@ -23,7 +23,7 @@ struct midi_ump Midi1NoteON(uint8_t channel, uint8_t key, uint8_t velocity)
 }
 
 
-struct midi_ump Midi1NoteOFF(uint8_t channel, uint8_t key, uint8_t velocity)
+struct midi_ump midi1_note_off(uint8_t channel, uint8_t key, uint8_t velocity)
 {
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
 								   (C_NOTE_OFF >> 4),
@@ -33,7 +33,7 @@ struct midi_ump Midi1NoteOFF(uint8_t channel, uint8_t key, uint8_t velocity)
 }
 
 
-struct midi_ump Midi1ControlChange(uint8_t channel,
+struct midi_ump midi1_controlchange(uint8_t channel,
 								   uint8_t controller,
 								   uint8_t val)
 {
@@ -48,7 +48,7 @@ struct midi_ump Midi1ControlChange(uint8_t channel,
 /*
  * Channel aftertouch is not a control change!!! 
  */
-struct midi_ump Midi1ChannelAfterTouch(uint8_t channel, uint8_t val)
+struct midi_ump midi1_channelaftertouch(uint8_t channel, uint8_t val)
 {
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
 								   (C_CHANNEL_AFTERTOUCH >> 4) ,
@@ -62,7 +62,7 @@ struct midi_ump Midi1ChannelAfterTouch(uint8_t channel, uint8_t val)
  * Even though most keybeds don't send it; a lot of synths
  * can respond to polyphonic aftertouch.
  */
-struct midi_ump Midi1PolyAfterTouch(uint8_t channel,
+struct midi_ump midi1_polyaftertouch(uint8_t channel,
 									uint8_t key,
 									uint8_t val)
 {
@@ -78,9 +78,9 @@ struct midi_ump Midi1PolyAfterTouch(uint8_t channel,
  * Mod wheel has both MSB and LSB however I never come across
  * a vendor that implements both.
  */
-struct midi_ump Midi1ModWheel(uint8_t channel, uint8_t val)
+struct midi_ump midi1_modwheel(uint8_t channel, uint8_t val)
 {
-	return Midi1ControlChange(channel, CTL_MSB_MODWHEEL, val);
+	return midi1_controlchange(channel, CTL_MSB_MODWHEEL, val);
 }
 
 
@@ -89,9 +89,9 @@ struct midi_ump Midi1ModWheel(uint8_t channel, uint8_t val)
  * The MIDI2.0 spec says the P1 should be LSB and P2 should be MSB.
  * when encapsulating MIDI1.0 into a UMP.
  */
-struct midi_ump Midi1ModWheelLSB(uint8_t channel, uint8_t val)
+struct midi_ump midi1_modwheellsb(uint8_t channel, uint8_t val)
 {
-	return Midi1ControlChange(channel, CTL_LSB_MODWHEEL, val);
+	return midi1_controlchange(channel, CTL_LSB_MODWHEEL, val);
 }
 
 
@@ -100,7 +100,7 @@ struct midi_ump Midi1ModWheelLSB(uint8_t channel, uint8_t val)
  * The MIDI2.0 spec says the P1 should be LSB and P2 should be MSB.
  * when encapsulating MIDI1.0 into a UMP.
  */
-struct midi_ump Midi1PitchWheel(uint8_t channel, uint16_t val)
+struct midi_ump midi1_pitchwheel(uint8_t channel, uint16_t val)
 {
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
 								   (C_PITCH_WHEEL >> 4),
@@ -114,28 +114,28 @@ struct midi_ump Midi1PitchWheel(uint8_t channel, uint16_t val)
  * -- == System realtime messages == --
  */
 /* Timing Clock */
-struct midi_ump Midi1TimingClock(void)
+struct midi_ump midi1_timingclock(void)
 {
 	return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP,RT_TIMING_CLOCK,0,0);
 }
 
 
 /* Start */
-struct midi_ump Midi1Start(void)
+struct midi_ump midi1_start(void)
 {
 	return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_START, 0, 0);
 }
 
 
 /* Continue */
-struct midi_ump Midi1Continue(void)
+struct midi_ump midi1_continue(void)
 {
 	return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_CONTINUE, 0, 0);
 }
 
 
 /* Stop */
-struct midi_ump Midi1Stop(void)
+struct midi_ump midi1_stop(void)
 {
 	return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_STOP, 0, 0);
 }
@@ -147,14 +147,14 @@ struct midi_ump Midi1Stop(void)
  */
 
 /* Active Sensing */
-struct midi_ump Midi1ActiveSensing(void)
+struct midi_ump midi1_activesensing(void)
 {
 	return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_ACTIVE_SENSING, 0, 0);
 }
 
 
 /* Reset */
-struct midi_ump Midi1Reset(void)
+struct midi_ump midi1_reset(void)
 {
 	return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_RESET, 0, 0);
 }

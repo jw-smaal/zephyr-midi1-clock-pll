@@ -153,9 +153,9 @@ int
 main(void)
 {
 	//uint8_t group = 0;
-	//UMP group(usually 0 unless multi ï ¿½63 ï ¿½group setup)
+	//UMP group(usually 0 unless multi ï¿½ 63ï¿½group setup)
 		uint8_t channel = 7;
-	//Channel 8 ï ¿½ï¿½ï¿½zero ï ¿½63 ï ¿½based index 0
+	//Channel 8 ï¿½ ï¿½ï¿½zero ï¿½ 63ï¿½based index 0
 		uint8_t controller = 1;
 	uint8_t		value = 63;
 	uint8_t		val = 32;
@@ -178,7 +178,7 @@ main(void)
 
 		for (int i = 0; i < 127; i++) {
 			usbd_midi_send(midi,
-				       midi1_controlchange(channel,
+				       Midi1ControlChange(channel,
 							  controller,
 							  val));
 			val++;

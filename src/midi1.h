@@ -8,8 +8,8 @@
  * @updated 20252810  -> for Zephyr use with USB. 
  * @license SPDX-License-Identifier: Apache-2.0
  */
-#ifndef _MIDI1_H
-#define _MIDI1_H
+#ifndef MIDI1_H
+#define MIDI1_H
 /*-----------------------------------------------------------------------*/
 #include <stdint.h>
 #include <string.h>
@@ -138,33 +138,33 @@ enum midi_control_change {
  * TODO: implement when creating a UMP bridge. 
  */
 //static uint8_t global_running_status_tx;
-//static uint8_t global_running_status_rx;
+//static uint_t global_running_status_rx;
 
 /**
  * -- == Channel messages == --
  */
-struct midi_ump Midi1NoteON(uint8_t channel, uint8_t key, uint8_t velocity);
-struct midi_ump Midi1NoteOFF(uint8_t channel, uint8_t key, uint8_t velocity);
-struct midi_ump Midi1ControlChange(uint8_t channel,
+struct midi_ump midi1_note_on(uint8_t channel, uint8_t key, uint8_t velocity);
+struct midi_ump midi1_note_off(uint8_t channel, uint8_t key, uint8_t velocity);
+struct midi_ump midi1_controlchange(uint8_t channel,
 								   uint8_t controller,
 								   uint8_t val);
-struct midi_ump Midi1PitchWheel(uint8_t channel, uint16_t val);
-struct midi_ump Midi1ModWheel(uint8_t channel, uint8_t val);
-struct midi_ump Midi1PolyAfterTouch(uint8_t channel,
+struct midi_ump midi1_pitchwheel(uint8_t channel, uint16_t val);
+struct midi_ump midi1_modwheel(uint8_t channel, uint8_t val);
+struct midi_ump midi1_polyaftertouch(uint8_t channel,
 									uint8_t key,
 									uint8_t val);
-struct midi_ump Midi1ChannelAfterTouch(uint8_t channel, uint8_t val);
+struct midi_ump midi1_channelaftertouch(uint8_t channel, uint8_t val);
 
 
 /**
  * -- == System realtime messages == --
  */
-struct midi_ump Midi1TimingClock(void);
-struct midi_ump Midi1Start(void);
-struct midi_ump Midi1Continue(void);
-struct midi_ump Midi1Stop(void);
-struct midi_ump Midi1Active_Sensing(void);
-struct midi_ump Midi1Reset(void);
+struct midi_ump midi1_timing_clock(void);
+struct midi_ump midi1_start(void);
+struct midi_ump midi1_continue(void);
+struct midi_ump midi1_stop(void);
+struct midi_ump midi1_active_sensing(void);
+struct midi_ump midi1_reset(void);
 
 
 #endif 
