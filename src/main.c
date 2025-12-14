@@ -178,19 +178,18 @@ int main(void)
 			midi_clock_init(midi);
 			midi_clock_start(sbpm_to_24pqn(i));
 			k_msleep(10000); 
-		}
+			controller = 1;
+			val = 0;
 
-		controller = 1;
-		val = 0;
-
-		for (int i = 0; i < 127; i++) {
-			/* usbd_midi_send(midi, midi1_timing_clock()); */
-			usbd_midi_send(midi, midi1_controlchange(
-									channel,
-									controller,
-									val));
-			val++;
-			k_msleep(100);
+			for (int i = 0; i < 127; i++) {
+				/* usbd_midi_send(midi, midi1_timing_clock()); */
+				usbd_midi_send(midi, midi1_controlchange(
+										channel,
+										controller,
+										val));
+				val++;
+				k_msleep(100);
+			}
 		}
 	}
 

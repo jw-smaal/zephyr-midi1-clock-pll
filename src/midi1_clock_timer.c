@@ -18,14 +18,15 @@
 
 
 /* Timer and running flag */
-// static struct k_timer g_midi_timer;
-//static atomic_t g_midi_running = ATOMIC_INIT(0);
+static struct k_timer g_midi_timer;
+static atomic_t g_midi_running = ATOMIC_INIT(0);
 
 /* Timer handler runs in system workqueue context; keep it short */
+/* static and kept local to the implementation */
 static void midi_timer_handler(struct k_timer *t)
 {
-        void *midi_dev = k_timer_user_data_get(t);
-		//ARG_UNUSED(t);
+        //void *midi_dev = k_timer_user_data_get(t);
+		const struct device *midi_dev = k_timer_user_data_get(t);
 
         if (!atomic_get(&g_midi_running)) {
                 return;
@@ -39,11 +40,11 @@ static void midi_timer_handler(struct k_timer *t)
  * Initialize MIDI clock subsystem with your MIDI device handle. Call once at
  * startup before starting the clock.
  */
-void midi_clock_init(void *midi_dev_arg)
+void midi_clock_init(const struct device *midi_dev_arg)
 {
         atomic_set(&g_midi_running, 0);
         k_timer_init(&g_midi_timer, midi_timer_handler, NULL);
-		k_timer_user_data_set(&g_midi_timer, midi_dev_arg);
+		k_timer_user_data_set(&g_midi_timer, (void *)midi_dev_arg);
 }
 
 /*
