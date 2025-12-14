@@ -31,6 +31,12 @@
  */
 #include "midi1.h"
 
+/** 
+ * Functions for the MIDI clock timer. 
+ */ 
+#include "midi1_clock_timer.h"
+
+
 /**
  * -- == Device Tree stuff == --
  */
@@ -162,13 +168,23 @@ int main(void)
 
 	LOG_INF("main: MIDI ready entering main() loop");
 
+	midi_clock_init(midi);
+    // midi_clock_stop();
+	
 	while (1) {
-		/* k_msleep(1000); */
+		/* Test tempo  */ 
+		for (int i = 8000u; i < 14000; i = i + 1000) {
+			midi_clock_stop();
+			midi_clock_init(midi);
+			midi_clock_start(sbpm_to_24pqn(i));
+			k_msleep(10000); 
+		}
+
 		controller = 1;
 		val = 0;
 
 		for (int i = 0; i < 127; i++) {
-			usbd_midi_send(midi, midi1_timing_clock());
+			/* usbd_midi_send(midi, midi1_timing_clock()); */
 			usbd_midi_send(midi, midi1_controlchange(
 									channel,
 									controller,
