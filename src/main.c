@@ -36,9 +36,7 @@
  */
 #define USB_MIDI_DT_NODE DT_NODELABEL(usb_midi)
 static const struct device *const midi = DEVICE_DT_GET(USB_MIDI_DT_NODE);
-static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led0),
-						     gpios,
-						     {0});
+static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led0),gpios,{0});
 
 /* We want logging */
 LOG_MODULE_REGISTER(sample_usb_midi, LOG_LEVEL_INF);
@@ -71,8 +69,7 @@ const struct ump_stream_responder_cfg responder_cfg =
 UMP_STREAM_RESPONDER(midi, usbd_midi_send, &ump_ep_dt);
 
 
-static void
-on_midi_packet(const struct device *dev, const struct midi_ump ump)
+static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 {
 	LOG_INF("Received MIDI packet (MT=%X)", UMP_MT(ump));
 
@@ -90,8 +87,7 @@ on_midi_packet(const struct device *dev, const struct midi_ump ump)
 }
 
 
-static void
-on_device_ready(const struct device *dev, const bool ready)
+static void on_device_ready(const struct device *dev, const bool ready)
 {
 	/* Light up the LED (if any) when USB-MIDI2.0 is enabled */
 	if (led.port) {
@@ -109,8 +105,7 @@ static const struct usbd_midi_ops ops = {
 /**
  * Init all the USB MIDI stuff in main.
  */
-int
-main_midi_init()
+int main_midi_init()
 {
 	struct usbd_context *sample_usbd;
 
@@ -149,13 +144,9 @@ main_midi_init()
  * Main thread - this may actually terminate normally (code 0) in zephyr.
  * and the rest of threads keeps running just fine.
  */
-int
-main(void)
+int main(void)
 {
-	//uint8_t group = 0;
-	//UMP group(usually 0 unless multi ï ¿½63 ï ¿½group setup)
 		uint8_t channel = 7;
-	//Channel 8 ï ¿½ï¿½ï¿½zero ï ¿½63 ï ¿½based index 0
 		uint8_t controller = 1;
 	uint8_t		value = 63;
 	uint8_t		val = 32;
@@ -172,17 +163,18 @@ main(void)
 	LOG_INF("main: MIDI ready entering main() loop");
 
 	while (1) {
-		k_msleep(1000);
+		/* k_msleep(1000); */
 		controller = 1;
 		val = 0;
 
 		for (int i = 0; i < 127; i++) {
-			usbd_midi_send(midi,
-				       midi1_controlchange(channel,
-							  controller,
-							  val));
+			usbd_midi_send(midi, midi1_timing_clock());
+			usbd_midi_send(midi, midi1_controlchange(
+									channel,
+									controller,
+									val));
 			val++;
-			k_msleep(10);
+			k_msleep(100);
 		}
 	}
 

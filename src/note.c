@@ -16,7 +16,7 @@
  * Return the note with the octave included.
  * not thread safe. 
  */
-char *noteToTextWithOctave(uint8_t midinote, bool flats)
+const char *noteToTextWithOctave(uint8_t midinote, bool flats)
 {
     static char notestring[5];
     snprintf(notestring,
@@ -28,14 +28,14 @@ char *noteToTextWithOctave(uint8_t midinote, bool flats)
 
 
 /* This function converts a MIDI note using a lookup table to a string */
-char *noteToText(uint8_t midinote, bool flats)
+const char *noteToText(uint8_t midinote, bool flats)
 {
     int octave = noteToOct(midinote);
     uint8_t note = midinote - ((octave + 2) * 12);
     static const char *flatNotes[] =  { "C ", "Db", "D ", "Eb", "E ", "F ", "Gb", "G ", "Ab", "A ", "Bb", "B "};
     static const char *sharpNotes[] = { "C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "};
 
-    char *noteString;
+    const char *noteString;
     if (flats) {
         noteString = flatNotes[note];
     } else {

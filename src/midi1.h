@@ -167,5 +167,32 @@ struct midi_ump midi1_active_sensing(void);
 struct midi_ump midi1_reset(void);
 
 
+/*
+ *------------------------------------------------------------------------------
+ * MIDI tempo helpers.
+ *
+ * upscaled implementation (s)bpm given
+ * 1.00 bpm is 100
+ * 123.10 bpm is 123100 max 65535 == 655.35 bpm
+ * period returned is in microseconds as a uint32_t
+ * 0.003814755 3.814 ms --> 3814 us (655,35 bpm)
+ * 2.500000000 s/(1/24 qn) --> 2500000 us
+ * i.e. multiplied by 1000000
+ * Done so we can run it on a ARM M0+ without a FPU and the need
+ * to compile in single precision math.
+ * By Jan-Willem Smaal <usenet@gispen.org> 20251214
+ */
+#define BPM_SCALE      100u
+#define US_PER_SECOND  1000000u
+uint32_t sbpm_to_us_interval(uint16_t sbpm);
+uint16_t us_interval_to_sbpm(uint32_t interval);
+uint32_t us_interval_to_24pqn(uint32_t interval);
+uint32_t pqn24_to_us_interval(uint32_t pqn24);
+uint32_t sbpm_to_24pqn(uint16_t sbpm);
+/* -------------------------------------------------------------------------- */
+
+
+
+
 #endif 
 /* EOF */

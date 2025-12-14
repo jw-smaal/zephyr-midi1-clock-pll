@@ -25,8 +25,8 @@
 #define BASE_A4_NOTE_FREQUENCY 440
 
 
-char *noteToText(uint8_t midinote, bool flats);
-char *noteToTextWithOctave(uint8_t midinote, bool flats);
+const char *noteToText(uint8_t midinote, bool flats);
+const char *noteToTextWithOctave(uint8_t midinote, bool flats);
 int noteToOct(uint8_t midinote);
 //float noteToFreq(uint8_t midinote, int base_a4_note_freq);
 float noteToFreq(uint8_t midinote);
