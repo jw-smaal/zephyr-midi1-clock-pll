@@ -2,31 +2,31 @@
 [0/1] cd /Users/smaal/zephyrproject2/WORK-GIT/usb-midi-minimal/build && /Users/smaal/zephyrproject2/.venv/bin/python3.14 /Users/smaal/zephyrproject2/zephyr/scripts/footprint/size_report -k /Users/smaal/zephyrproject2/WORK-GIT/usb-midi-minimal/build/zephyr/zephyr.elf -z /Users/smaal/zephyrproject2/zephyr -o /Users/smaal/zephyrproject2/WORK-GIT/usb-midi-minimal/build --workspace=/Users/smaal/zephyrproject2 -d 99 --json rom.json rom
 Path                                                                                             Size       %  Address    Section    
 ==========================================================================================================================================
-Root                                                                                            37696 100.00%  - 
+Root                                                                                            37700 100.00%  - 
 ├── (hidden)                                                                                     1830   4.85%  - 
 ├── (no paths)                                                                                   2250   5.97%  - 
 │   ├── __aeabi_idiv0                                                                               2   0.01%  0x000004c5 text
-│   ├── __aeabi_llsl                                                                               24   0.06%  0x0000059d text
-│   ├── __aeabi_llsr                                                                               24   0.06%  0x00000585 text
+│   ├── __aeabi_memcpy4                                                                            18   0.05%  0x00008323 text
 │   ├── __aeabi_uidivmod                                                                           18   0.05%  0x000004b1 text
 │   ├── __aeabi_uldivmod                                                                           62   0.16%  0x00000545 text
+│   ├── __ashldi3                                                                                  24   0.06%  0x0000059d text
 │   ├── __clzsi2                                                                                   60   0.16%  0x000004c9 text
 │   ├── __ctzsi2                                                                                   64   0.17%  0x00000505 text
 │   ├── __gnu_thumb1_case_shi                                                                      20   0.05%  0x00000425 text
 │   ├── __gnu_thumb1_case_uqi                                                                      18   0.05%  0x00000411 text
-│   ├── __l_vfprintf                                                                             1232   3.27%  0x00004ad5 text
+│   ├── __l_vfprintf                                                                             1232   3.27%  0x00004ad9 text
+│   ├── __lshrdi3                                                                                  24   0.06%  0x00000585 text
 │   ├── __udivmoddi4                                                                              222   0.59%  0x000005ef text
 │   ├── __udivsi3                                                                                 120   0.32%  0x00000439 text
-│   ├── __ultoa_invert                                                                            270   0.72%  0x00008357 text
-│   ├── gpio_mcux_port3_init                                                                        4   0.01%  0x000078c1 text
-│   ├── mcux_mcg_off                                                                                4   0.01%  0x000077bb text
-│   ├── memcpy                                                                                     18   0.05%  0x0000831f text
-│   ├── memset                                                                                     16   0.04%  0x00008331 text
+│   ├── __ultoa_invert                                                                            270   0.72%  0x0000835b text
+│   ├── gpio_mcux_port3_init                                                                        4   0.01%  0x000078c5 text
+│   ├── mcux_mcg_off                                                                                4   0.01%  0x000077bf text
+│   ├── memset                                                                                     16   0.04%  0x00008335 text
 │   ├── strcmp                                                                                     20   0.05%  0x000005cd text
 │   ├── strlen                                                                                     14   0.04%  0x000005e1 text
-│   ├── strnlen                                                                                    22   0.06%  0x00008341 text
-│   ├── usbd_midi_class_resumed                                                                     8   0.02%  0x00006521 text
-│   └── usbd_midi_class_suspended                                                                   8   0.02%  0x00006543 text
+│   ├── strnlen                                                                                    22   0.06%  0x00008345 text
+│   ├── usbd_midi_class_resumed                                                                     8   0.02%  0x00006525 text
+│   └── usbd_midi_class_suspended                                                                   8   0.02%  0x00006547 text
 ├── OUTPUT_DIR                                                                                    402   1.07%  - 
 │   └── zephyr                                                                                    402   1.07%  - 
 │       ├── include                                                                                16   0.04%  - 
@@ -34,28 +34,28 @@ Root                                                                            
 │       │       └── zephyr                                                                         16   0.04%  - 
 │       │           └── syscalls                                                                   16   0.04%  - 
 │       │               └── kernel.h                                                               16   0.04%  - 
-│       │                   ├── k_mutex_unlock.isra.0                                               8   0.02%  0x000056d3 text
-│       │                   └── k_mutex_unlock.isra.0                                               8   0.02%  0x00005d87 text
+│       │                   ├── k_mutex_unlock.isra.0                                               8   0.02%  0x000056d7 text
+│       │                   └── k_mutex_unlock.isra.0                                               8   0.02%  0x00005d8b text
 │       ├── isr_tables.c                                                                          384   1.02%  - 
 │       │   ├── _irq_vector_table                                                                 128   0.34%  0x00000040 rom_start
-│       │   └── _sw_isr_table                                                                     256   0.68%  0x000086d4 sw_isr_table
+│       │   └── _sw_isr_table                                                                     256   0.68%  0x000086d8 sw_isr_table
 │       └── misc                                                                                    2   0.01%  - 
 │           └── generated                                                                           2   0.01%  - 
 │               └── configs.c                                                                       2   0.01%  - 
-│                   └── _ConfigAbsSyms                                                              2   0.01%  0x00005545 text
-├── WORKSPACE                                                                                    2785   7.39%  - 
-│   ├── WORK-GIT                                                                                 1285   3.41%  - 
-│   │   └── usb-midi-minimal                                                                     1285   3.41%  - 
+│                   └── _ConfigAbsSyms                                                              2   0.01%  0x00005549 text
+├── WORKSPACE                                                                                    2789   7.40%  - 
+│   ├── WORK-GIT                                                                                 1289   3.42%  - 
+│   │   └── usb-midi-minimal                                                                     1289   3.42%  - 
 │   │       ├── common                                                                            549   1.46%  - 
 │   │       │   └── sample_usbd_init.c                                                            549   1.46%  - 
-│   │       │       ├── ascii_fs_cfg_desc                                                          17   0.05%  0x00008a2a rodata
-│   │       │       ├── ascii_sample_mfr                                                           17   0.05%  0x00008a51 rodata
-│   │       │       ├── ascii_sample_product                                                       22   0.06%  0x00008a3b rodata
-│   │       │       ├── blocklist                                                                   8   0.02%  0x00008844 rodata
+│   │       │       ├── ascii_fs_cfg_desc                                                          17   0.05%  0x00008a2e rodata
+│   │       │       ├── ascii_sample_mfr                                                           17   0.05%  0x00008a55 rodata
+│   │       │       ├── ascii_sample_product                                                       22   0.06%  0x00008a3f rodata
+│   │       │       ├── blocklist                                                                   8   0.02%  0x00008848 rodata
 │   │       │       ├── cfg_desc_sample_fs_config                                                   9   0.02%  0x1ffff300 datas
 │   │       │       ├── fs_cfg_desc                                                                24   0.06%  0x1ffff044 datas
 │   │       │       ├── fs_desc_sample_usbd                                                        18   0.05%  0x1ffff309 datas
-│   │       │       ├── langid_sample_lang                                                          2   0.01%  0x00008a28 rodata
+│   │       │       ├── langid_sample_lang                                                          2   0.01%  0x00008a2c rodata
 │   │       │       ├── sample_fs_config                                                           20   0.05%  0x1ffff030 datas
 │   │       │       ├── sample_lang                                                                24   0.06%  0x1ffff0a4 datas
 │   │       │       ├── sample_mfr                                                                 24   0.06%  0x1ffff08c datas
@@ -64,25 +64,25 @@ Root                                                                            
 │   │       │       ├── sample_usbd                                                               124   0.33%  0x1ffff590 usbd_context_area
 │   │       │       ├── sample_usbd_init_device                                                    36   0.10%  0x00000769 text
 │   │       │       └── sample_usbd_setup_device                                                  156   0.41%  0x000006cd text
-│   │       └── src                                                                               736   1.95%  - 
-│   │           ├── main.c                                                                        436   1.16%  - 
+│   │       └── src                                                                               740   1.96%  - 
+│   │           ├── main.c                                                                        440   1.17%  - 
 │   │           │   ├── led                                                                         8   0.02%  0x1ffff0bc datas
-│   │           │   ├── main                                                                      136   0.36%  0x00000889 text
+│   │           │   ├── main                                                                      140   0.37%  0x00000889 text
 │   │           │   ├── main_midi_init                                                            132   0.35%  0x00000805 text
 │   │           │   ├── on_device_ready                                                            56   0.15%  0x000007cd text
 │   │           │   ├── on_midi_packet                                                             64   0.17%  0x0000078d text
-│   │           │   ├── ops                                                                         8   0.02%  0x0000884c rodata
-│   │           │   ├── responder_cfg                                                              12   0.03%  0x00008854 rodata
-│   │           │   └── ump_ep_dt                                                                  20   0.05%  0x00008860 rodata
+│   │           │   ├── ops                                                                         8   0.02%  0x00008850 rodata
+│   │           │   ├── responder_cfg                                                              12   0.03%  0x00008858 rodata
+│   │           │   └── ump_ep_dt                                                                  20   0.05%  0x00008864 rodata
 │   │           ├── midi1.c                                                                       120   0.32%  - 
-│   │           │   ├── midi1_controlchange                                                        60   0.16%  0x00000911 text
-│   │           │   ├── midi1_timing_clock                                                         28   0.07%  0x0000094d text
-│   │           │   └── sbpm_to_24pqn                                                              32   0.08%  0x00000969 text
+│   │           │   ├── midi1_controlchange                                                        60   0.16%  0x00000915 text
+│   │           │   ├── midi1_timing_clock                                                         28   0.07%  0x00000951 text
+│   │           │   └── sbpm_to_24pqn                                                              32   0.08%  0x0000096d text
 │   │           └── midi1_clock_timer.c                                                           180   0.48%  - 
-│   │               ├── midi_clock_init                                                            40   0.11%  0x000009bd text
-│   │               ├── midi_clock_start                                                           60   0.16%  0x000009e5 text
-│   │               ├── midi_clock_stop                                                            28   0.07%  0x00000a21 text
-│   │               └── midi_timer_handler                                                         52   0.14%  0x00000989 text
+│   │               ├── midi_clock_init                                                            40   0.11%  0x000009c1 text
+│   │               ├── midi_clock_start                                                           60   0.16%  0x000009e9 text
+│   │               ├── midi_clock_stop                                                            28   0.07%  0x00000a25 text
+│   │               └── midi_timer_handler                                                         52   0.14%  0x0000098d text
 │   └── modules                                                                                  1500   3.98%  - 
 │       └── hal                                                                                  1500   3.98%  - 
 │           └── nxp                                                                              1500   3.98%  - 
@@ -94,532 +94,532 @@ Root                                                                            
 │                       │           └── MCXC242                                                   858   2.28%  - 
 │                       │               ├── drivers                                               808   2.14%  - 
 │                       │               │   └── fsl_clock.c                                       808   2.14%  - 
-│                       │               │       ├── CLOCK_EnableUsbfs0Clock                       100   0.27%  0x00003139 text
-│                       │               │       ├── CLOCK_GetEr32kClkFreq                          64   0.17%  0x000030cd text
-│                       │               │       ├── CLOCK_GetFreq                                 120   0.32%  0x00003231 text
-│                       │               │       ├── CLOCK_GetInternalRefClkFreq                    36   0.10%  0x0000319d text
-│                       │               │       ├── CLOCK_GetLircClkFreq                           48   0.13%  0x00003081 text
-│                       │               │       ├── CLOCK_GetOsc0ErClkFreq                         28   0.07%  0x000030b1 text
-│                       │               │       ├── CLOCK_GetOutClkFreq                            64   0.17%  0x000031f1 text
-│                       │               │       ├── CLOCK_GetPeriphClkFreq                         48   0.13%  0x000031c1 text
-│                       │               │       ├── CLOCK_InitOsc0                                108   0.29%  0x00003335 text
-│                       │               │       ├── CLOCK_SetMcgliteConfig                        140   0.37%  0x000032a9 text
-│                       │               │       ├── CLOCK_SetSimConfig                             44   0.12%  0x0000310d text
-│                       │               │       └── lircFreqs.0                                     8   0.02%  0x000089fc rodata
+│                       │               │       ├── CLOCK_EnableUsbfs0Clock                       100   0.27%  0x0000313d text
+│                       │               │       ├── CLOCK_GetEr32kClkFreq                          64   0.17%  0x000030d1 text
+│                       │               │       ├── CLOCK_GetFreq                                 120   0.32%  0x00003235 text
+│                       │               │       ├── CLOCK_GetInternalRefClkFreq                    36   0.10%  0x000031a1 text
+│                       │               │       ├── CLOCK_GetLircClkFreq                           48   0.13%  0x00003085 text
+│                       │               │       ├── CLOCK_GetOsc0ErClkFreq                         28   0.07%  0x000030b5 text
+│                       │               │       ├── CLOCK_GetOutClkFreq                            64   0.17%  0x000031f5 text
+│                       │               │       ├── CLOCK_GetPeriphClkFreq                         48   0.13%  0x000031c5 text
+│                       │               │       ├── CLOCK_InitOsc0                                108   0.29%  0x00003339 text
+│                       │               │       ├── CLOCK_SetMcgliteConfig                        140   0.37%  0x000032ad text
+│                       │               │       ├── CLOCK_SetSimConfig                             44   0.12%  0x00003111 text
+│                       │               │       └── lircFreqs.0                                     8   0.02%  0x00008a00 rodata
 │                       │               └── system_MCXC242.c                                       50   0.13%  - 
 │                       │                   ├── SystemCoreClock                                     4   0.01%  0x1ffff2f0 datas
-│                       │                   ├── SystemInit                                         44   0.12%  0x00003055 text
-│                       │                   └── SystemInitHook                                      2   0.01%  0x00007b45 text
+│                       │                   ├── SystemInit                                         44   0.12%  0x00003059 text
+│                       │                   └── SystemInitHook                                      2   0.01%  0x00007b49 text
 │                       └── drivers                                                               642   1.70%  - 
 │                           └── lpuart                                                            642   1.70%  - 
 │                               └── fsl_lpuart.c                                                  642   1.70%  - 
-│                                   ├── LPUART_ClearStatusFlags                                    48   0.13%  0x00003025 text
-│                                   ├── LPUART_Deinit                                              68   0.18%  0x00002fd5 text
-│                                   ├── LPUART_GetDefaultConfig                                    22   0.06%  0x00007b2f text
-│                                   ├── LPUART_GetInstance                                         32   0.08%  0x00002df1 text
-│                                   ├── LPUART_GetStatusFlags                                      12   0.03%  0x00003019 text
-│                                   ├── LPUART_Init                                               452   1.20%  0x00002e11 text
-│                                   └── s_lpuartClock                                               8   0.02%  0x000089f4 rodata
-└── ZEPHYR_BASE                                                                                 30429  80.72%  - 
+│                                   ├── LPUART_ClearStatusFlags                                    48   0.13%  0x00003029 text
+│                                   ├── LPUART_Deinit                                              68   0.18%  0x00002fd9 text
+│                                   ├── LPUART_GetDefaultConfig                                    22   0.06%  0x00007b33 text
+│                                   ├── LPUART_GetInstance                                         32   0.08%  0x00002df5 text
+│                                   ├── LPUART_GetStatusFlags                                      12   0.03%  0x0000301d text
+│                                   ├── LPUART_Init                                               452   1.20%  0x00002e15 text
+│                                   └── s_lpuartClock                                               8   0.02%  0x000089f8 rodata
+└── ZEPHYR_BASE                                                                                 30429  80.71%  - 
     ├── arch                                                                                     1034   2.74%  - 
     │   ├── arm                                                                                   942   2.50%  - 
     │   │   └── core                                                                              942   2.50%  - 
     │   │       ├── cortex_m                                                                      766   2.03%  - 
     │   │       │   ├── cpu_idle.c                                                                 26   0.07%  - 
-    │   │       │   │   ├── arch_cpu_idle                                                          14   0.04%  0x000055b3 text
-    │   │       │   │   └── z_arm_cpu_idle_init                                                    12   0.03%  0x0000119d text
+    │   │       │   │   ├── arch_cpu_idle                                                          14   0.04%  0x000055b7 text
+    │   │       │   │   └── z_arm_cpu_idle_init                                                    12   0.03%  0x000011a1 text
     │   │       │   ├── exc_exit.c                                                                 32   0.08%  - 
-    │   │       │   │   └── z_arm_exc_exit                                                         32   0.08%  0x00000e59 text
+    │   │       │   │   └── z_arm_exc_exit                                                         32   0.08%  0x00000e5d text
     │   │       │   ├── fault.c                                                                   252   0.67%  - 
-    │   │       │   │   ├── z_arm_fault                                                           236   0.63%  0x00000e79 text
-    │   │       │   │   └── z_arm_fault_init                                                       16   0.04%  0x00000f65 text
+    │   │       │   │   ├── z_arm_fault                                                           236   0.63%  0x00000e7d text
+    │   │       │   │   └── z_arm_fault_init                                                       16   0.04%  0x00000f69 text
     │   │       │   ├── irq_init.c                                                                 48   0.13%  - 
-    │   │       │   │   └── z_arm_interrupt_init                                                   48   0.13%  0x000011a9 text
+    │   │       │   │   └── z_arm_interrupt_init                                                   48   0.13%  0x000011ad text
     │   │       │   ├── irq_manage.c                                                              152   0.40%  - 
-    │   │       │   │   ├── arm_irq_disable                                                        32   0.08%  0x000010a9 text
-    │   │       │   │   ├── arm_irq_enable                                                         24   0.06%  0x00001091 text
-    │   │       │   │   ├── arm_irq_priority_set                                                   84   0.22%  0x000010c9 text
-    │   │       │   │   └── z_irq_spurious                                                         12   0.03%  0x0000557f text
+    │   │       │   │   ├── arm_irq_disable                                                        32   0.08%  0x000010ad text
+    │   │       │   │   ├── arm_irq_enable                                                         24   0.06%  0x00001095 text
+    │   │       │   │   ├── arm_irq_priority_set                                                   84   0.22%  0x000010cd text
+    │   │       │   │   └── z_irq_spurious                                                         12   0.03%  0x00005583 text
     │   │       │   ├── isr_wrapper.c                                                              32   0.08%  - 
-    │   │       │   │   └── _isr_wrapper                                                           32   0.08%  0x000011d9 text
+    │   │       │   │   └── _isr_wrapper                                                           32   0.08%  0x000011dd text
     │   │       │   ├── prep_c.c                                                                   50   0.13%  - 
-    │   │       │   │   ├── relocate_vector_table                                                  28   0.07%  0x0000111d text
-    │   │       │   │   └── z_prep_c                                                               22   0.06%  0x0000558b text
+    │   │       │   │   ├── relocate_vector_table                                                  28   0.07%  0x00001121 text
+    │   │       │   │   └── z_prep_c                                                               22   0.06%  0x0000558f text
     │   │       │   ├── thread.c                                                                  118   0.31%  - 
-    │   │       │   │   ├── arch_coprocessors_disable                                               6   0.02%  0x000055a1 text
-    │   │       │   │   ├── arch_irq_unlock_outlined                                               12   0.03%  0x000055a7 text
-    │   │       │   │   ├── arch_new_thread                                                        44   0.12%  0x00001139 text
-    │   │       │   │   └── arch_switch_to_main_thread                                             56   0.15%  0x00001165 text
+    │   │       │   │   ├── arch_coprocessors_disable                                               6   0.02%  0x000055a5 text
+    │   │       │   │   ├── arch_irq_unlock_outlined                                               12   0.03%  0x000055ab text
+    │   │       │   │   ├── arch_new_thread                                                        44   0.12%  0x0000113d text
+    │   │       │   │   └── arch_switch_to_main_thread                                             56   0.15%  0x00001169 text
     │   │       │   └── thread_abort.c                                                             56   0.15%  - 
-    │   │       │       └── z_impl_k_thread_abort                                                  56   0.15%  0x00000fc1 text
+    │   │       │       └── z_impl_k_thread_abort                                                  56   0.15%  0x00000fc5 text
     │   │       ├── fatal.c                                                                       108   0.29%  - 
-    │   │       │   ├── z_arm_fatal_error                                                          96   0.25%  0x00000dbd text
-    │   │       │   └── z_do_kernel_oops                                                           12   0.03%  0x00005567 text
+    │   │       │   ├── z_arm_fatal_error                                                          96   0.25%  0x00000dc1 text
+    │   │       │   └── z_do_kernel_oops                                                           12   0.03%  0x0000556b text
     │   │       ├── nmi.c                                                                          12   0.03%  - 
-    │   │       │   └── z_arm_nmi                                                                  12   0.03%  0x00005573 text
+    │   │       │   └── z_arm_nmi                                                                  12   0.03%  0x00005577 text
     │   │       └── tls.c                                                                          56   0.15%  - 
-    │   │           └── arch_tls_stack_setup                                                       56   0.15%  0x00000e21 text
+    │   │           └── arch_tls_stack_setup                                                       56   0.15%  0x00000e25 text
     │   └── common                                                                                 92   0.24%  - 
     │       ├── init.c                                                                             40   0.11%  - 
-    │       │   ├── arch_bss_zero                                                                  24   0.06%  0x00000d71 text
-    │       │   ├── arch_early_memcpy                                                               8   0.02%  0x0000555f text
-    │       │   └── arch_early_memset                                                               8   0.02%  0x00005557 text
+    │       │   ├── arch_bss_zero                                                                  24   0.06%  0x00000d75 text
+    │       │   ├── arch_early_memcpy                                                               8   0.02%  0x00005563 text
+    │       │   └── arch_early_memset                                                               8   0.02%  0x0000555b text
     │       └── xip.c                                                                              52   0.14%  - 
-    │           └── arch_data_copy                                                                 52   0.14%  0x00000d89 text
+    │           └── arch_data_copy                                                                 52   0.14%  0x00000d8d text
     ├── drivers                                                                                  8928  23.68%  - 
     │   ├── clock_control                                                                         268   0.71%  - 
     │   │   ├── clock_control_mcux_mcg.c                                                           94   0.25%  - 
-    │   │   │   ├── __device_dts_ord_73                                                            28   0.07%  0x00008530 device_area
+    │   │   │   ├── __device_dts_ord_73                                                            28   0.07%  0x00008534 device_area
     │   │   │   ├── __devstate_dts_ord_73                                                           2   0.01%  0x1ffff4b8 device_states
-    │   │   │   ├── __init___device_dts_ord_73                                                      8   0.02%  0x00008480 initlevel
-    │   │   │   ├── mcux_mcg_driver_api                                                            28   0.07%  0x000087f8 clock_control_driver_api_area
-    │   │   │   ├── mcux_mcg_get_rate                                                              24   0.06%  0x000077a3 text
-    │   │   │   └── mcux_mcg_on                                                                     4   0.01%  0x0000779f text
+    │   │   │   ├── __init___device_dts_ord_73                                                      8   0.02%  0x00008484 initlevel
+    │   │   │   ├── mcux_mcg_driver_api                                                            28   0.07%  0x000087fc clock_control_driver_api_area
+    │   │   │   ├── mcux_mcg_get_rate                                                              24   0.06%  0x000077a7 text
+    │   │   │   └── mcux_mcg_on                                                                     4   0.01%  0x000077a3 text
     │   │   └── clock_control_mcux_sim.c                                                          174   0.46%  - 
-    │   │       ├── __device_dts_ord_14                                                            28   0.07%  0x0000854c device_area
+    │   │       ├── __device_dts_ord_14                                                            28   0.07%  0x00008550 device_area
     │   │       ├── __devstate_dts_ord_14                                                           2   0.01%  0x1ffff4ba device_states
-    │   │       ├── __init___device_dts_ord_14                                                      8   0.02%  0x00008478 initlevel
-    │   │       ├── mcux_sim_driver_api                                                            28   0.07%  0x00008814 clock_control_driver_api_area
-    │   │       ├── mcux_sim_get_subsys_rate                                                       48   0.13%  0x00002941 text
-    │   │       ├── mcux_sim_init                                                                   4   0.01%  0x000077bf text
-    │   │       ├── mcux_sim_off                                                                   28   0.07%  0x00002925 text
-    │   │       └── mcux_sim_on                                                                    28   0.07%  0x00002909 text
+    │   │       ├── __init___device_dts_ord_14                                                      8   0.02%  0x0000847c initlevel
+    │   │       ├── mcux_sim_driver_api                                                            28   0.07%  0x00008818 clock_control_driver_api_area
+    │   │       ├── mcux_sim_get_subsys_rate                                                       48   0.13%  0x00002945 text
+    │   │       ├── mcux_sim_init                                                                   4   0.01%  0x000077c3 text
+    │   │       ├── mcux_sim_off                                                                   28   0.07%  0x00002929 text
+    │   │       └── mcux_sim_on                                                                    28   0.07%  0x0000290d text
     │   ├── console                                                                                92   0.24%  - 
     │   │   └── uart_console.c                                                                     92   0.24%  - 
-    │   │       ├── __init_uart_console_init                                                        8   0.02%  0x00008520 initlevel
-    │   │       ├── console_out                                                                    40   0.11%  0x0000299d text
-    │   │       └── uart_console_init                                                              44   0.12%  0x00002971 text
+    │   │       ├── __init_uart_console_init                                                        8   0.02%  0x00008524 initlevel
+    │   │       ├── console_out                                                                    40   0.11%  0x000029a1 text
+    │   │       └── uart_console_init                                                              44   0.12%  0x00002975 text
     │   ├── gpio                                                                                  806   2.14%  - 
     │   │   └── gpio_mcux.c                                                                       806   2.14%  - 
-    │   │       ├── __device_dts_ord_16                                                            28   0.07%  0x00008680 device_area
-    │   │       ├── __device_dts_ord_18                                                            28   0.07%  0x00008648 device_area
-    │   │       ├── __device_dts_ord_23                                                            28   0.07%  0x00008664 device_area
-    │   │       ├── __device_dts_ord_53                                                            28   0.07%  0x0000862c device_area
+    │   │       ├── __device_dts_ord_16                                                            28   0.07%  0x00008684 device_area
+    │   │       ├── __device_dts_ord_18                                                            28   0.07%  0x0000864c device_area
+    │   │       ├── __device_dts_ord_23                                                            28   0.07%  0x00008668 device_area
+    │   │       ├── __device_dts_ord_53                                                            28   0.07%  0x00008630 device_area
     │   │       ├── __devstate_dts_ord_16                                                           2   0.01%  0x1ffff4c2 device_states
     │   │       ├── __devstate_dts_ord_18                                                           2   0.01%  0x1ffff4be device_states
     │   │       ├── __devstate_dts_ord_23                                                           2   0.01%  0x1ffff4c0 device_states
     │   │       ├── __devstate_dts_ord_53                                                           2   0.01%  0x1ffff4bc device_states
-    │   │       ├── __init___device_dts_ord_16                                                      8   0.02%  0x000084e0 initlevel
-    │   │       ├── __init___device_dts_ord_18                                                      8   0.02%  0x000084e8 initlevel
-    │   │       ├── __init___device_dts_ord_23                                                      8   0.02%  0x000084f0 initlevel
-    │   │       ├── __init___device_dts_ord_53                                                      8   0.02%  0x000084f8 initlevel
-    │   │       ├── gpio_mcux_driver_api                                                           36   0.10%  0x000087d4 gpio_driver_api_area
-    │   │       ├── gpio_mcux_manage_callback                                                      88   0.23%  0x000077ff text
-    │   │       ├── gpio_mcux_pin_interrupt_configure                                             136   0.36%  0x00002a69 text
-    │   │       ├── gpio_mcux_port0_config                                                         16   0.04%  0x00008940 rodata
-    │   │       ├── gpio_mcux_port0_init                                                           22   0.06%  0x0000785b text
-    │   │       ├── gpio_mcux_port1_config                                                         16   0.04%  0x00008930 rodata
-    │   │       ├── gpio_mcux_port1_init                                                            4   0.01%  0x00007857 text
-    │   │       ├── gpio_mcux_port2_config                                                         16   0.04%  0x00008920 rodata
-    │   │       ├── gpio_mcux_port2_init                                                           22   0.06%  0x00007871 text
-    │   │       ├── gpio_mcux_port3_config                                                         16   0.04%  0x00008910 rodata
-    │   │       ├── gpio_mcux_port_clear_bits_raw                                                  10   0.03%  0x000077eb text
-    │   │       ├── gpio_mcux_port_configure                                                      164   0.44%  0x000029c5 text
-    │   │       ├── gpio_mcux_port_get_raw                                                         12   0.03%  0x000077c3 text
-    │   │       ├── gpio_mcux_port_isr                                                             58   0.15%  0x00007887 text
-    │   │       ├── gpio_mcux_port_set_bits_raw                                                    10   0.03%  0x000077e1 text
-    │   │       ├── gpio_mcux_port_set_masked_raw                                                  18   0.05%  0x000077cf text
-    │   │       └── gpio_mcux_port_toggle_bits                                                     10   0.03%  0x000077f5 text
+    │   │       ├── __init___device_dts_ord_16                                                      8   0.02%  0x000084e4 initlevel
+    │   │       ├── __init___device_dts_ord_18                                                      8   0.02%  0x000084ec initlevel
+    │   │       ├── __init___device_dts_ord_23                                                      8   0.02%  0x000084f4 initlevel
+    │   │       ├── __init___device_dts_ord_53                                                      8   0.02%  0x000084fc initlevel
+    │   │       ├── gpio_mcux_driver_api                                                           36   0.10%  0x000087d8 gpio_driver_api_area
+    │   │       ├── gpio_mcux_manage_callback                                                      88   0.23%  0x00007803 text
+    │   │       ├── gpio_mcux_pin_interrupt_configure                                             136   0.36%  0x00002a6d text
+    │   │       ├── gpio_mcux_port0_config                                                         16   0.04%  0x00008944 rodata
+    │   │       ├── gpio_mcux_port0_init                                                           22   0.06%  0x0000785f text
+    │   │       ├── gpio_mcux_port1_config                                                         16   0.04%  0x00008934 rodata
+    │   │       ├── gpio_mcux_port1_init                                                            4   0.01%  0x0000785b text
+    │   │       ├── gpio_mcux_port2_config                                                         16   0.04%  0x00008924 rodata
+    │   │       ├── gpio_mcux_port2_init                                                           22   0.06%  0x00007875 text
+    │   │       ├── gpio_mcux_port3_config                                                         16   0.04%  0x00008914 rodata
+    │   │       ├── gpio_mcux_port_clear_bits_raw                                                  10   0.03%  0x000077ef text
+    │   │       ├── gpio_mcux_port_configure                                                      164   0.44%  0x000029c9 text
+    │   │       ├── gpio_mcux_port_get_raw                                                         12   0.03%  0x000077c7 text
+    │   │       ├── gpio_mcux_port_isr                                                             58   0.15%  0x0000788b text
+    │   │       ├── gpio_mcux_port_set_bits_raw                                                    10   0.03%  0x000077e5 text
+    │   │       ├── gpio_mcux_port_set_masked_raw                                                  18   0.05%  0x000077d3 text
+    │   │       └── gpio_mcux_port_toggle_bits                                                     10   0.03%  0x000077f9 text
     │   ├── hwinfo                                                                                158   0.42%  - 
     │   │   ├── hwinfo_mcux_sim.c                                                                 152   0.40%  - 
-    │   │   │   └── z_impl_hwinfo_get_device_id                                                   152   0.40%  0x00002af1 text
+    │   │   │   └── z_impl_hwinfo_get_device_id                                                   152   0.40%  0x00002af5 text
     │   │   └── hwinfo_weak_impl.c                                                                  6   0.02%  - 
-    │   │       └── z_impl_hwinfo_get_device_eui64                                                  6   0.02%  0x000078c5 text
+    │   │       └── z_impl_hwinfo_get_device_eui64                                                  6   0.02%  0x000078c9 text
     │   ├── pinctrl                                                                               396   1.05%  - 
     │   │   ├── common.c                                                                           38   0.10%  - 
-    │   │   │   └── pinctrl_lookup_state                                                           38   0.10%  0x000078cb text
+    │   │   │   └── pinctrl_lookup_state                                                           38   0.10%  0x000078cf text
     │   │   └── pinctrl_nxp_port.c                                                                358   0.95%  - 
-    │   │       ├── __device_dts_ord_15                                                            28   0.07%  0x000085d8 device_area
-    │   │       ├── __device_dts_ord_17                                                            28   0.07%  0x000085a0 device_area
-    │   │       ├── __device_dts_ord_22                                                            28   0.07%  0x000085bc device_area
-    │   │       ├── __device_dts_ord_50                                                            28   0.07%  0x00008584 device_area
-    │   │       ├── __device_dts_ord_52                                                            28   0.07%  0x00008568 device_area
+    │   │       ├── __device_dts_ord_15                                                            28   0.07%  0x000085dc device_area
+    │   │       ├── __device_dts_ord_17                                                            28   0.07%  0x000085a4 device_area
+    │   │       ├── __device_dts_ord_22                                                            28   0.07%  0x000085c0 device_area
+    │   │       ├── __device_dts_ord_50                                                            28   0.07%  0x00008588 device_area
+    │   │       ├── __device_dts_ord_52                                                            28   0.07%  0x0000856c device_area
     │   │       ├── __devstate_dts_ord_15                                                           2   0.01%  0x1ffff4cc device_states
     │   │       ├── __devstate_dts_ord_17                                                           2   0.01%  0x1ffff4c8 device_states
     │   │       ├── __devstate_dts_ord_22                                                           2   0.01%  0x1ffff4ca device_states
     │   │       ├── __devstate_dts_ord_50                                                           2   0.01%  0x1ffff4c6 device_states
     │   │       ├── __devstate_dts_ord_52                                                           2   0.01%  0x1ffff4c4 device_states
-    │   │       ├── __init___device_dts_ord_15                                                      8   0.02%  0x00008498 initlevel
-    │   │       ├── __init___device_dts_ord_17                                                      8   0.02%  0x000084a0 initlevel
-    │   │       ├── __init___device_dts_ord_22                                                      8   0.02%  0x000084a8 initlevel
-    │   │       ├── __init___device_dts_ord_50                                                      8   0.02%  0x000084b0 initlevel
-    │   │       ├── __init___device_dts_ord_52                                                      8   0.02%  0x000084b8 initlevel
-    │   │       ├── pinctrl_configure_pins                                                         68   0.18%  0x00002b89 text
-    │   │       ├── pinctrl_mcux_0_config                                                           8   0.02%  0x00008970 rodata
-    │   │       ├── pinctrl_mcux_1_config                                                           8   0.02%  0x00008968 rodata
-    │   │       ├── pinctrl_mcux_2_config                                                           8   0.02%  0x00008960 rodata
-    │   │       ├── pinctrl_mcux_3_config                                                           8   0.02%  0x00008958 rodata
-    │   │       ├── pinctrl_mcux_4_config                                                           8   0.02%  0x00008950 rodata
-    │   │       ├── pinctrl_mcux_init                                                              40   0.11%  0x000078f1 text
-    │   │       └── ports                                                                          20   0.05%  0x00008978 rodata
+    │   │       ├── __init___device_dts_ord_15                                                      8   0.02%  0x0000849c initlevel
+    │   │       ├── __init___device_dts_ord_17                                                      8   0.02%  0x000084a4 initlevel
+    │   │       ├── __init___device_dts_ord_22                                                      8   0.02%  0x000084ac initlevel
+    │   │       ├── __init___device_dts_ord_50                                                      8   0.02%  0x000084b4 initlevel
+    │   │       ├── __init___device_dts_ord_52                                                      8   0.02%  0x000084bc initlevel
+    │   │       ├── pinctrl_configure_pins                                                         68   0.18%  0x00002b8d text
+    │   │       ├── pinctrl_mcux_0_config                                                           8   0.02%  0x00008974 rodata
+    │   │       ├── pinctrl_mcux_1_config                                                           8   0.02%  0x0000896c rodata
+    │   │       ├── pinctrl_mcux_2_config                                                           8   0.02%  0x00008964 rodata
+    │   │       ├── pinctrl_mcux_3_config                                                           8   0.02%  0x0000895c rodata
+    │   │       ├── pinctrl_mcux_4_config                                                           8   0.02%  0x00008954 rodata
+    │   │       ├── pinctrl_mcux_init                                                              40   0.11%  0x000078f5 text
+    │   │       └── ports                                                                          20   0.05%  0x0000897c rodata
     │   ├── serial                                                                                708   1.88%  - 
     │   │   └── uart_mcux_lpuart.c                                                                708   1.88%  - 
-    │   │       ├── __device_dts_ord_59                                                            28   0.07%  0x00008610 device_area
-    │   │       ├── __device_dts_ord_60                                                            28   0.07%  0x000085f4 device_area
+    │   │       ├── __device_dts_ord_59                                                            28   0.07%  0x00008614 device_area
+    │   │       ├── __device_dts_ord_60                                                            28   0.07%  0x000085f8 device_area
     │   │       ├── __devstate_dts_ord_59                                                           2   0.01%  0x1ffff4d0 device_states
     │   │       ├── __devstate_dts_ord_60                                                           2   0.01%  0x1ffff4ce device_states
-    │   │       ├── __init___device_dts_ord_59                                                      8   0.02%  0x000084c0 initlevel
-    │   │       ├── __init___device_dts_ord_60                                                      8   0.02%  0x000084c8 initlevel
-    │   │       ├── __pinctrl_dev_config__device_dts_ord_59                                         8   0.02%  0x000089dc rodata
-    │   │       ├── __pinctrl_dev_config__device_dts_ord_60                                         8   0.02%  0x000089a8 rodata
-    │   │       ├── __pinctrl_state_pins_0__device_dts_ord_59                                       8   0.02%  0x000089ec rodata
-    │   │       ├── __pinctrl_state_pins_0__device_dts_ord_60                                       8   0.02%  0x000089b8 rodata
-    │   │       ├── __pinctrl_states__device_dts_ord_59                                             8   0.02%  0x000089e4 rodata
-    │   │       ├── __pinctrl_states__device_dts_ord_60                                             8   0.02%  0x000089b0 rodata
-    │   │       ├── mcux_lpuart_0_config                                                           28   0.07%  0x000089c0 rodata
-    │   │       ├── mcux_lpuart_1_config                                                           28   0.07%  0x0000898c rodata
-    │   │       ├── mcux_lpuart_config_get                                                         12   0.03%  0x00007919 text
-    │   │       ├── mcux_lpuart_configure                                                          48   0.13%  0x00007abb text
-    │   │       ├── mcux_lpuart_configure_init                                                    254   0.67%  0x000079a3 text
-    │   │       ├── mcux_lpuart_driver_api                                                         20   0.05%  0x00008830 uart_driver_api_area
-    │   │       ├── mcux_lpuart_err_check                                                          52   0.14%  0x00007945 text
-    │   │       ├── mcux_lpuart_init                                                               68   0.18%  0x00007aeb text
-    │   │       ├── mcux_lpuart_poll_in                                                            32   0.08%  0x00007925 text
-    │   │       └── mcux_lpuart_poll_out                                                           42   0.11%  0x00007979 text
+    │   │       ├── __init___device_dts_ord_59                                                      8   0.02%  0x000084c4 initlevel
+    │   │       ├── __init___device_dts_ord_60                                                      8   0.02%  0x000084cc initlevel
+    │   │       ├── __pinctrl_dev_config__device_dts_ord_59                                         8   0.02%  0x000089e0 rodata
+    │   │       ├── __pinctrl_dev_config__device_dts_ord_60                                         8   0.02%  0x000089ac rodata
+    │   │       ├── __pinctrl_state_pins_0__device_dts_ord_59                                       8   0.02%  0x000089f0 rodata
+    │   │       ├── __pinctrl_state_pins_0__device_dts_ord_60                                       8   0.02%  0x000089bc rodata
+    │   │       ├── __pinctrl_states__device_dts_ord_59                                             8   0.02%  0x000089e8 rodata
+    │   │       ├── __pinctrl_states__device_dts_ord_60                                             8   0.02%  0x000089b4 rodata
+    │   │       ├── mcux_lpuart_0_config                                                           28   0.07%  0x000089c4 rodata
+    │   │       ├── mcux_lpuart_1_config                                                           28   0.07%  0x00008990 rodata
+    │   │       ├── mcux_lpuart_config_get                                                         12   0.03%  0x0000791d text
+    │   │       ├── mcux_lpuart_configure                                                          48   0.13%  0x00007abf text
+    │   │       ├── mcux_lpuart_configure_init                                                    254   0.67%  0x000079a7 text
+    │   │       ├── mcux_lpuart_driver_api                                                         20   0.05%  0x00008834 uart_driver_api_area
+    │   │       ├── mcux_lpuart_err_check                                                          52   0.14%  0x00007949 text
+    │   │       ├── mcux_lpuart_init                                                               68   0.18%  0x00007aef text
+    │   │       ├── mcux_lpuart_poll_in                                                            32   0.08%  0x00007929 text
+    │   │       └── mcux_lpuart_poll_out                                                           42   0.11%  0x0000797d text
     │   ├── timer                                                                                 556   1.47%  - 
     │   │   └── cortex_m_systick.c                                                                556   1.47%  - 
-    │   │       ├── __init_sys_clock_driver_init                                                    8   0.02%  0x000084d0 initlevel
-    │   │       ├── elapsed                                                                        84   0.22%  0x00002bcd text
-    │   │       ├── sys_clock_cycle_get_32                                                         36   0.10%  0x00002dcd text
-    │   │       ├── sys_clock_driver_init                                                          64   0.17%  0x00002c21 text
-    │   │       ├── sys_clock_elapsed                                                              52   0.14%  0x00002d99 text
-    │   │       ├── sys_clock_isr                                                                  68   0.18%  0x00002c61 text
-    │   │       └── sys_clock_set_timeout                                                         244   0.65%  0x00002ca5 text
+    │   │       ├── __init_sys_clock_driver_init                                                    8   0.02%  0x000084d4 initlevel
+    │   │       ├── elapsed                                                                        84   0.22%  0x00002bd1 text
+    │   │       ├── sys_clock_cycle_get_32                                                         36   0.10%  0x00002dd1 text
+    │   │       ├── sys_clock_driver_init                                                          64   0.17%  0x00002c25 text
+    │   │       ├── sys_clock_elapsed                                                              52   0.14%  0x00002d9d text
+    │   │       ├── sys_clock_isr                                                                  68   0.18%  0x00002c65 text
+    │   │       └── sys_clock_set_timeout                                                         244   0.65%  0x00002ca9 text
     │   └── usb                                                                                  5944  15.77%  - 
     │       └── udc                                                                              5944  15.77%  - 
     │           ├── udc_common.c                                                                 2344   6.22%  - 
-    │           │   ├── __init_udc_work_q_init                                                      8   0.02%  0x00008500 initlevel
-    │           │   ├── ep_check_config.constprop.0                                               106   0.28%  0x00006649 text
-    │           │   ├── net_buf_data_alloc_udc_ep_pool                                             16   0.04%  0x000088b0 rodata
-    │           │   ├── net_buf_dma_cb                                                             12   0.03%  0x000088c0 rodata
+    │           │   ├── __init_udc_work_q_init                                                      8   0.02%  0x00008504 initlevel
+    │           │   ├── ep_check_config.constprop.0                                               106   0.28%  0x0000664d text
+    │           │   ├── net_buf_data_alloc_udc_ep_pool                                             16   0.04%  0x000088b4 rodata
+    │           │   ├── net_buf_dma_cb                                                             12   0.03%  0x000088c4 rodata
     │           │   ├── net_buf_mem_pool_udc_ep_pool                                               20   0.05%  0x1ffff50c k_heap_area
-    │           │   ├── udc_buf_destroy                                                            48   0.13%  0x00006619 text
-    │           │   ├── udc_buf_get                                                                12   0.03%  0x00006757 text
-    │           │   ├── udc_buf_get_all                                                            48   0.13%  0x00006763 text
-    │           │   ├── udc_buf_peek                                                                8   0.02%  0x00006793 text
-    │           │   ├── udc_buf_put                                                                 8   0.02%  0x0000679b text
-    │           │   ├── udc_ctrl_alloc                                                              8   0.02%  0x00006b29 text
-    │           │   ├── udc_ctrl_stage_is_data_in                                                  16   0.04%  0x00006d95 text
-    │           │   ├── udc_ctrl_stage_is_data_out                                                 16   0.04%  0x00006d85 text
-    │           │   ├── udc_ctrl_stage_is_no_data                                                  16   0.04%  0x00006dc5 text
-    │           │   ├── udc_ctrl_stage_is_status_in                                                16   0.04%  0x00006db5 text
-    │           │   ├── udc_ctrl_stage_is_status_out                                               16   0.04%  0x00006da5 text
-    │           │   ├── udc_ctrl_submit_s_in_status                                                82   0.22%  0x00006ce5 text
-    │           │   ├── udc_ctrl_submit_s_out_status                                               72   0.19%  0x00006c9d text
-    │           │   ├── udc_ctrl_submit_s_status                                                   60   0.16%  0x00006d37 text
-    │           │   ├── udc_ctrl_submit_status                                                     18   0.05%  0x00006d73 text
-    │           │   ├── udc_ctrl_update_stage                                                     136   0.36%  0x00006dd5 text
-    │           │   ├── udc_device_speed                                                           44   0.12%  0x00006b4d text
-    │           │   ├── udc_disable                                                                58   0.15%  0x00006bc7 text
-    │           │   ├── udc_enable                                                                 78   0.21%  0x00006b79 text
-    │           │   ├── udc_ep_buf_alloc                                                           48   0.13%  0x0000255d text
-    │           │   ├── udc_ep_buf_clear_zlp                                                       10   0.03%  0x000067b9 text
-    │           │   ├── udc_ep_buf_free                                                            28   0.07%  0x00006b31 text
-    │           │   ├── udc_ep_buf_has_zlp                                                          8   0.02%  0x000067b1 text
-    │           │   ├── udc_ep_buf_set_setup                                                       14   0.04%  0x000067a3 text
-    │           │   ├── udc_ep_clear_halt                                                          94   0.25%  0x00006a35 text
-    │           │   ├── udc_ep_dequeue                                                             68   0.18%  0x00006ae5 text
-    │           │   ├── udc_ep_disable                                                             58   0.15%  0x000069a9 text
-    │           │   ├── udc_ep_disable_internal                                                    62   0.16%  0x0000696b text
-    │           │   ├── udc_ep_enable                                                              76   0.20%  0x0000691f text
-    │           │   ├── udc_ep_enable_internal                                                    106   0.28%  0x000068b5 text
-    │           │   ├── udc_ep_enqueue                                                             82   0.22%  0x00006a93 text
-    │           │   ├── udc_ep_is_busy                                                              8   0.02%  0x0000670b text
+    │           │   ├── udc_buf_destroy                                                            48   0.13%  0x0000661d text
+    │           │   ├── udc_buf_get                                                                12   0.03%  0x0000675b text
+    │           │   ├── udc_buf_get_all                                                            48   0.13%  0x00006767 text
+    │           │   ├── udc_buf_peek                                                                8   0.02%  0x00006797 text
+    │           │   ├── udc_buf_put                                                                 8   0.02%  0x0000679f text
+    │           │   ├── udc_ctrl_alloc                                                              8   0.02%  0x00006b2d text
+    │           │   ├── udc_ctrl_stage_is_data_in                                                  16   0.04%  0x00006d99 text
+    │           │   ├── udc_ctrl_stage_is_data_out                                                 16   0.04%  0x00006d89 text
+    │           │   ├── udc_ctrl_stage_is_no_data                                                  16   0.04%  0x00006dc9 text
+    │           │   ├── udc_ctrl_stage_is_status_in                                                16   0.04%  0x00006db9 text
+    │           │   ├── udc_ctrl_stage_is_status_out                                               16   0.04%  0x00006da9 text
+    │           │   ├── udc_ctrl_submit_s_in_status                                                82   0.22%  0x00006ce9 text
+    │           │   ├── udc_ctrl_submit_s_out_status                                               72   0.19%  0x00006ca1 text
+    │           │   ├── udc_ctrl_submit_s_status                                                   60   0.16%  0x00006d3b text
+    │           │   ├── udc_ctrl_submit_status                                                     18   0.05%  0x00006d77 text
+    │           │   ├── udc_ctrl_update_stage                                                     136   0.36%  0x00006dd9 text
+    │           │   ├── udc_device_speed                                                           44   0.12%  0x00006b51 text
+    │           │   ├── udc_disable                                                                58   0.15%  0x00006bcb text
+    │           │   ├── udc_enable                                                                 78   0.21%  0x00006b7d text
+    │           │   ├── udc_ep_buf_alloc                                                           48   0.13%  0x00002561 text
+    │           │   ├── udc_ep_buf_clear_zlp                                                       10   0.03%  0x000067bd text
+    │           │   ├── udc_ep_buf_free                                                            28   0.07%  0x00006b35 text
+    │           │   ├── udc_ep_buf_has_zlp                                                          8   0.02%  0x000067b5 text
+    │           │   ├── udc_ep_buf_set_setup                                                       14   0.04%  0x000067a7 text
+    │           │   ├── udc_ep_clear_halt                                                          94   0.25%  0x00006a39 text
+    │           │   ├── udc_ep_dequeue                                                             68   0.18%  0x00006ae9 text
+    │           │   ├── udc_ep_disable                                                             58   0.15%  0x000069ad text
+    │           │   ├── udc_ep_disable_internal                                                    62   0.16%  0x0000696f text
+    │           │   ├── udc_ep_enable                                                              76   0.20%  0x00006923 text
+    │           │   ├── udc_ep_enable_internal                                                    106   0.28%  0x000068b9 text
+    │           │   ├── udc_ep_enqueue                                                             82   0.22%  0x00006a97 text
+    │           │   ├── udc_ep_is_busy                                                              8   0.02%  0x0000670f text
     │           │   ├── udc_ep_pool                                                                36   0.10%  0x1ffff548 net_buf_pool_area
-    │           │   ├── udc_ep_set_busy                                                            18   0.05%  0x00006713 text
-    │           │   ├── udc_ep_set_halt                                                            82   0.22%  0x000069e3 text
-    │           │   ├── udc_ep_try_config                                                         144   0.38%  0x00006825 text
-    │           │   ├── udc_get_ep_cfg                                                             20   0.05%  0x000066f7 text
-    │           │   ├── udc_init                                                                   84   0.22%  0x00006c01 text
-    │           │   ├── udc_pool_data_alloc                                                        46   0.12%  0x000065eb text
-    │           │   ├── udc_pool_data_unref                                                        22   0.06%  0x000065d5 text
-    │           │   ├── udc_register_ep                                                            50   0.13%  0x00006725 text
-    │           │   ├── udc_set_suspended                                                          40   0.11%  0x000066cf text
-    │           │   ├── udc_shutdown                                                               72   0.19%  0x00006c55 text
-    │           │   ├── udc_submit_ep_event                                                        74   0.20%  0x000067db text
-    │           │   ├── udc_submit_event                                                           24   0.06%  0x000067c3 text
-    │           │   └── udc_work_q_init                                                            48   0.13%  0x0000252d text
+    │           │   ├── udc_ep_set_busy                                                            18   0.05%  0x00006717 text
+    │           │   ├── udc_ep_set_halt                                                            82   0.22%  0x000069e7 text
+    │           │   ├── udc_ep_try_config                                                         144   0.38%  0x00006829 text
+    │           │   ├── udc_get_ep_cfg                                                             20   0.05%  0x000066fb text
+    │           │   ├── udc_init                                                                   84   0.22%  0x00006c05 text
+    │           │   ├── udc_pool_data_alloc                                                        46   0.12%  0x000065ef text
+    │           │   ├── udc_pool_data_unref                                                        22   0.06%  0x000065d9 text
+    │           │   ├── udc_register_ep                                                            50   0.13%  0x00006729 text
+    │           │   ├── udc_set_suspended                                                          40   0.11%  0x000066d3 text
+    │           │   ├── udc_shutdown                                                               72   0.19%  0x00006c59 text
+    │           │   ├── udc_submit_ep_event                                                        74   0.20%  0x000067df text
+    │           │   ├── udc_submit_event                                                           24   0.06%  0x000067c7 text
+    │           │   └── udc_work_q_init                                                            48   0.13%  0x00002531 text
     │           └── udc_kinetis.c                                                                3600   9.55%  - 
-    │               ├── __device_dts_ord_62                                                        28   0.07%  0x000086b8 device_area
+    │               ├── __device_dts_ord_62                                                        28   0.07%  0x000086bc device_area
     │               ├── __devstate_dts_ord_62                                                       2   0.01%  0x1ffff4b6 device_states
-    │               ├── __init___device_dts_ord_62                                                  8   0.02%  0x00008510 initlevel
+    │               ├── __init___device_dts_ord_62                                                  8   0.02%  0x00008514 initlevel
     │               ├── priv_config_0                                                              28   0.07%  0x1ffff2d4 datas
     │               ├── udc_data_0                                                                176   0.47%  0x1ffff224 datas
-    │               ├── udc_irq_disable_func0                                                      10   0.03%  0x00006ebf text
-    │               ├── udc_irq_enable_func0                                                       20   0.05%  0x00006ec9 text
-    │               ├── usbfsotg_api                                                               68   0.18%  0x000088cc rodata
-    │               ├── usbfsotg_ctrl_feed_dout                                                   260   0.69%  0x00007179 text
-    │               ├── usbfsotg_ctrl_feed_start                                                  162   0.43%  0x000070d7 text
-    │               ├── usbfsotg_disable                                                           18   0.05%  0x00006e7d text
-    │               ├── usbfsotg_driver_preinit                                                   292   0.77%  0x000027e5 text
+    │               ├── udc_irq_disable_func0                                                      10   0.03%  0x00006ec3 text
+    │               ├── udc_irq_enable_func0                                                       20   0.05%  0x00006ecd text
+    │               ├── usbfsotg_api                                                               68   0.18%  0x000088d0 rodata
+    │               ├── usbfsotg_ctrl_feed_dout                                                   260   0.69%  0x0000717d text
+    │               ├── usbfsotg_ctrl_feed_start                                                  162   0.43%  0x000070db text
+    │               ├── usbfsotg_disable                                                           18   0.05%  0x00006e81 text
+    │               ├── usbfsotg_driver_preinit                                                   292   0.77%  0x000027e9 text
     │               ├── usbfsotg_ee_slab                                                           28   0.07%  0x1ffff4f0 k_mem_slab_area
-    │               ├── usbfsotg_enable                                                            14   0.04%  0x00006e6f text
-    │               ├── usbfsotg_ep_clear_halt                                                    150   0.40%  0x0000727d text
-    │               ├── usbfsotg_ep_dequeue                                                        82   0.22%  0x00006fe7 text
-    │               ├── usbfsotg_ep_disable                                                       102   0.27%  0x0000749f text
-    │               ├── usbfsotg_ep_enable                                                        244   0.65%  0x000073ab text
-    │               ├── usbfsotg_ep_enqueue                                                        38   0.10%  0x00006eef text
-    │               ├── usbfsotg_ep_set_halt                                                      152   0.40%  0x00007313 text
-    │               ├── usbfsotg_event_submit                                                      76   0.20%  0x0000258d text
-    │               ├── usbfsotg_get_ebd.isra.0                                                    40   0.11%  0x00006fbf text
-    │               ├── usbfsotg_host_wakeup                                                        6   0.02%  0x00006e5d text
-    │               ├── usbfsotg_init                                                             170   0.45%  0x00006f15 text
-    │               ├── usbfsotg_isr_handler                                                      654   1.73%  0x00007511 text
-    │               ├── usbfsotg_lock                                                              18   0.05%  0x00006edd text
-    │               ├── usbfsotg_set_address                                                       12   0.03%  0x00006e63 text
-    │               ├── usbfsotg_shutdown                                                          48   0.13%  0x00006e8f text
-    │               ├── usbfsotg_unlock                                                            12   0.03%  0x00007505 text
-    │               ├── usbfsotg_xfer_continue                                                    158   0.42%  0x00007039 text
-    │               └── xfer_work_handler                                                         524   1.39%  0x000025d9 text
+    │               ├── usbfsotg_enable                                                            14   0.04%  0x00006e73 text
+    │               ├── usbfsotg_ep_clear_halt                                                    150   0.40%  0x00007281 text
+    │               ├── usbfsotg_ep_dequeue                                                        82   0.22%  0x00006feb text
+    │               ├── usbfsotg_ep_disable                                                       102   0.27%  0x000074a3 text
+    │               ├── usbfsotg_ep_enable                                                        244   0.65%  0x000073af text
+    │               ├── usbfsotg_ep_enqueue                                                        38   0.10%  0x00006ef3 text
+    │               ├── usbfsotg_ep_set_halt                                                      152   0.40%  0x00007317 text
+    │               ├── usbfsotg_event_submit                                                      76   0.20%  0x00002591 text
+    │               ├── usbfsotg_get_ebd.isra.0                                                    40   0.11%  0x00006fc3 text
+    │               ├── usbfsotg_host_wakeup                                                        6   0.02%  0x00006e61 text
+    │               ├── usbfsotg_init                                                             170   0.45%  0x00006f19 text
+    │               ├── usbfsotg_isr_handler                                                      654   1.73%  0x00007515 text
+    │               ├── usbfsotg_lock                                                              18   0.05%  0x00006ee1 text
+    │               ├── usbfsotg_set_address                                                       12   0.03%  0x00006e67 text
+    │               ├── usbfsotg_shutdown                                                          48   0.13%  0x00006e93 text
+    │               ├── usbfsotg_unlock                                                            12   0.03%  0x00007509 text
+    │               ├── usbfsotg_xfer_continue                                                    158   0.42%  0x0000703d text
+    │               └── xfer_work_handler                                                         524   1.39%  0x000025dd text
     ├── include                                                                                   306   0.81%  - 
     │   └── zephyr                                                                                306   0.81%  - 
     │       ├── drivers                                                                           172   0.46%  - 
     │       │   ├── pinctrl.h                                                                      26   0.07%  - 
-    │       │   │   └── pinctrl_apply_state                                                        26   0.07%  0x00007aa1 text
+    │       │   │   └── pinctrl_apply_state                                                        26   0.07%  0x00007aa5 text
     │       │   └── usb                                                                           146   0.39%  - 
     │       │       └── udc.h                                                                     146   0.39%  - 
-    │       │           ├── udc_is_enabled.isra.0                                                  14   0.04%  0x000066c1 text
-    │       │           ├── udc_is_initialized.isra.0                                              14   0.04%  0x000066b3 text
-    │       │           ├── udc_set_address                                                        52   0.14%  0x00005a47 text
-    │       │           └── udc_test_mode                                                          66   0.18%  0x00005a05 text
+    │       │           ├── udc_is_enabled.isra.0                                                  14   0.04%  0x000066c5 text
+    │       │           ├── udc_is_initialized.isra.0                                              14   0.04%  0x000066b7 text
+    │       │           ├── udc_set_address                                                        52   0.14%  0x00005a4b text
+    │       │           └── udc_test_mode                                                          66   0.18%  0x00005a09 text
     │       ├── net_buf.h                                                                          56   0.15%  - 
-    │       │   └── net_buf_destroy                                                                56   0.15%  0x00001245 text
+    │       │   └── net_buf_destroy                                                                56   0.15%  0x00001249 text
     │       └── sys                                                                                78   0.21%  - 
     │           ├── dlist.h                                                                        16   0.04%  - 
-    │           │   └── sys_dlist_remove                                                           16   0.04%  0x00007ff9 text
+    │           │   └── sys_dlist_remove                                                           16   0.04%  0x00007ffd text
     │           └── ring_buffer.h                                                                  62   0.16%  - 
-    │               ├── ring_buf_get_claim                                                         30   0.08%  0x00005473 text
-    │               └── ring_buf_put_claim                                                         32   0.08%  0x00005453 text
+    │               ├── ring_buf_get_claim                                                         30   0.08%  0x00005477 text
+    │               └── ring_buf_put_claim                                                         32   0.08%  0x00005457 text
     ├── kernel                                                                                   8006  21.24%  - 
     │   ├── atomic_c.c                                                                             80   0.21%  - 
-    │   │   ├── atomic_get                                                                          4   0.01%  0x000082bb text
-    │   │   ├── z_impl_atomic_and                                                                  26   0.07%  0x000082f1 text
-    │   │   ├── z_impl_atomic_or                                                                   26   0.07%  0x000082d7 text
-    │   │   └── z_impl_atomic_set                                                                  24   0.06%  0x000082bf text
+    │   │   ├── atomic_get                                                                          4   0.01%  0x000082bf text
+    │   │   ├── z_impl_atomic_and                                                                  26   0.07%  0x000082f5 text
+    │   │   ├── z_impl_atomic_or                                                                   26   0.07%  0x000082db text
+    │   │   └── z_impl_atomic_set                                                                  24   0.06%  0x000082c3 text
     │   ├── banner.c                                                                                2   0.01%  - 
-    │   │   └── boot_banner                                                                         2   0.01%  0x0000831d text
+    │   │   └── boot_banner                                                                         2   0.01%  0x00008321 text
     │   ├── busy_wait.c                                                                            28   0.07%  - 
-    │   │   └── z_impl_k_busy_wait                                                                 28   0.07%  0x00007b47 text
+    │   │   └── z_impl_k_busy_wait                                                                 28   0.07%  0x00007b4b text
     │   ├── device.c                                                                               76   0.20%  - 
-    │   │   ├── do_device_init                                                                     50   0.13%  0x00007b63 text
-    │   │   └── z_impl_device_is_ready                                                             26   0.07%  0x00007b95 text
+    │   │   ├── do_device_init                                                                     50   0.13%  0x00007b67 text
+    │   │   └── z_impl_device_is_ready                                                             26   0.07%  0x00007b99 text
     │   ├── fatal.c                                                                                54   0.14%  - 
-    │   │   ├── arch_system_halt                                                                    8   0.02%  0x00007baf text
-    │   │   ├── k_sys_fatal_error_handler                                                           6   0.02%  0x00007bb7 text
-    │   │   └── z_fatal_error                                                                      40   0.11%  0x000033a1 text
+    │   │   ├── arch_system_halt                                                                    8   0.02%  0x00007bb3 text
+    │   │   ├── k_sys_fatal_error_handler                                                           6   0.02%  0x00007bbb text
+    │   │   └── z_fatal_error                                                                      40   0.11%  0x000033a5 text
     │   ├── idle.c                                                                                 14   0.04%  - 
-    │   │   └── idle                                                                               14   0.04%  0x00007d11 text
+    │   │   └── idle                                                                               14   0.04%  0x00007d15 text
     │   ├── include                                                                               120   0.32%  - 
     │   │   ├── kernel_offsets.h                                                                    2   0.01%  - 
-    │   │   │   └── _OffsetAbsSyms                                                                  2   0.01%  0x00004fa5 text
+    │   │   │   └── _OffsetAbsSyms                                                                  2   0.01%  0x00004fa9 text
     │   │   ├── ksched.h                                                                           74   0.20%  - 
-    │   │   │   ├── unpend_thread_no_timeout                                                       26   0.07%  0x00007d1f text
-    │   │   │   ├── unpend_thread_no_timeout                                                       26   0.07%  0x00007d69 text
-    │   │   │   └── unpend_thread_no_timeout                                                       22   0.06%  0x00008009 text
+    │   │   │   ├── unpend_thread_no_timeout                                                       26   0.07%  0x00007d23 text
+    │   │   │   ├── unpend_thread_no_timeout                                                       26   0.07%  0x00007d6d text
+    │   │   │   └── unpend_thread_no_timeout                                                       22   0.06%  0x0000800d text
     │   │   └── kswap.h                                                                            44   0.12%  - 
-    │   │       └── z_swap_irqlock                                                                 44   0.12%  0x00003ea5 text
+    │   │       └── z_swap_irqlock                                                                 44   0.12%  0x00003ea9 text
     │   ├── init.c                                                                                524   1.39%  - 
-    │   │   ├── bg_thread_main                                                                    168   0.45%  0x000033fd text
-    │   │   ├── levels.0                                                                           24   0.06%  0x00008a04 rodata
-    │   │   ├── z_cstart                                                                          176   0.47%  0x0000350d text
-    │   │   ├── z_init_cpu                                                                        104   0.28%  0x000034a5 text
-    │   │   └── z_sys_init_run_level                                                               52   0.14%  0x000033c9 text
+    │   │   ├── bg_thread_main                                                                    168   0.45%  0x00003401 text
+    │   │   ├── levels.0                                                                           24   0.06%  0x00008a08 rodata
+    │   │   ├── z_cstart                                                                          176   0.47%  0x00003511 text
+    │   │   ├── z_init_cpu                                                                        104   0.28%  0x000034a9 text
+    │   │   └── z_sys_init_run_level                                                               52   0.14%  0x000033cd text
     │   ├── kheap.c                                                                               248   0.66%  - 
-    │   │   ├── __init_statics_init_pre                                                             8   0.02%  0x00008488 initlevel
-    │   │   ├── k_heap_aligned_alloc                                                               28   0.07%  0x000035e1 text
-    │   │   ├── k_heap_free                                                                        50   0.13%  0x00007c3b text
-    │   │   ├── k_heap_init                                                                        16   0.04%  0x00007c2b text
-    │   │   ├── statics_init                                                                       36   0.10%  0x000035bd text
-    │   │   └── z_heap_alloc_helper                                                               110   0.29%  0x00007bbd text
+    │   │   ├── __init_statics_init_pre                                                             8   0.02%  0x0000848c initlevel
+    │   │   ├── k_heap_aligned_alloc                                                               28   0.07%  0x000035e5 text
+    │   │   ├── k_heap_free                                                                        50   0.13%  0x00007c3f text
+    │   │   ├── k_heap_init                                                                        16   0.04%  0x00007c2f text
+    │   │   ├── statics_init                                                                       36   0.10%  0x000035c1 text
+    │   │   └── z_heap_alloc_helper                                                               110   0.29%  0x00007bc1 text
     │   ├── mem_slab.c                                                                            296   0.79%  - 
-    │   │   ├── __init_init_mem_slab_obj_core_list                                                  8   0.02%  0x00008490 initlevel
-    │   │   ├── create_free_list                                                                   58   0.15%  0x00007c6d text
-    │   │   ├── init_mem_slab_obj_core_list                                                        36   0.10%  0x000035fd text
-    │   │   ├── k_mem_slab_alloc                                                                   88   0.23%  0x00003621 text
-    │   │   └── k_mem_slab_free                                                                   106   0.28%  0x00007ca7 text
+    │   │   ├── __init_init_mem_slab_obj_core_list                                                  8   0.02%  0x00008494 initlevel
+    │   │   ├── create_free_list                                                                   58   0.15%  0x00007c71 text
+    │   │   ├── init_mem_slab_obj_core_list                                                        36   0.10%  0x00003601 text
+    │   │   ├── k_mem_slab_alloc                                                                   88   0.23%  0x00003625 text
+    │   │   └── k_mem_slab_free                                                                   106   0.28%  0x00007cab text
     │   ├── mempool.c                                                                             110   0.29%  - 
-    │   │   ├── k_free                                                                             18   0.05%  0x0000830b text
-    │   │   ├── z_thread_alloc_helper                                                              72   0.19%  0x00004a51 text
-    │   │   └── z_thread_malloc                                                                    20   0.05%  0x00004a99 text
+    │   │   ├── k_free                                                                             18   0.05%  0x0000830f text
+    │   │   ├── z_thread_alloc_helper                                                              72   0.19%  0x00004a55 text
+    │   │   └── z_thread_malloc                                                                    20   0.05%  0x00004a9d text
     │   ├── msg_q.c                                                                               400   1.06%  - 
-    │   │   ├── put_msg_in_queue                                                                  204   0.54%  0x00003679 text
-    │   │   ├── z_impl_k_msgq_get                                                                 184   0.49%  0x00003745 text
-    │   │   └── z_impl_k_msgq_put                                                                  12   0.03%  0x00007d39 text
+    │   │   ├── put_msg_in_queue                                                                  204   0.54%  0x0000367d text
+    │   │   ├── z_impl_k_msgq_get                                                                 184   0.49%  0x00003749 text
+    │   │   └── z_impl_k_msgq_put                                                                  12   0.03%  0x00007d3d text
     │   ├── mutex.c                                                                               428   1.14%  - 
-    │   │   ├── adjust_owner_prio.isra.0                                                           22   0.06%  0x00007d45 text
-    │   │   ├── z_impl_k_mutex_init                                                                14   0.04%  0x00007d5b text
-    │   │   ├── z_impl_k_mutex_lock                                                               240   0.64%  0x000037fd text
-    │   │   └── z_impl_k_mutex_unlock                                                             152   0.40%  0x000038ed text
+    │   │   ├── adjust_owner_prio.isra.0                                                           22   0.06%  0x00007d49 text
+    │   │   ├── z_impl_k_mutex_init                                                                14   0.04%  0x00007d5f text
+    │   │   ├── z_impl_k_mutex_lock                                                               240   0.64%  0x00003801 text
+    │   │   └── z_impl_k_mutex_unlock                                                             152   0.40%  0x000038f1 text
     │   ├── queue.c                                                                               382   1.01%  - 
-    │   │   ├── k_queue_append                                                                     18   0.05%  0x00007e77 text
-    │   │   ├── k_queue_prepend                                                                    16   0.04%  0x00007e89 text
-    │   │   ├── queue_insert                                                                      202   0.54%  0x00007d83 text
-    │   │   ├── z_impl_k_queue_get                                                                 92   0.24%  0x00003985 text
-    │   │   ├── z_impl_k_queue_init                                                                16   0.04%  0x00007e67 text
-    │   │   ├── z_impl_k_queue_peek_head                                                           12   0.03%  0x00007e99 text
-    │   │   └── z_queue_node_peek                                                                  26   0.07%  0x00007e4d text
+    │   │   ├── k_queue_append                                                                     18   0.05%  0x00007e7b text
+    │   │   ├── k_queue_prepend                                                                    16   0.04%  0x00007e8d text
+    │   │   ├── queue_insert                                                                      202   0.54%  0x00007d87 text
+    │   │   ├── z_impl_k_queue_get                                                                 92   0.24%  0x00003989 text
+    │   │   ├── z_impl_k_queue_init                                                                16   0.04%  0x00007e6b text
+    │   │   ├── z_impl_k_queue_peek_head                                                           12   0.03%  0x00007e9d text
+    │   │   └── z_queue_node_peek                                                                  26   0.07%  0x00007e51 text
     │   ├── sched.c                                                                              1980   5.25%  - 
-    │   │   ├── add_thread_timeout                                                                 24   0.06%  0x00003fb5 text
-    │   │   ├── add_to_waitq_locked                                                                82   0.22%  0x0000801f text
-    │   │   ├── k_sched_lock                                                                       32   0.08%  0x000041bd text
-    │   │   ├── k_sched_unlock                                                                     96   0.25%  0x000041dd text
-    │   │   ├── move_current_to_end_of_prio_q                                                     120   0.32%  0x00003fcd text
-    │   │   ├── ready_thread                                                                      140   0.37%  0x00003ed1 text
-    │   │   ├── unready_thread                                                                     88   0.23%  0x00003f5d text
-    │   │   ├── z_impl_k_sched_current_thread_query                                                12   0.03%  0x000043c9 text
-    │   │   ├── z_impl_k_sleep                                                                     64   0.17%  0x00004349 text
-    │   │   ├── z_impl_k_wakeup                                                                    64   0.17%  0x00004389 text
-    │   │   ├── z_impl_k_yield                                                                    132   0.35%  0x00004251 text
-    │   │   ├── z_pend_curr                                                                        56   0.15%  0x00004045 text
-    │   │   ├── z_ready_thread                                                                     24   0.06%  0x00008071 text
-    │   │   ├── z_reschedule                                                                       44   0.12%  0x00004165 text
-    │   │   ├── z_reschedule_irqlock                                                               44   0.12%  0x00004191 text
-    │   │   ├── z_sched_init                                                                       20   0.05%  0x0000423d text
-    │   │   ├── z_sched_wait                                                                       36   0.10%  0x00004501 text
-    │   │   ├── z_sched_wake                                                                       60   0.16%  0x0000814b text
-    │   │   ├── z_sched_wake_thread                                                                54   0.14%  0x000080a7 text
-    │   │   ├── z_thread_abort                                                                    300   0.80%  0x000043d5 text
-    │   │   ├── z_thread_prio_set                                                                 232   0.62%  0x0000407d text
-    │   │   ├── z_thread_timeout                                                                   12   0.03%  0x000080dd text
-    │   │   ├── z_tick_sleep                                                                      116   0.31%  0x000042d5 text
-    │   │   ├── z_unpend1_no_timeout                                                               42   0.11%  0x000080e9 text
-    │   │   ├── z_unpend_all                                                                       38   0.10%  0x00008125 text
-    │   │   ├── z_unpend_thread                                                                    18   0.05%  0x00008113 text
-    │   │   └── z_unpend_thread_no_timeout                                                         30   0.08%  0x00008089 text
+    │   │   ├── add_thread_timeout                                                                 24   0.06%  0x00003fb9 text
+    │   │   ├── add_to_waitq_locked                                                                82   0.22%  0x00008023 text
+    │   │   ├── k_sched_lock                                                                       32   0.08%  0x000041c1 text
+    │   │   ├── k_sched_unlock                                                                     96   0.25%  0x000041e1 text
+    │   │   ├── move_current_to_end_of_prio_q                                                     120   0.32%  0x00003fd1 text
+    │   │   ├── ready_thread                                                                      140   0.37%  0x00003ed5 text
+    │   │   ├── unready_thread                                                                     88   0.23%  0x00003f61 text
+    │   │   ├── z_impl_k_sched_current_thread_query                                                12   0.03%  0x000043cd text
+    │   │   ├── z_impl_k_sleep                                                                     64   0.17%  0x0000434d text
+    │   │   ├── z_impl_k_wakeup                                                                    64   0.17%  0x0000438d text
+    │   │   ├── z_impl_k_yield                                                                    132   0.35%  0x00004255 text
+    │   │   ├── z_pend_curr                                                                        56   0.15%  0x00004049 text
+    │   │   ├── z_ready_thread                                                                     24   0.06%  0x00008075 text
+    │   │   ├── z_reschedule                                                                       44   0.12%  0x00004169 text
+    │   │   ├── z_reschedule_irqlock                                                               44   0.12%  0x00004195 text
+    │   │   ├── z_sched_init                                                                       20   0.05%  0x00004241 text
+    │   │   ├── z_sched_wait                                                                       36   0.10%  0x00004505 text
+    │   │   ├── z_sched_wake                                                                       60   0.16%  0x0000814f text
+    │   │   ├── z_sched_wake_thread                                                                54   0.14%  0x000080ab text
+    │   │   ├── z_thread_abort                                                                    300   0.80%  0x000043d9 text
+    │   │   ├── z_thread_prio_set                                                                 232   0.62%  0x00004081 text
+    │   │   ├── z_thread_timeout                                                                   12   0.03%  0x000080e1 text
+    │   │   ├── z_tick_sleep                                                                      116   0.31%  0x000042d9 text
+    │   │   ├── z_unpend1_no_timeout                                                               42   0.11%  0x000080ed text
+    │   │   ├── z_unpend_all                                                                       38   0.10%  0x00008129 text
+    │   │   ├── z_unpend_thread                                                                    18   0.05%  0x00008117 text
+    │   │   └── z_unpend_thread_no_timeout                                                         30   0.08%  0x0000808d text
     │   ├── sem.c                                                                                 100   0.27%  - 
-    │   │   └── z_impl_k_sem_give                                                                 100   0.27%  0x000039e1 text
+    │   │   └── z_impl_k_sem_give                                                                 100   0.27%  0x000039e5 text
     │   ├── system_work_q.c                                                                        60   0.16%  - 
-    │   │   ├── __init_k_sys_work_q_init                                                            8   0.02%  0x00008508 initlevel
-    │   │   ├── cfg.0                                                                              12   0.03%  0x00008a1c rodata
-    │   │   └── k_sys_work_q_init                                                                  40   0.11%  0x00004aad text
+    │   │   ├── __init_k_sys_work_q_init                                                            8   0.02%  0x0000850c initlevel
+    │   │   ├── cfg.0                                                                              12   0.03%  0x00008a20 rodata
+    │   │   └── k_sys_work_q_init                                                                  40   0.11%  0x00004ab1 text
     │   ├── thread.c                                                                              242   0.64%  - 
-    │   │   ├── k_is_in_isr                                                                        12   0.03%  0x00007fe7 text
-    │   │   ├── z_dummy_thread_init                                                                20   0.05%  0x00003e91 text
-    │   │   ├── z_impl_k_thread_create                                                             88   0.23%  0x00003e39 text
-    │   │   ├── z_impl_k_thread_name_set                                                            6   0.02%  0x00007ff3 text
-    │   │   └── z_setup_new_thread                                                                116   0.31%  0x00003dc5 text
+    │   │   ├── k_is_in_isr                                                                        12   0.03%  0x00007feb text
+    │   │   ├── z_dummy_thread_init                                                                20   0.05%  0x00003e95 text
+    │   │   ├── z_impl_k_thread_create                                                             88   0.23%  0x00003e3d text
+    │   │   ├── z_impl_k_thread_name_set                                                            6   0.02%  0x00007ff7 text
+    │   │   └── z_setup_new_thread                                                                116   0.31%  0x00003dc9 text
     │   ├── timeout.c                                                                             938   2.49%  - 
-    │   │   ├── elapsed                                                                            24   0.06%  0x00004671 text
-    │   │   ├── first                                                                              16   0.04%  0x00004629 text
-    │   │   ├── next_timeout                                                                       56   0.15%  0x00004639 text
-    │   │   ├── remove_timeout                                                                     56   0.15%  0x00004689 text
-    │   │   ├── sys_clock_announce                                                                212   0.56%  0x000047e1 text
-    │   │   ├── sys_clock_tick_get                                                                 44   0.12%  0x000048b5 text
-    │   │   ├── sys_clock_tick_get_32                                                               8   0.02%  0x000081d3 text
-    │   │   ├── sys_timepoint_calc                                                                 66   0.18%  0x000081e3 text
-    │   │   ├── sys_timepoint_timeout                                                              76   0.20%  0x00008225 text
+    │   │   ├── elapsed                                                                            24   0.06%  0x00004675 text
+    │   │   ├── first                                                                              16   0.04%  0x0000462d text
+    │   │   ├── next_timeout                                                                       56   0.15%  0x0000463d text
+    │   │   ├── remove_timeout                                                                     56   0.15%  0x0000468d text
+    │   │   ├── sys_clock_announce                                                                212   0.56%  0x000047e5 text
+    │   │   ├── sys_clock_tick_get                                                                 44   0.12%  0x000048b9 text
+    │   │   ├── sys_clock_tick_get_32                                                               8   0.02%  0x000081d7 text
+    │   │   ├── sys_timepoint_calc                                                                 66   0.18%  0x000081e7 text
+    │   │   ├── sys_timepoint_timeout                                                              76   0.20%  0x00008229 text
     │   │   ├── timeout_list                                                                        8   0.02%  0x1ffff2f8 datas
-    │   │   ├── z_abort_timeout                                                                    76   0.20%  0x00008187 text
-    │   │   ├── z_add_timeout                                                                     288   0.76%  0x000046c1 text
-    │   │   └── z_impl_k_uptime_ticks                                                               8   0.02%  0x000081db text
+    │   │   ├── z_abort_timeout                                                                    76   0.20%  0x0000818b text
+    │   │   ├── z_add_timeout                                                                     288   0.76%  0x000046c5 text
+    │   │   └── z_impl_k_uptime_ticks                                                               8   0.02%  0x000081df text
     │   ├── timer.c                                                                               442   1.17%  - 
-    │   │   ├── k_timer_init                                                                       24   0.06%  0x00008271 text
-    │   │   ├── z_impl_k_timer_start                                                              104   0.28%  0x000049e9 text
-    │   │   ├── z_impl_k_timer_stop                                                                50   0.13%  0x00008289 text
-    │   │   └── z_timer_expiration_handler                                                        264   0.70%  0x000048e1 text
+    │   │   ├── k_timer_init                                                                       24   0.06%  0x00008275 text
+    │   │   ├── z_impl_k_timer_start                                                              104   0.28%  0x000049ed text
+    │   │   ├── z_impl_k_timer_stop                                                                50   0.13%  0x0000828d text
+    │   │   └── z_timer_expiration_handler                                                        264   0.70%  0x000048e5 text
     │   ├── timeslicing.c                                                                         264   0.70%  - 
     │   │   ├── slice_ticks                                                                         4   0.01%  0x1ffff2f4 datas
-    │   │   ├── slice_timeout                                                                      32   0.08%  0x00004525 text
-    │   │   ├── thread_is_sliceable                                                                64   0.17%  0x00004545 text
-    │   │   ├── z_reset_time_slice                                                                 76   0.20%  0x00004585 text
-    │   │   └── z_time_slice                                                                       88   0.23%  0x000045d1 text
+    │   │   ├── slice_timeout                                                                      32   0.08%  0x00004529 text
+    │   │   ├── thread_is_sliceable                                                                64   0.17%  0x00004549 text
+    │   │   ├── z_reset_time_slice                                                                 76   0.20%  0x00004589 text
+    │   │   └── z_time_slice                                                                       88   0.23%  0x000045d5 text
     │   └── work.c                                                                               1218   3.23%  - 
-    │       ├── cancel_async_locked                                                               100   0.27%  0x00007eef text
-    │       ├── flag_test_and_clear                                                                24   0.06%  0x00007ea5 text
-    │       ├── k_work_cancel                                                                      24   0.06%  0x00007fcf text
-    │       ├── k_work_init                                                                        18   0.05%  0x00007f87 text
-    │       ├── k_work_queue_start                                                                136   0.36%  0x00003c71 text
-    │       ├── k_work_reschedule                                                                  20   0.05%  0x00003db1 text
-    │       ├── k_work_reschedule_for_queue                                                        84   0.22%  0x00003d5d text
-    │       ├── k_work_schedule                                                                    20   0.05%  0x00003d49 text
-    │       ├── k_work_schedule_for_queue                                                          80   0.21%  0x00003cf9 text
-    │       ├── k_work_submit                                                                      20   0.05%  0x00003c5d text
-    │       ├── k_work_submit_to_queue                                                             24   0.06%  0x00007fb7 text
-    │       ├── notify_queue_locked.isra.0                                                         18   0.05%  0x00007edd text
-    │       ├── submit_to_queue_locked                                                            212   0.56%  0x00003b89 text
-    │       ├── unschedule_locked                                                                  32   0.08%  0x00007ebd text
-    │       ├── work_queue_main                                                                   324   0.86%  0x00003a45 text
-    │       ├── work_timeout                                                                       52   0.14%  0x00007f53 text
-    │       └── z_work_submit_to_queue                                                             30   0.08%  0x00007f99 text
+    │       ├── cancel_async_locked                                                               100   0.27%  0x00007ef3 text
+    │       ├── flag_test_and_clear                                                                24   0.06%  0x00007ea9 text
+    │       ├── k_work_cancel                                                                      24   0.06%  0x00007fd3 text
+    │       ├── k_work_init                                                                        18   0.05%  0x00007f8b text
+    │       ├── k_work_queue_start                                                                136   0.36%  0x00003c75 text
+    │       ├── k_work_reschedule                                                                  20   0.05%  0x00003db5 text
+    │       ├── k_work_reschedule_for_queue                                                        84   0.22%  0x00003d61 text
+    │       ├── k_work_schedule                                                                    20   0.05%  0x00003d4d text
+    │       ├── k_work_schedule_for_queue                                                          80   0.21%  0x00003cfd text
+    │       ├── k_work_submit                                                                      20   0.05%  0x00003c61 text
+    │       ├── k_work_submit_to_queue                                                             24   0.06%  0x00007fbb text
+    │       ├── notify_queue_locked.isra.0                                                         18   0.05%  0x00007ee1 text
+    │       ├── submit_to_queue_locked                                                            212   0.56%  0x00003b8d text
+    │       ├── unschedule_locked                                                                  32   0.08%  0x00007ec1 text
+    │       ├── work_queue_main                                                                   324   0.86%  0x00003a49 text
+    │       ├── work_timeout                                                                       52   0.14%  0x00007f57 text
+    │       └── z_work_submit_to_queue                                                             30   0.08%  0x00007f9d text
     ├── lib                                                                                      2859   7.58%  - 
     │   ├── heap                                                                                  958   2.54%  - 
     │   │   ├── heap.c                                                                            948   2.51%  - 
-    │   │   │   ├── alloc_chunk                                                                   126   0.33%  0x00005051 text
-    │   │   │   ├── free_chunk                                                                     96   0.25%  0x00005133 text
-    │   │   │   ├── free_list_add                                                                  78   0.21%  0x00004fb1 text
-    │   │   │   ├── free_list_remove                                                               28   0.07%  0x00005035 text
-    │   │   │   ├── free_list_remove_bidx                                                          54   0.14%  0x00004fff text
-    │   │   │   ├── merge_chunks                                                                   48   0.13%  0x000050cf text
-    │   │   │   ├── split_chunks                                                                   52   0.14%  0x000050ff text
-    │   │   │   ├── sys_heap_aligned_alloc                                                        214   0.57%  0x0000521b text
-    │   │   │   ├── sys_heap_alloc                                                                 94   0.25%  0x000051b3 text
-    │   │   │   ├── sys_heap_free                                                                  32   0.08%  0x00005193 text
-    │   │   │   ├── sys_heap_init                                                                 116   0.31%  0x000052f1 text
-    │   │   │   └── sys_heap_noalign_alloc                                                         10   0.03%  0x00005211 text
+    │   │   │   ├── alloc_chunk                                                                   126   0.33%  0x00005055 text
+    │   │   │   ├── free_chunk                                                                     96   0.25%  0x00005137 text
+    │   │   │   ├── free_list_add                                                                  78   0.21%  0x00004fb5 text
+    │   │   │   ├── free_list_remove                                                               28   0.07%  0x00005039 text
+    │   │   │   ├── free_list_remove_bidx                                                          54   0.14%  0x00005003 text
+    │   │   │   ├── merge_chunks                                                                   48   0.13%  0x000050d3 text
+    │   │   │   ├── split_chunks                                                                   52   0.14%  0x00005103 text
+    │   │   │   ├── sys_heap_aligned_alloc                                                        214   0.57%  0x0000521f text
+    │   │   │   ├── sys_heap_alloc                                                                 94   0.25%  0x000051b7 text
+    │   │   │   ├── sys_heap_free                                                                  32   0.08%  0x00005197 text
+    │   │   │   ├── sys_heap_init                                                                 116   0.31%  0x000052f5 text
+    │   │   │   └── sys_heap_noalign_alloc                                                         10   0.03%  0x00005215 text
     │   │   └── heap.h                                                                             10   0.03%  - 
-    │   │       └── chunk_size                                                                     10   0.03%  0x00004fa7 text
+    │   │       └── chunk_size                                                                     10   0.03%  0x00004fab text
     │   ├── libc                                                                                  110   0.29%  - 
     │   │   ├── common                                                                             44   0.12%  - 
     │   │   │   └── source                                                                         44   0.12%  - 
     │   │   │       └── stdlib                                                                     44   0.12%  - 
     │   │   │           └── malloc.c                                                               44   0.12%  - 
-    │   │   │               ├── __init_malloc_prepare                                               8   0.02%  0x000084d8 initlevel
-    │   │   │               └── malloc_prepare                                                     36   0.10%  0x00001221 text
+    │   │   │               ├── __init_malloc_prepare                                               8   0.02%  0x000084dc initlevel
+    │   │   │               └── malloc_prepare                                                     36   0.10%  0x00001225 text
     │   │   └── picolibc                                                                           66   0.18%  - 
     │   │       └── stdio.c                                                                        66   0.18%  - 
     │   │           ├── __stdout                                                                   16   0.04%  0x1ffff0c8 datas
-    │   │           ├── __stdout_hook_install                                                      24   0.06%  0x00001209 text
-    │   │           ├── picolibc_put                                                               10   0.03%  0x000055c1 text
-    │   │           └── z_impl_zephyr_fputc                                                        16   0.04%  0x000011f9 text
+    │   │           ├── __stdout_hook_install                                                      24   0.06%  0x0000120d text
+    │   │           ├── picolibc_put                                                               10   0.03%  0x000055c5 text
+    │   │           └── z_impl_zephyr_fputc                                                        16   0.04%  0x000011fd text
     │   ├── midi2                                                                                 729   1.93%  - 
     │   │   └── ump_stream_responder.c                                                            729   1.93%  - 
-    │   │       ├── hex.0                                                                          17   0.05%  0x00008a99 rodata
-    │   │       ├── send_string                                                                   164   0.44%  0x00005365 text
-    │   │       ├── ump_fb_discover_block                                                         160   0.42%  0x00000a3d text
-    │   │       ├── ump_product_instance_id                                                       100   0.27%  0x00000add text
-    │   │       └── ump_stream_respond                                                            288   0.76%  0x00000b41 text
+    │   │       ├── hex.0                                                                          17   0.05%  0x00008a9d rodata
+    │   │       ├── send_string                                                                   164   0.44%  0x00005369 text
+    │   │       ├── ump_fb_discover_block                                                         160   0.42%  0x00000a41 text
+    │   │       ├── ump_product_instance_id                                                       100   0.27%  0x00000ae1 text
+    │   │       └── ump_stream_respond                                                            288   0.76%  0x00000b45 text
     │   ├── net_buf                                                                               676   1.79%  - 
-    │   │   ├── buf.c                                                                             520   1.38%  - 
-    │   │   │   ├── fixed_data_alloc                                                               36   0.10%  0x000012b1 text
-    │   │   │   ├── fixed_data_unref                                                                2   0.01%  0x000055cb text
-    │   │   │   ├── net_buf_alloc_fixed                                                            12   0.03%  0x000055cd text
-    │   │   │   ├── net_buf_alloc_len                                                             256   0.68%  0x000012d5 text
-    │   │   │   ├── net_buf_fixed_cb                                                               12   0.03%  0x00008884 rodata
-    │   │   │   ├── net_buf_frag_add                                                               34   0.09%  0x000055f1 text
-    │   │   │   ├── net_buf_frag_del                                                               28   0.07%  0x00005613 text
-    │   │   │   ├── net_buf_frag_insert                                                            24   0.06%  0x000055d9 text
-    │   │   │   ├── net_buf_id                                                                     36   0.10%  0x0000128d text
-    │   │   │   ├── net_buf_pool_get                                                               16   0.04%  0x0000127d text
-    │   │   │   └── net_buf_unref                                                                  64   0.17%  0x000013d5 text
-    │   │   └── buf_simple.c                                                                      156   0.41%  - 
-    │   │       ├── errno                                                                           4   0.01%  0x00000004 rom_start
-    │   │       ├── net_buf_simple_add                                                             14   0.04%  0x0000562f text
-    │   │       ├── net_buf_simple_add_le16                                                        18   0.05%  0x00005661 text
-    │   │       ├── net_buf_simple_add_mem                                                         20   0.05%  0x0000563d text
-    │   │       ├── net_buf_simple_add_u8                                                          16   0.04%  0x00005651 text
-    │   │       ├── net_buf_simple_pull                                                            16   0.04%  0x00005681 text
-    │   │       ├── net_buf_simple_pull_le32                                                       34   0.09%  0x00005691 text
-    │   │       ├── net_buf_simple_remove_mem                                                      14   0.04%  0x00005673 text
-    │   │       ├── net_buf_simple_tailroom                                                        16   0.04%  0x000056b3 text
-    │   │       └── z_tls_current                                                                   4   0.01%  0x00000000 rom_start
+    │   │   ├── buf.c                                                                             528   1.40%  - 
+    │   │   │   ├── errno                                                                           4   0.01%  0x00000004 rom_start
+    │   │   │   ├── fixed_data_alloc                                                               36   0.10%  0x000012b5 text
+    │   │   │   ├── fixed_data_unref                                                                2   0.01%  0x000055cf text
+    │   │   │   ├── net_buf_alloc_fixed                                                            12   0.03%  0x000055d1 text
+    │   │   │   ├── net_buf_alloc_len                                                             256   0.68%  0x000012d9 text
+    │   │   │   ├── net_buf_fixed_cb                                                               12   0.03%  0x00008888 rodata
+    │   │   │   ├── net_buf_frag_add                                                               34   0.09%  0x000055f5 text
+    │   │   │   ├── net_buf_frag_del                                                               28   0.07%  0x00005617 text
+    │   │   │   ├── net_buf_frag_insert                                                            24   0.06%  0x000055dd text
+    │   │   │   ├── net_buf_id                                                                     36   0.10%  0x00001291 text
+    │   │   │   ├── net_buf_pool_get                                                               16   0.04%  0x00001281 text
+    │   │   │   ├── net_buf_unref                                                                  64   0.17%  0x000013d9 text
+    │   │   │   └── z_tls_current                                                                   4   0.01%  0x00000000 rom_start
+    │   │   └── buf_simple.c                                                                      148   0.39%  - 
+    │   │       ├── net_buf_simple_add                                                             14   0.04%  0x00005633 text
+    │   │       ├── net_buf_simple_add_le16                                                        18   0.05%  0x00005665 text
+    │   │       ├── net_buf_simple_add_mem                                                         20   0.05%  0x00005641 text
+    │   │       ├── net_buf_simple_add_u8                                                          16   0.04%  0x00005655 text
+    │   │       ├── net_buf_simple_pull                                                            16   0.04%  0x00005685 text
+    │   │       ├── net_buf_simple_pull_le32                                                       34   0.09%  0x00005695 text
+    │   │       ├── net_buf_simple_remove_mem                                                      14   0.04%  0x00005677 text
+    │   │       └── net_buf_simple_tailroom                                                        16   0.04%  0x000056b7 text
     │   ├── os                                                                                    154   0.41%  - 
     │   │   ├── printk.c                                                                          106   0.28%  - 
-    │   │   │   ├── __printk_hook_install                                                          12   0.03%  0x00000c71 text
+    │   │   │   ├── __printk_hook_install                                                          12   0.03%  0x00000c75 text
     │   │   │   ├── _char_out                                                                       4   0.01%  0x1ffff0c4 datas
-    │   │   │   ├── arch_printk_char_out                                                            4   0.01%  0x00005409 text
-    │   │   │   ├── char_out                                                                       16   0.04%  0x00000c61 text
-    │   │   │   ├── printk                                                                         22   0.06%  0x0000540d text
-    │   │   │   └── vprintk                                                                        48   0.13%  0x00000c7d text
+    │   │   │   ├── arch_printk_char_out                                                            4   0.01%  0x0000540d text
+    │   │   │   ├── char_out                                                                       16   0.04%  0x00000c65 text
+    │   │   │   ├── printk                                                                         22   0.06%  0x00005411 text
+    │   │   │   └── vprintk                                                                        48   0.13%  0x00000c81 text
     │   │   └── thread_entry.c                                                                     48   0.13%  - 
-    │   │       └── z_thread_entry                                                                 48   0.13%  0x00000cad text
+    │   │       └── z_thread_entry                                                                 48   0.13%  0x00000cb1 text
     │   └── utils                                                                                 232   0.62%  - 
     │       ├── last_section_id.c                                                                   4   0.01%  - 
-    │       │   └── last_id                                                                         4   0.01%  0x00009344 .last_section
+    │       │   └── last_id                                                                         4   0.01%  0x00009348 .last_section
     │       └── ring_buffer.c                                                                     228   0.60%  - 
-    │           ├── ring_buf_area_claim                                                            48   0.13%  0x00005423 text
-    │           ├── ring_buf_area_finish                                                           50   0.13%  0x00005491 text
-    │           ├── ring_buf_get                                                                   66   0.18%  0x00005503 text
-    │           └── ring_buf_put                                                                   64   0.17%  0x000054c3 text
+    │           ├── ring_buf_area_claim                                                            48   0.13%  0x00005427 text
+    │           ├── ring_buf_area_finish                                                           50   0.13%  0x00005495 text
+    │           ├── ring_buf_get                                                                   66   0.18%  0x00005507 text
+    │           └── ring_buf_put                                                                   64   0.17%  0x000054c7 text
     ├── soc                                                                                       202   0.54%  - 
     │   └── nxp                                                                                   202   0.54%  - 
     │       └── mcx                                                                               202   0.54%  - 
@@ -627,119 +627,119 @@ Root                                                                            
     │               ├── flash_configuration.c                                                      16   0.04%  - 
     │               │   └── __kinetis_flash_config                                                 16   0.04%  0x00000400 rom_start
     │               └── soc.c                                                                     186   0.49%  - 
-    │                   ├── clock_init                                                            148   0.39%  0x00000cdd text
-    │                   ├── mcgliteConfig_BOARD_BootClockRUN                                        6   0.02%  0x00008aaa rodata
-    │                   ├── oscConfig_BOARD_BootClockRUN                                            8   0.02%  0x00008874 rodata
-    │                   ├── simConfig_BOARD_BootClockRUN                                            8   0.02%  0x0000887c rodata
-    │                   ├── soc_early_init_hook                                                     8   0.02%  0x00005547 text
-    │                   └── soc_reset_hook                                                          8   0.02%  0x0000554f text
+    │                   ├── clock_init                                                            148   0.39%  0x00000ce1 text
+    │                   ├── mcgliteConfig_BOARD_BootClockRUN                                        6   0.02%  0x00008aae rodata
+    │                   ├── oscConfig_BOARD_BootClockRUN                                            8   0.02%  0x00008878 rodata
+    │                   ├── simConfig_BOARD_BootClockRUN                                            8   0.02%  0x00008880 rodata
+    │                   ├── soc_early_init_hook                                                     8   0.02%  0x0000554b text
+    │                   └── soc_reset_hook                                                          8   0.02%  0x00005553 text
     └── subsys                                                                                   9094  24.12%  - 
         └── usb                                                                                  9094  24.12%  - 
             └── device_next                                                                      9094  24.12%  - 
                 ├── class                                                                        1625   4.31%  - 
                 │   └── usbd_midi2.c                                                             1625   4.31%  - 
-                │       ├── __device_dts_ord_76                                                    28   0.07%  0x0000869c device_area
+                │       ├── __device_dts_ord_76                                                    28   0.07%  0x000086a0 device_area
                 │       ├── __devstate_dts_ord_76                                                   2   0.01%  0x1ffff4b4 device_states
-                │       ├── __init___device_dts_ord_76                                              8   0.02%  0x00008518 initlevel
+                │       ├── __init___device_dts_ord_76                                              8   0.02%  0x0000851c initlevel
                 │       ├── midi_0                                                                 20   0.05%  0x1ffff15c datas
                 │       ├── midi_0_fs                                                              24   0.06%  0x1ffff60c usbd_class_fs_area
-                │       ├── net_buf_fixed_alloc_usbd_midi_buf_pool                                 16   0.04%  0x0000889c rodata
-                │       ├── net_buf_fixed_usbd_midi_buf_pool                                        4   0.01%  0x000088ac rodata
-                │       ├── usbd_midi_buf_alloc                                                    28   0.07%  0x00002401 text
+                │       ├── net_buf_fixed_alloc_usbd_midi_buf_pool                                 16   0.04%  0x000088a0 rodata
+                │       ├── net_buf_fixed_usbd_midi_buf_pool                                        4   0.01%  0x000088b0 rodata
+                │       ├── usbd_midi_buf_alloc                                                    28   0.07%  0x00002405 text
                 │       ├── usbd_midi_buf_pool                                                     36   0.10%  0x1ffff56c net_buf_pool_area
                 │       ├── usbd_midi_class_api                                                    52   0.14%  0x1ffff1f0 datas
-                │       ├── usbd_midi_class_cth                                                   148   0.39%  0x0000241d text
-                │       ├── usbd_midi_class_disable                                                26   0.07%  0x00006529 text
-                │       ├── usbd_midi_class_enable                                                 34   0.09%  0x000064ff text
-                │       ├── usbd_midi_class_get_desc                                                8   0.02%  0x000064f7 text
-                │       ├── usbd_midi_class_init                                                    4   0.01%  0x000064f3 text
-                │       ├── usbd_midi_class_request                                               148   0.39%  0x00002339 text
-                │       ├── usbd_midi_class_update                                                 46   0.12%  0x000064c5 text
-                │       ├── usbd_midi_config_0                                                     12   0.03%  0x00008890 rodata
+                │       ├── usbd_midi_class_cth                                                   148   0.39%  0x00002421 text
+                │       ├── usbd_midi_class_disable                                                26   0.07%  0x0000652d text
+                │       ├── usbd_midi_class_enable                                                 34   0.09%  0x00006503 text
+                │       ├── usbd_midi_class_get_desc                                                8   0.02%  0x000064fb text
+                │       ├── usbd_midi_class_init                                                    4   0.01%  0x000064f7 text
+                │       ├── usbd_midi_class_request                                               148   0.39%  0x0000233d text
+                │       ├── usbd_midi_class_update                                                 46   0.12%  0x000064c9 text
+                │       ├── usbd_midi_config_0                                                     12   0.03%  0x00008894 rodata
                 │       ├── usbd_midi_data_0                                                      132   0.35%  0x1ffff0d8 datas
                 │       ├── usbd_midi_desc_0                                                      407   1.08%  0x1ffff31b datas
                 │       ├── usbd_midi_desc_array_fs_0                                              64   0.17%  0x1ffff1b0 datas
                 │       ├── usbd_midi_desc_array_hs_0                                              64   0.17%  0x1ffff170 datas
-                │       ├── usbd_midi_preinit                                                      52   0.14%  0x000023cd text
-                │       ├── usbd_midi_rx_work                                                      44   0.12%  0x0000654b text
-                │       ├── usbd_midi_send                                                        124   0.33%  0x000024b1 text
-                │       ├── usbd_midi_set_ops                                                      24   0.06%  0x000065bd text
-                │       └── usbd_midi_tx_work                                                      70   0.19%  0x00006577 text
+                │       ├── usbd_midi_preinit                                                      52   0.14%  0x000023d1 text
+                │       ├── usbd_midi_rx_work                                                      44   0.12%  0x0000654f text
+                │       ├── usbd_midi_send                                                        124   0.33%  0x000024b5 text
+                │       ├── usbd_midi_set_ops                                                      24   0.06%  0x000065c1 text
+                │       └── usbd_midi_tx_work                                                      70   0.19%  0x0000657b text
                 ├── usbd_ch9.c                                                                   2933   7.78%  - 
-                │   ├── hex.0                                                                      17   0.05%  0x00008c06 rodata
-                │   ├── nonstd_request                                                            160   0.42%  0x00001415 text
-                │   ├── reqtype_is_to_host                                                         22   0.06%  0x000059cf text
-                │   ├── sreq_feature_halt_notify                                                   32   0.08%  0x000059e5 text
-                │   ├── usbd_handle_ctrl_xfer                                                    2688   7.13%  0x000014b5 text
-                │   └── usbd_init_control_pipe                                                     14   0.04%  0x00005a7b text
+                │   ├── hex.0                                                                      17   0.05%  0x00008c0a rodata
+                │   ├── nonstd_request                                                            160   0.42%  0x00001419 text
+                │   ├── reqtype_is_to_host                                                         22   0.06%  0x000059d3 text
+                │   ├── sreq_feature_halt_notify                                                   32   0.08%  0x000059e9 text
+                │   ├── usbd_handle_ctrl_xfer                                                    2688   7.13%  0x000014b9 text
+                │   └── usbd_init_control_pipe                                                     14   0.04%  0x00005a7f text
                 ├── usbd_class.c                                                                  554   1.47%  - 
-                │   ├── usbd_class_desc_len                                                        42   0.11%  0x00005f61 text
-                │   ├── usbd_class_get_by_config                                                   34   0.09%  0x00005f8b text
-                │   ├── usbd_class_get_by_ep                                                       82   0.22%  0x00005ff7 text
-                │   ├── usbd_class_get_by_iface                                                    34   0.09%  0x00005fad text
-                │   ├── usbd_class_get_by_req                                                      52   0.14%  0x00006049 text
-                │   ├── usbd_class_handle_xfer                                                     40   0.11%  0x00005fcf text
-                │   ├── usbd_class_node_get.part.0                                                 44   0.12%  0x000021bd text
-                │   ├── usbd_register_all_classes                                                  92   0.24%  0x000021e9 text
-                │   └── usbd_register_class                                                       134   0.36%  0x0000607d text
+                │   ├── usbd_class_desc_len                                                        42   0.11%  0x00005f65 text
+                │   ├── usbd_class_get_by_config                                                   34   0.09%  0x00005f8f text
+                │   ├── usbd_class_get_by_ep                                                       82   0.22%  0x00005ffb text
+                │   ├── usbd_class_get_by_iface                                                    34   0.09%  0x00005fb1 text
+                │   ├── usbd_class_get_by_req                                                      52   0.14%  0x0000604d text
+                │   ├── usbd_class_handle_xfer                                                     40   0.11%  0x00005fd3 text
+                │   ├── usbd_class_node_get.part.0                                                 44   0.12%  0x000021c1 text
+                │   ├── usbd_register_all_classes                                                  92   0.24%  0x000021ed text
+                │   └── usbd_register_class                                                       134   0.36%  0x00006081 text
                 ├── usbd_config.c                                                                 450   1.19%  - 
-                │   ├── usbd_add_configuration                                                    200   0.53%  0x00005e89 text
-                │   ├── usbd_config_exist                                                          14   0.04%  0x00005dd7 text
-                │   ├── usbd_config_get                                                            34   0.09%  0x00005d8f text
-                │   ├── usbd_config_get_current                                                    38   0.10%  0x00005db1 text
-                │   └── usbd_config_set                                                           164   0.44%  0x00005de5 text
+                │   ├── usbd_add_configuration                                                    200   0.53%  0x00005e8d text
+                │   ├── usbd_config_exist                                                          14   0.04%  0x00005ddb text
+                │   ├── usbd_config_get                                                            34   0.09%  0x00005d93 text
+                │   ├── usbd_config_get_current                                                    38   0.10%  0x00005db5 text
+                │   └── usbd_config_set                                                           164   0.44%  0x00005de9 text
                 ├── usbd_core.c                                                                   772   2.05%  - 
-                │   ├── __init_usbd_pre_init                                                        8   0.02%  0x00008528 initlevel
-                │   ├── usbd_class_bcast_event                                                     76   0.20%  0x00005a89 text
-                │   ├── usbd_device_init_core                                                      48   0.13%  0x0000218d text
-                │   ├── usbd_event_carrier                                                         68   0.18%  0x00001f35 text
+                │   ├── __init_usbd_pre_init                                                        8   0.02%  0x0000852c initlevel
+                │   ├── usbd_class_bcast_event                                                     76   0.20%  0x00005a8d text
+                │   ├── usbd_device_init_core                                                      48   0.13%  0x00002191 text
+                │   ├── usbd_event_carrier                                                         68   0.18%  0x00001f39 text
                 │   ├── usbd_msgq                                                                  40   0.11%  0x1ffff520 k_msgq_area
-                │   ├── usbd_pre_init                                                             136   0.36%  0x00002105 text
-                │   └── usbd_thread                                                               396   1.05%  0x00001f79 text
+                │   ├── usbd_pre_init                                                             136   0.36%  0x00002109 text
+                │   └── usbd_thread                                                               396   1.05%  0x00001f7d text
                 ├── usbd_desc.c                                                                   314   0.83%  - 
-                │   ├── usbd_add_descriptor                                                       248   0.66%  0x000058c9 text
-                │   ├── usbd_get_descriptor                                                        52   0.14%  0x00005895 text
-                │   └── usbd_str_desc_get_idx                                                      14   0.04%  0x000059c1 text
+                │   ├── usbd_add_descriptor                                                       248   0.66%  0x000058cd text
+                │   ├── usbd_get_descriptor                                                        52   0.14%  0x00005899 text
+                │   └── usbd_str_desc_get_idx                                                      14   0.04%  0x000059c5 text
                 ├── usbd_device.c                                                                 442   1.17%  - 
-                │   ├── usbd_bus_speed                                                             10   0.03%  0x000056db text
-                │   ├── usbd_device_get_vreq                                                       36   0.10%  0x00005815 text
-                │   ├── usbd_device_register_vreq                                                  92   0.24%  0x00005839 text
-                │   ├── usbd_device_set_code_triple                                                78   0.21%  0x000056e5 text
-                │   ├── usbd_enable                                                                88   0.23%  0x000057bd text
-                │   ├── usbd_init                                                                  90   0.24%  0x00005763 text
-                │   ├── usbd_is_suspended                                                          10   0.03%  0x00005759 text
-                │   └── usbd_self_powered                                                          38   0.10%  0x00005733 text
+                │   ├── usbd_bus_speed                                                             10   0.03%  0x000056df text
+                │   ├── usbd_device_get_vreq                                                       36   0.10%  0x00005819 text
+                │   ├── usbd_device_register_vreq                                                  92   0.24%  0x0000583d text
+                │   ├── usbd_device_set_code_triple                                                78   0.21%  0x000056e9 text
+                │   ├── usbd_enable                                                                88   0.23%  0x000057c1 text
+                │   ├── usbd_init                                                                  90   0.24%  0x00005767 text
+                │   ├── usbd_is_suspended                                                          10   0.03%  0x0000575d text
+                │   └── usbd_self_powered                                                          38   0.10%  0x00005737 text
                 ├── usbd_device.h                                                                  48   0.13%  - 
-                │   ├── usbd_device_lock                                                           16   0.04%  0x00005f51 text
-                │   ├── usbd_device_lock                                                           16   0.04%  0x000056c3 text
-                │   └── usbd_device_lock                                                           16   0.04%  0x00005d77 text
+                │   ├── usbd_device_lock                                                           16   0.04%  0x00005f55 text
+                │   ├── usbd_device_lock                                                           16   0.04%  0x000056c7 text
+                │   └── usbd_device_lock                                                           16   0.04%  0x00005d7b text
                 ├── usbd_endpoint.c                                                               422   1.12%  - 
-                │   ├── usbd_ep_buf_free                                                           10   0.03%  0x00006415 text
-                │   ├── usbd_ep_clear_halt                                                         30   0.08%  0x00006451 text
-                │   ├── usbd_ep_ctrl_enqueue                                                      154   0.41%  0x00006345 text
-                │   ├── usbd_ep_dequeue                                                            10   0.03%  0x0000641f text
-                │   ├── usbd_ep_disable                                                            44   0.12%  0x00006319 text
-                │   ├── usbd_ep_enable                                                             58   0.15%  0x000062df text
-                │   ├── usbd_ep_enqueue                                                            54   0.14%  0x000063df text
-                │   ├── usbd_ep_is_halted                                                          22   0.06%  0x0000646f text
-                │   └── usbd_ep_set_halt                                                           40   0.11%  0x00006429 text
+                │   ├── usbd_ep_buf_free                                                           10   0.03%  0x00006419 text
+                │   ├── usbd_ep_clear_halt                                                         30   0.08%  0x00006455 text
+                │   ├── usbd_ep_ctrl_enqueue                                                      154   0.41%  0x00006349 text
+                │   ├── usbd_ep_dequeue                                                            10   0.03%  0x00006423 text
+                │   ├── usbd_ep_disable                                                            44   0.12%  0x0000631d text
+                │   ├── usbd_ep_enable                                                             58   0.15%  0x000062e3 text
+                │   ├── usbd_ep_enqueue                                                            54   0.14%  0x000063e3 text
+                │   ├── usbd_ep_is_halted                                                          22   0.06%  0x00006473 text
+                │   └── usbd_ep_set_halt                                                           40   0.11%  0x0000642d text
                 ├── usbd_endpoint.h                                                                46   0.12%  - 
-                │   ├── usbd_ep_bm_clear                                                           26   0.07%  0x000062c5 text
-                │   └── usbd_ep_bm_is_set.isra.0                                                   20   0.05%  0x00005ad5 text
+                │   ├── usbd_ep_bm_clear                                                           26   0.07%  0x000062c9 text
+                │   └── usbd_ep_bm_is_set.isra.0                                                   20   0.05%  0x00005ad9 text
                 ├── usbd_init.c                                                                   654   1.73%  - 
-                │   ├── unassign_eps.constprop.0                                                  132   0.35%  0x00005ae9 text
-                │   └── usbd_init_configurations                                                  522   1.38%  0x00005b6d text
+                │   ├── unassign_eps.constprop.0                                                  132   0.35%  0x00005aed text
+                │   └── usbd_init_configurations                                                  522   1.38%  0x00005b71 text
                 ├── usbd_interface.c                                                              450   1.19%  - 
-                │   ├── usbd_interface_default                                                     74   0.20%  0x000061ff text
-                │   ├── usbd_interface_modify                                                     158   0.42%  0x00006103 text
-                │   ├── usbd_interface_set                                                        124   0.33%  0x00006249 text
-                │   └── usbd_interface_shutdown                                                    94   0.25%  0x000061a1 text
+                │   ├── usbd_interface_default                                                     74   0.20%  0x00006203 text
+                │   ├── usbd_interface_modify                                                     158   0.42%  0x00006107 text
+                │   ├── usbd_interface_set                                                        124   0.33%  0x0000624d text
+                │   └── usbd_interface_shutdown                                                    94   0.25%  0x000061a5 text
                 └── usbd_msg.c                                                                    384   1.02%  - 
                     ├── msg_work                                                                   48   0.13%  0x1ffff000 datas
-                    ├── msg_work_handler                                                          140   0.37%  0x00002245 text
-                    ├── usbd_msg_pub                                                              104   0.28%  0x000022d1 text
-                    ├── usbd_msg_pub_simple                                                        20   0.05%  0x000064b1 text
-                    ├── usbd_msg_register_cb                                                       44   0.12%  0x00006485 text
+                    ├── msg_work_handler                                                          140   0.37%  0x00002249 text
+                    ├── usbd_msg_pub                                                              104   0.28%  0x000022d5 text
+                    ├── usbd_msg_pub_simple                                                        20   0.05%  0x000064b5 text
+                    ├── usbd_msg_register_cb                                                       44   0.12%  0x00006489 text
                     └── usbd_msg_slab                                                              28   0.07%  0x1ffff4d4 k_mem_slab_area
 ==========================================================================================================================================
-                                                                                                37696
+                                                                                                37700
