@@ -11,49 +11,48 @@
  */
 #include "note.h"
 
-
 /*
  * Return the note with the octave included.
  * not thread safe. 
  */
 const char *noteToTextWithOctave(uint8_t midinote, bool flats)
 {
-    static char notestring[5];
-    snprintf(notestring,
-             sizeof(notestring),
-            "%s%d", 
-            noteToText(midinote, flats), noteToOct(midinote));
-    return &notestring[0];  
+        static char notestring[5];
+        snprintf(notestring,
+                 sizeof(notestring),
+                 "%s%d", noteToText(midinote, flats), noteToOct(midinote));
+        return &notestring[0];
 }
-
 
 /* This function converts a MIDI note using a lookup table to a string */
 const char *noteToText(uint8_t midinote, bool flats)
 {
-    int octave = noteToOct(midinote);
-    uint8_t note = midinote - ((octave + 2) * 12);
-    static const char *flatNotes[] =  { "C ", "Db", "D ", "Eb", "E ", "F ", "Gb", "G ", "Ab", "A ", "Bb", "B "};
-    static const char *sharpNotes[] = { "C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "};
+        int octave = noteToOct(midinote);
+        uint8_t note = midinote - ((octave + 2) * 12);
+        static const char *flatNotes[] =
+            { "C ", "Db", "D ", "Eb", "E ", "F ", "Gb", "G ", "Ab", "A ", "Bb",
+"B " };
+        static const char *sharpNotes[] =
+            { "C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#",
+"B " };
 
-    const char *noteString;
-    if (flats) {
-        noteString = flatNotes[note];
-    } else {
-        noteString = sharpNotes[note];
-    }
-    /*  Null-terminated string is returned from the static char array */
-    return noteString; 
+        const char *noteString;
+        if (flats) {
+                noteString = flatNotes[note];
+        } else {
+                noteString = sharpNotes[note];
+        }
+        /*  Null-terminated string is returned from the static char array */
+        return noteString;
 }
-
 
 /*
  * This function converts a MIDI note to an octave number 
  */
 int noteToOct(uint8_t midinote)
 {
-    return (midinote / 12) - 2;
+        return (midinote / 12) - 2;
 }
-
 
 #if TODO_USING_MATH
 /*
@@ -62,7 +61,7 @@ int noteToOct(uint8_t midinote)
  */
 float noteToFreqCustomA4(uint8_t midinote, int base_a4_note_freq)
 {
-    return base_a4_note_freq * pow(2, (midinote - 69) / 12.0);
+        return base_a4_note_freq * pow(2, (midinote - 69) / 12.0);
 }
 #endif
 
@@ -76,21 +75,21 @@ float noteToFreqCustomA4(uint8_t midinote, int base_a4_note_freq)
 #include "midi_freq_table.h"
 float noteToFreq(uint8_t midinote)
 {
-	return midi_freq_table[midinote];
+        return midi_freq_table[midinote];
 }
-
 
 #if TODO_USING_MATH
 uint8_t freqToMidiNote(float freq)
 {
-	/* Fast inverse using log2f */
-	float n = 69.0f + 12.0f * log2f(freq / BASE_A4_NOTE_FREQ);
-	if (n < 0) n = 0;
-	if (n > 127) n = 127;
-	return (uint8_t)(n + 0.5f);
+        /* Fast inverse using log2f */
+        float n = 69.0f + 12.0f * log2f(freq / BASE_A4_NOTE_FREQ);
+        if (n < 0)
+                n = 0;
+        if (n > 127)
+                n = 127;
+        return (uint8_t) (n + 0.5f);
 }
 #endif
-
 
 /**
  * Convert a frequency value to the nearest MIDI note number.
@@ -105,29 +104,31 @@ uint8_t freqToMidiNote(float freq)
  */
 uint8_t freqToMidiNote(float freq)
 {
-	int min = 0;      /* Lower bound of search range (C-1) */
-	int max = 127;    /* Upper bound of search range (G9) */
-	
-	/* Binary search loop: narrow down until min and max converge */
-	while (min < max) {
-		int mid = (min + max) / 2;  /* Midpoint index */
-		
-		/* Compare input frequency against the midpoint note frequency */
-		if (freq >= midi_freq_table[mid]) {
-			/* If freq is higher or equal, search the upper half */
-			min = mid + 1;
-		} else {
-			/* If freq is lower, search the lower half */
-			max = mid - 1;
-		}
-	}
-	
-	/* Clamp result to valid MIDI note range */
-	if (min < 0) return 0;
-	if (min > 127) return 127;
-	
-	/* Return the closest MIDI note index */
-	return (uint8_t)min;
+        int min = 0;            /* Lower bound of search range (C-1) */
+        int max = 127;          /* Upper bound of search range (G9) */
+
+        /* Binary search loop: narrow down until min and max converge */
+        while (min < max) {
+                int mid = (min + max) / 2;      /* Midpoint index */
+
+                /* Compare input frequency against the midpoint note frequency */
+                if (freq >= midi_freq_table[mid]) {
+                        /* If freq is higher or equal, search the upper half */
+                        min = mid + 1;
+                } else {
+                        /* If freq is lower, search the lower half */
+                        max = mid - 1;
+                }
+        }
+
+        /* Clamp result to valid MIDI note range */
+        if (min < 0)
+                return 0;
+        if (min > 127)
+                return 127;
+
+        /* Return the closest MIDI note index */
+        return (uint8_t) min;
 }
 
 /* EOF */

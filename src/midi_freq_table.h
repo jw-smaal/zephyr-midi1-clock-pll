@@ -20,4 +20,4 @@ static const float midi_freq_table[128] = {
 #include "midi_freq_table.inc"
 };
 
-#endif /* MIDI_FREQ_TABLE_H */
+#endif                          /* MIDI_FREQ_TABLE_H */

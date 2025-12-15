@@ -9,8 +9,8 @@
  * @updated 20241224
  * @license SPDX-License-Identifier: Apache-2.0
  */
-#ifndef _HARMONY_NOTE_H
-#define _HARMONY_NOTE_H
+#ifndef HARMONY_NOTE_H
+#define HARMONY_NOTE_H
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -24,13 +24,14 @@
 /* 440 Hz for the A4 note */
 #define BASE_A4_NOTE_FREQUENCY 440
 
-
 const char *noteToText(uint8_t midinote, bool flats);
 const char *noteToTextWithOctave(uint8_t midinote, bool flats);
 int noteToOct(uint8_t midinote);
-//float noteToFreq(uint8_t midinote, int base_a4_note_freq);
+#if TODO_USING_MATH
+float noteToFreq(uint8_t midinote, int base_a4_note_freq);
+#endif
 float noteToFreq(uint8_t midinote);
 uint8_t freqToMidiNote(float freq);
 
-#endif /* _HARMONY_NOTE */
+#endif                          /* HARMONY_NOTE_H */
 /* EOF */
