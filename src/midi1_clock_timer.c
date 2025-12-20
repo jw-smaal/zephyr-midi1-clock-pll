@@ -25,15 +25,15 @@ static atomic_t g_midi1_running = ATOMIC_INIT(0);
 /* static and kept local to the implementation */
 static void midi1_timer_handler(struct k_timer *t)
 {
-        //void *midi_dev = k_timer_user_data_get(t);
-        const struct device *midi1_dev = k_timer_user_data_get(t);
+	//void *midi_dev = k_timer_user_data_get(t);
+	const struct device *midi1_dev = k_timer_user_data_get(t);
 
-        if (!atomic_get(&g_midi1_running)) {
-                return;
-        }
-        if (midi1_dev) {
-                usbd_midi_send(midi1_dev, midi1_timing_clock());
-        }
+	if (!atomic_get(&g_midi1_running)) {
+		return;
+	}
+	if (midi1_dev) {
+		usbd_midi_send(midi1_dev, midi1_timing_clock());
+	}
 }
 
 /*
@@ -42,9 +42,9 @@ static void midi1_timer_handler(struct k_timer *t)
  */
 void midi1_clock_init(const struct device *midi1_dev_arg)
 {
-        atomic_set(&g_midi1_running, 0);
-        k_timer_init(&g_midi1_timer, midi1_timer_handler, NULL);
-        k_timer_user_data_set(&g_midi1_timer, (void *)midi1_dev_arg);
+	atomic_set(&g_midi1_running, 0);
+	k_timer_init(&g_midi1_timer, midi1_timer_handler, NULL);
+	k_timer_user_data_set(&g_midi1_timer, (void *)midi1_dev_arg);
 }
 
 /*
@@ -53,18 +53,18 @@ void midi1_clock_init(const struct device *midi1_dev_arg)
  */
 void midi1_clock_start(uint32_t interval_us)
 {
-        if (interval_us == 0u) {
-                return;
-        }
-        atomic_set(&g_midi1_running, 1);
-        k_timer_start(&g_midi1_timer, K_USEC(interval_us), K_USEC(interval_us));
+	if (interval_us == 0u) {
+		return;
+	}
+	atomic_set(&g_midi1_running, 1);
+	k_timer_start(&g_midi1_timer, K_USEC(interval_us), K_USEC(interval_us));
 }
 
 /* Stop the clock */
 void midi1_clock_stop(void)
 {
-        atomic_set(&g_midi1_running, 0);
-        k_timer_stop(&g_midi1_timer);
+	atomic_set(&g_midi1_running, 0);
+	k_timer_stop(&g_midi1_timer);
 }
 
 /* EOF */

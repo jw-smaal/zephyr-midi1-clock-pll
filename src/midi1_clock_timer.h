@@ -5,10 +5,10 @@
  *
  * By Jan-Willem Smaal <usenet@gispen.org> 20251214
  */
-#include <zephyr/kernel.h>      /* k_timer */
-#include <zephyr/sys/atomic.h>  /* atomic_t, atomic_get/set */
-#include <stdint.h>             /* uint32_t, uint16_t */
-#include <stddef.h>             /* NULL */
+#include <zephyr/kernel.h>	/* k_timer */
+#include <zephyr/sys/atomic.h>	/* atomic_t, atomic_get/set */
+#include <stdint.h>		/* uint32_t, uint16_t */
+#include <stddef.h>		/* NULL */
 
 /*
  * Initialize MIDI clock subsystem with your MIDI device handle. Call once at
@@ -25,5 +25,5 @@ void midi1_clock_start(uint32_t interval_us);
 /* Stop the clock */
 void midi1_clock_stop(void);
 
-#endif                          /* MIDI1_CLOCK_TIMER */
+#endif				/* MIDI1_CLOCK_TIMER */
 /* EOF */

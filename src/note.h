@@ -33,5 +33,5 @@ float noteToFreq(uint8_t midinote, int base_a4_note_freq);
 float noteToFreq(uint8_t midinote);
 uint8_t freqToMidiNote(float freq);
 
-#endif                          /* HARMONY_NOTE_H */
+#endif				/* HARMONY_NOTE_H */
 /* EOF */

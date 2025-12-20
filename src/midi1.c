@@ -14,27 +14,27 @@
  */
 struct midi_ump midi1_note_on(uint8_t channel, uint8_t key, uint8_t velocity)
 {
-        return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
-                                       UMP_MIDI_NOTE_ON,
-                                       channel & 0x0F,
-                                       key & MIDI_DATA, velocity & MIDI_DATA);
+	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
+				       UMP_MIDI_NOTE_ON,
+				       channel & 0x0F,
+				       key & MIDI_DATA, velocity & MIDI_DATA);
 }
 
 struct midi_ump midi1_note_off(uint8_t channel, uint8_t key, uint8_t velocity)
 {
-        return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
-                                       UMP_MIDI_NOTE_OFF,
-                                       channel & 0x0F,
-                                       key & MIDI_DATA, velocity & MIDI_DATA);
+	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
+				       UMP_MIDI_NOTE_OFF,
+				       channel & 0x0F,
+				       key & MIDI_DATA, velocity & MIDI_DATA);
 }
 
 struct midi_ump midi1_controlchange(uint8_t channel,
-                                    uint8_t controller, uint8_t val)
+				    uint8_t controller, uint8_t val)
 {
-        return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
-                                       UMP_MIDI_CONTROL_CHANGE,
-                                       channel & 0x0F,
-                                       controller & MIDI_DATA, val & MIDI_DATA);
+	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
+				       UMP_MIDI_CONTROL_CHANGE,
+				       channel & 0x0F,
+				       controller & MIDI_DATA, val & MIDI_DATA);
 }
 
 /*
@@ -42,9 +42,9 @@ struct midi_ump midi1_controlchange(uint8_t channel,
  */
 struct midi_ump midi1_channelaftertouch(uint8_t channel, uint8_t val)
 {
-        return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
-                                       UMP_MIDI_CHAN_AFTERTOUCH,
-                                       channel & 0x0F, val & MIDI_DATA, 0);
+	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
+				       UMP_MIDI_CHAN_AFTERTOUCH,
+				       channel & 0x0F, val & MIDI_DATA, 0);
 }
 
 /*
@@ -53,10 +53,10 @@ struct midi_ump midi1_channelaftertouch(uint8_t channel, uint8_t val)
  */
 struct midi_ump midi1_polyaftertouch(uint8_t channel, uint8_t key, uint8_t val)
 {
-        return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
-                                       UMP_MIDI_AFTERTOUCH,
-                                       channel & 0x0F,
-                                       key & MIDI_DATA, val & MIDI_DATA);
+	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
+				       UMP_MIDI_AFTERTOUCH,
+				       channel & 0x0F,
+				       key & MIDI_DATA, val & MIDI_DATA);
 }
 
 /**
@@ -65,7 +65,7 @@ struct midi_ump midi1_polyaftertouch(uint8_t channel, uint8_t key, uint8_t val)
  */
 struct midi_ump midi1_modwheel(uint8_t channel, uint8_t val)
 {
-        return midi1_controlchange(channel, CTL_MSB_MODWHEEL, val);
+	return midi1_controlchange(channel, CTL_MSB_MODWHEEL, val);
 }
 
 /**
@@ -75,7 +75,7 @@ struct midi_ump midi1_modwheel(uint8_t channel, uint8_t val)
  */
 struct midi_ump midi1_modwheellsb(uint8_t channel, uint8_t val)
 {
-        return midi1_controlchange(channel, CTL_LSB_MODWHEEL, val);
+	return midi1_controlchange(channel, CTL_LSB_MODWHEEL, val);
 }
 
 /**
@@ -85,10 +85,10 @@ struct midi_ump midi1_modwheellsb(uint8_t channel, uint8_t val)
  */
 struct midi_ump midi1_pitchwheel(uint8_t channel, uint16_t val)
 {
-        return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
-                                       UMP_MIDI_PITCH_BEND,
-                                       channel & 0x0F,
-                                       val & MIDI_DATA, (val >> 7) & MIDI_DATA);
+	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
+				       UMP_MIDI_PITCH_BEND,
+				       channel & 0x0F,
+				       val & MIDI_DATA, (val >> 7) & MIDI_DATA);
 }
 
 /**
@@ -97,25 +97,25 @@ struct midi_ump midi1_pitchwheel(uint8_t channel, uint16_t val)
 /* Timing Clock */
 struct midi_ump midi1_timing_clock(void)
 {
-        return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_TIMING_CLOCK, 0, 0);
+	return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_TIMING_CLOCK, 0, 0);
 }
 
 /* Start */
 struct midi_ump midi1_start(void)
 {
-        return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_START, 0, 0);
+	return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_START, 0, 0);
 }
 
 /* Continue */
 struct midi_ump midi1_continue(void)
 {
-        return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_CONTINUE, 0, 0);
+	return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_CONTINUE, 0, 0);
 }
 
 /* Stop */
 struct midi_ump midi1_stop(void)
 {
-        return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_STOP, 0, 0);
+	return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_STOP, 0, 0);
 }
 
 /**
@@ -125,13 +125,13 @@ struct midi_ump midi1_stop(void)
 /* Active Sensing */
 struct midi_ump midi1_activesensing(void)
 {
-        return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_ACTIVE_SENSING, 0, 0);
+	return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_ACTIVE_SENSING, 0, 0);
 }
 
 /* Reset */
 struct midi_ump midi1_reset(void)
 {
-        return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_RESET, 0, 0);
+	return UMP_SYS_RT_COMMON(UMP_CHANNEL_GROUP, RT_RESET, 0, 0);
 }
 
 /*
@@ -155,75 +155,74 @@ struct midi_ump midi1_reset(void)
 #if OLD_CODE
 uint32_t sbpm_to_us_interval(uint16_t sbpm)
 {
-        if (sbpm == 0) {
-                return 0u;
-        } else {
-                uint64_t numer = (uint64_t) US_PER_SECOND * 60u * BPM_SCALE;
-                uint64_t res = numer / (uint64_t) sbpm;
-                return (uint32_t) res;
-        }
+	if (sbpm == 0) {
+		return 0u;
+	} else {
+		uint64_t numer = (uint64_t) US_PER_SECOND * 60u * BPM_SCALE;
+		uint64_t res = numer / (uint64_t) sbpm;
+		return (uint32_t) res;
+	}
 }
 
 uint16_t us_interval_to_sbpm(uint32_t interval)
 {
-        if (interval == 0) {
-                return 0u;
-        } else {
-                uint64_t numer = (uint64_t) US_PER_SECOND * 60u * BPM_SCALE;
-                uint64_t res = numer / (uint64_t) interval;
-                return (uint32_t) res;
-        }
+	if (interval == 0) {
+		return 0u;
+	} else {
+		uint64_t numer = (uint64_t) US_PER_SECOND * 60u * BPM_SCALE;
+		uint64_t res = numer / (uint64_t) interval;
+		return (uint32_t) res;
+	}
 }
 #endif
 
 uint32_t sbpm_to_us_interval(uint16_t sbpm)
 {
-		if (sbpm == 0) {
-				return 0u;
-		} else {
-				uint64_t numer = (uint64_t)US_PER_SECOND * 60u * BPM_SCALE;
-				uint64_t res = (numer + (sbpm/2u)) / (uint64_t)sbpm;
-				return (uint32_t)res;
-		}
+	if (sbpm == 0) {
+		return 0u;
+	} else {
+		uint64_t numer = (uint64_t) US_PER_SECOND * 60u * BPM_SCALE;
+		uint64_t res = (numer + (sbpm / 2u)) / (uint64_t) sbpm;
+		return (uint32_t) res;
+	}
 }
-
 
 uint16_t us_interval_to_sbpm(uint32_t interval)
 {
-		if (interval == 0) {
-				return 0u;
-		} else {
-				uint64_t numer = (uint64_t)US_PER_SECOND * 60u * BPM_SCALE;
-				uint64_t res = (numer + (interval/2u)) / (uint64_t)interval;
-				return (uint32_t)res;
-		}
+	if (interval == 0) {
+		return 0u;
+	} else {
+		uint64_t numer = (uint64_t) US_PER_SECOND * 60u * BPM_SCALE;
+		uint64_t res = (numer + (interval / 2u)) / (uint64_t) interval;
+		return (uint32_t) res;
+	}
 }
 
 uint32_t us_interval_to_24pqn(uint32_t interval)
 {
-        if (interval == 0) {
-                return 0u;
-        } else {
-                return (interval + 12u) / 24u;
-        }
+	if (interval == 0) {
+		return 0u;
+	} else {
+		return (interval + 12u) / 24u;
+	}
 }
 
 uint32_t pqn24_to_us_interval(uint32_t pqn24)
 {
-        if (pqn24 == 0) {
-                return 0u;
-        } else {
-                return pqn24 * 24;
-        }
+	if (pqn24 == 0) {
+		return 0u;
+	} else {
+		return (pqn24 * 24) + 12;
+	}
 }
 
 uint32_t sbpm_to_24pqn(uint16_t sbpm)
 {
-        if (sbpm == 0) {
-                return 0u;
-        } else {
-                return us_interval_to_24pqn(sbpm_to_us_interval(sbpm));
-        }
+	if (sbpm == 0) {
+		return 0u;
+	} else {
+		return us_interval_to_24pqn(sbpm_to_us_interval(sbpm));
+	}
 }
 
 /* -------------------------------------------------------------------------- */

@@ -1,6 +1,6 @@
 /*
  * implementation of midi1_clock_clock by Jan-Willem Smaal <usenet@gispen.org
- * this is a hardware based counter tested with NXP FRDM_MCXC242 in zephyr.  
+ * this is a hardware based counter tested with NXP FRDM_MCXC242 in zephyr.
  * 20251214
  */
 #include <zephyr/audio/midi.h>
@@ -18,22 +18,21 @@
 #include "midi1.h"
 #include "midi1_clock_counter.h"
 
-/* Timer and running flag */
 static atomic_t g_midi1_running_cntr = ATOMIC_INIT(0);
+static struct device *g_midi1_dev; 
+const struct device *g_counter_dev;
 
-/* static and kept local to the implementation */
-static void midi1_cntr_handler(const struct *midi_dev)
+/* This is the ISR/callback */ 
+static void midi1_cntr_handler(const struct device *dev, void *midi1_dev_arg)
 {
-        //void *midi_dev = k_timer_user_data_get(t);
-		void *midi_dev = user_data; 
-        //const struct device *midi1_dev = k_timer_user_data_get(t);
+	//g_midi1_dev = (struct device *)midi1_dev_arg;
 
-        if (!atomic_get(&g_midi1_running_cntr)) {
-                return;
-        }
-      //  if (midi1_dev) {
-      //          usbd_midi_send(midi1_dev, midi1_timing_clock());
-      //  }
+	if (!atomic_get(&g_midi1_running_cntr)) {
+		return;
+	}
+	if (g_midi1_dev) {
+		usbd_midi_send(g_midi1_dev, midi1_timing_clock());
+	}
 }
 
 /*
@@ -42,9 +41,16 @@ static void midi1_cntr_handler(const struct *midi_dev)
  */
 void midi1_clock_cntr_init(const struct device *midi1_dev_arg)
 {
-        atomic_set(&g_midi1_running_cntr, 0);
-      //  k_timer_init(&g_midi1_timer, midi1_timer_handler, NULL);
-      //  k_timer_user_data_set(&g_midi1_timer, (void *)midi1_dev_arg);
+	int err = 0;
+
+	atomic_set(&g_midi1_running_cntr, 0);
+	g_counter_dev = DEVICE_DT_GET(DT_NODELABEL(COUNTER_DEVICE));
+	if (!device_is_ready(g_counter_dev)) {
+		printk("Counter device not ready\n");
+		return;
+	}
+	g_midi1_dev = midi1_dev_arg;
+	return;
 }
 
 /*
@@ -53,18 +59,43 @@ void midi1_clock_cntr_init(const struct device *midi1_dev_arg)
  */
 void midi1_clock_cntr_start(uint32_t interval_us)
 {
-        if (interval_us == 0u) {
-                return;
-        }
-        atomic_set(&g_midi1_running_cntr, 1);
-       // k_timer_start(&g_midi1_timer, K_USEC(interval_us), K_USEC(interval_us));
+	int err = 0;
+	if (interval_us == 0u) {
+		return;
+	}
+	atomic_set(&g_midi1_running_cntr, 1);
+
+	uint32_t ticks = counter_us_to_ticks(g_counter_dev, interval_us); 
+
+
+	/* Configure top value: e.g. 1 second at 48 MHz clock */
+	struct counter_top_cfg top_cfg = {
+		.callback = midi1_cntr_handler,
+		.user_data = g_midi1_dev,
+		//.ticks = 48000000U,
+		.ticks = ticks,
+		.flags = 0,
+	};
+
+	err = counter_set_top_value(g_counter_dev, &top_cfg);
+	if (err != 0) {
+		printk("Failed to set top value: %d\n", err);
+		return;
+	}
+
+	/* Start the counter */
+	err = counter_start(g_counter_dev);
+	if (err != 0) {
+		printk("Failed to start counter: %d\n", err);
+		return;
+	}
 }
 
 /* Stop the clock */
 void midi1_clock_cntr_stop(void)
 {
-        atomic_set(&g_midi1_running_cntr, 0);
-        //k_timer_stop(&g_midi1_timer);
+	atomic_set(&g_midi1_running_cntr, 0);
+	//k_timer_stop(&g_midi1_timer);
 }
 
 /* EOF */
