@@ -1,5 +1,6 @@
 /*
  * implementation of midi1_clock_timer by Jan-Willem Smaal <usenet@gispen.org
+ * this is a software timer in zephyr.  
  * 20251214
  */
 #include <zephyr/audio/midi.h>

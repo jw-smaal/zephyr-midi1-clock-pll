@@ -37,12 +37,21 @@
 #include "midi1_clock_timer.h"
 
 /**
+ * Functions for the MIDI clock timer.
+ */
+#include "midi1_clock_counter.h"
+
+/**
  * -- == Device Tree stuff == --
  */
 #define USB_MIDI_DT_NODE DT_NODELABEL(usb_midi)
 static const struct device *const midi = DEVICE_DT_GET(USB_MIDI_DT_NODE);
-static struct gpio_dt_spec led =
-GPIO_DT_SPEC_GET_OR(DT_ALIAS(led0), gpios, { 0 });
+
+/* LED's */
+static struct gpio_dt_spec led0 = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
+static struct gpio_dt_spec led1 = GPIO_DT_SPEC_GET(DT_ALIAS(led1), gpios);
+static struct gpio_dt_spec led2 = GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios);
+
 
 /* We want logging */
 LOG_MODULE_REGISTER(sample_usb_midi, LOG_LEVEL_INF);
@@ -92,8 +101,10 @@ static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 static void on_device_ready(const struct device *dev, const bool ready)
 {
         /* Light up the LED (if any) when USB-MIDI2.0 is enabled */
-        if (led.port) {
-                gpio_pin_set_dt(&led, ready);
+        if (led0.port) {
+                gpio_pin_set_dt(&led0, ready);
+				k_msleep(700);
+				gpio_pin_toggle_dt(&led0);
         }
 }
 
@@ -113,12 +124,21 @@ int main_midi_init()
                 LOG_ERR("MIDI device not ready");
                 return -1;
         }
-        if (led.port) {
-                if (gpio_pin_configure_dt(&led, GPIO_OUTPUT)) {
-                        LOG_ERR("Unable to setup LED, not using it");
-                        memset(&led, 0, sizeof(led));
+        if (led0.port && led1.port && led2.port) {
+                if (gpio_pin_configure_dt(&led0, GPIO_OUTPUT)) {
+                        LOG_ERR("Unable to setup LED0, not using it");
+                        memset(&led0, 0, sizeof(led0));
                 }
+				if (gpio_pin_configure_dt(&led1, GPIO_OUTPUT)) {
+						LOG_ERR("Unable to setup LED1, not using it");
+						memset(&led1, 0, sizeof(led1));
+				}
+				if (gpio_pin_configure_dt(&led2, GPIO_OUTPUT)) {
+						LOG_ERR("Unable to setup LED2, not using it");
+						memset(&led2, 0, sizeof(led2));
+				}
         }
+	
         usbd_midi_set_ops(midi, &ops);
 
         sample_usbd = sample_usbd_init_device(NULL);
@@ -133,6 +153,7 @@ int main_midi_init()
         LOG_INF("USB device support enabled");
         return 0;
 }
+
 
 /**
  * Main thread - this may actually terminate normally (code 0) in zephyr.
@@ -156,15 +177,26 @@ int main(void)
         LOG_INF("main: MIDI ready entering main() loop");
 
         midi1_clock_init(midi);
-        //midi_clock_stop();
-
+        midi1_clock_cntr_init(midi);
+	
         while (1) {
                 /* Test tempo  */
-                for (int i = 8000u; i < 14000; i = i + 1000) {
+                for (int i = 4000u; i < 19000; i = i + 1000) {
+						if (led1.port) {
+							gpio_pin_toggle_dt(&led1);
+						}
+#if 0
+						/* Software timer implementation */ 
                         midi1_clock_stop();
                         midi1_clock_init(midi);
                         midi1_clock_start(sbpm_to_24pqn(i));
-                        k_msleep(10000);
+#endif 			
+						/* Hardware timer implementation */ 
+						midi1_clock_cntr_stop(); 
+						midi1_clock_cntr_init(midi); 
+						midi1_clock_cntr_start(sbpm_to_24pqn(i)); 
+
+                        k_msleep(7000);
                         controller = 1;
                         val = 0;
 
@@ -176,6 +208,9 @@ int main(void)
                                                                    val));
                                 val++;
                                 k_msleep(100);
+								if (led2.port) {
+									gpio_pin_toggle_dt(&led2);
+								}
                         }
                 }
         }

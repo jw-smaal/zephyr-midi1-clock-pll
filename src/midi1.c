@@ -152,6 +152,7 @@ struct midi_ump midi1_reset(void)
 #define BPM_SCALE      100u
 #define US_PER_SECOND  1000000u
 
+#if OLD_CODE
 uint32_t sbpm_to_us_interval(uint16_t sbpm)
 {
         if (sbpm == 0) {
@@ -173,13 +174,37 @@ uint16_t us_interval_to_sbpm(uint32_t interval)
                 return (uint32_t) res;
         }
 }
+#endif
+
+uint32_t sbpm_to_us_interval(uint16_t sbpm)
+{
+		if (sbpm == 0) {
+				return 0u;
+		} else {
+				uint64_t numer = (uint64_t)US_PER_SECOND * 60u * BPM_SCALE;
+				uint64_t res = (numer + (sbpm/2u)) / (uint64_t)sbpm;
+				return (uint32_t)res;
+		}
+}
+
+
+uint16_t us_interval_to_sbpm(uint32_t interval)
+{
+		if (interval == 0) {
+				return 0u;
+		} else {
+				uint64_t numer = (uint64_t)US_PER_SECOND * 60u * BPM_SCALE;
+				uint64_t res = (numer + (interval/2u)) / (uint64_t)interval;
+				return (uint32_t)res;
+		}
+}
 
 uint32_t us_interval_to_24pqn(uint32_t interval)
 {
         if (interval == 0) {
                 return 0u;
         } else {
-                return interval / 24;
+                return (interval + 12u) / 24u;
         }
 }
 
