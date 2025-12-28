@@ -160,8 +160,6 @@ struct midi_ump midi1_reset(void)
  *
  * It's better to use clock ticks.  so the spbm_to_ticks 
  */
-#define BPM_SCALE      100u
-#define US_PER_SECOND  1000000u
 
 uint32_t sbpm_to_us_interval(uint16_t sbpm)
 {

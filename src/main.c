@@ -41,6 +41,12 @@
  */
 #include "midi1_clock_counter.h"
 
+
+/**
+ * Functions for measuring incoming MIDI clock
+ */
+#include "midi1_clock_measure.h"
+
 /**
  * -- == Device Tree stuff == --
  */
@@ -97,7 +103,32 @@ static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 	case UMP_MT_UMP_STREAM:
 		ump_stream_respond(&responder_cfg, ump);
 		break;
+	case UMP_MT_SYS_RT_COMMON:
+		uint8_t status = UMP_MIDI_STATUS(ump);
+		switch (status) {
+			case RT_TIMING_CLOCK:   /* MIDI Clock */
+				midi1_clock_meas_pulse();
+				break;
+			case RT_START:   	/* Start */
+				midi1_clock_meas_init();
+				break;
+			case RT_CONTINUE:   	/* Continue */
+				/* optional: resume measurement */
+				break;
+			case RT_STOP:   	/* Stop */
+				midi1_clock_meas_init();
+				break;
+			default:
+				break;
+		}
+		break;
+	default:
+		printk("Unimplemented message %02X %02X %02X\n",
+			UMP_MIDI_STATUS(ump), UMP_MIDI1_P1(ump),
+			UMP_MIDI1_P2(ump));
+		break;
 	}
+
 }
 
 static void on_device_ready(const struct device *dev, const bool ready)
@@ -186,8 +217,8 @@ int main(void)
 		midi1_clock_cntr_init(midi);
 		/* Test tempo changes  */
 		for (int i = 4000u; i < 19000; i = i + 1000) {
+			midi1_clock_meas_init();
 			/* Hardware timer implementation */
-
 			printk("BPM is: %d clock_freq: %d\n",
 			       i,
 			       midi1_clock_cntr_cpu_frequency());
@@ -206,6 +237,11 @@ int main(void)
 								   val));
 				val++;
 				k_msleep(100);
+				/* Don't print this too often */
+				if(!(i%10)) {
+					printk("Measured BPM during: %u\n",
+					       midi1_clock_meas_get_sbpm());
+				}
 			}
 		}
 	}

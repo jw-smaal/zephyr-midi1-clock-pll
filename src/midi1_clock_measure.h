@@ -9,7 +9,7 @@
  * Call midi1_clock_meas_pulse() on each received MIDI clock tick.
  *
  * By Jan-Willem Smaal <usenet@gispen.org>
- * 2025-12-14
+ * 20251214
  */
 
 #ifndef MIDI1_CLOCK_MEASURE_H
@@ -17,6 +17,9 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+
+/* Some helper functions for MIDI1.0 by J-W Smaal */
+#include "midi1.h"
 
 /*
  * Initialize/reset the measurement state.

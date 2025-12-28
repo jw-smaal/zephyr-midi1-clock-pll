@@ -22,6 +22,8 @@
  */
 
 #include "midi1_clock_measure.h"
+/* Some helper functions for MIDI1.0 by J-W Smaal */
+#include "midi1.h"
 
 #include <zephyr/kernel.h>
 
@@ -30,11 +32,21 @@ static uint32_t g_last_ts_us;
 static uint32_t g_scaled_bpm;
 static bool     g_valid;
 
-/* Constant derived from:
+/*
+ * Constant derived from:
  * scaledBPM = (60 * 1_000_000 * 100) / (24 * interval_us)
  *           = 250000000 / interval_us
+ *
+ * so there are defined in "midi1.h"
+ * #define BPM_SCALE      100u
+ * #define US_PER_SECOND  1000000u
+ * Normally this should be:   250000000u
+ * and the result can be stored in a uint32_t
+ * however the intermediate value cannot fit into uint32_t
+ * that is why I am using "ull" during compile time.
  */
-#define MIDI1_SCALED_BPM_NUMERATOR  250000000u
+#define MIDI1_SCALED_BPM_NUMERATOR ((60ull * US_PER_SECOND * BPM_SCALE)/24ull)
+
 
 void midi1_clock_meas_init(void)
 {
