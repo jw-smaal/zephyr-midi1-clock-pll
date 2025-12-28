@@ -18,13 +18,17 @@
  * Initialize MIDI clock subsystem with your MIDI device handle. Call once at
  * startup before starting the clock.
  */
-void midi1_clock_cntr_init(const struct device *midi1_dev);
+void midi1_clock_cntr_init(struct device *midi1_dev);
+
+uint32_t midi1_clock_cntr_cpu_frequency(void);
 
 /*
- * Start periodic MIDI clock. interval_us must be > 0. Uses k_timer_start with
- * the same period for initial and repeat time.
+ * Start periodic MIDI clock. interval_us must be > 0. 
  */
 void midi1_clock_cntr_start(uint32_t interval_us);
+
+/* Start clock with MIDI ticks as argument (more accurate) */ 
+void midi1_clock_cntr_ticks_start(uint32_t ticks);
 
 /* Stop the clock */
 void midi1_clock_cntr_stop(void);

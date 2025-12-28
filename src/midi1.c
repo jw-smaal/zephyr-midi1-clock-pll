@@ -17,7 +17,8 @@ struct midi_ump midi1_note_on(uint8_t channel, uint8_t key, uint8_t velocity)
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
 				       UMP_MIDI_NOTE_ON,
 				       channel & 0x0F,
-				       key & MIDI_DATA, velocity & MIDI_DATA);
+				       key & MIDI_DATA,
+				       velocity & MIDI_DATA);
 }
 
 struct midi_ump midi1_note_off(uint8_t channel, uint8_t key, uint8_t velocity)
@@ -25,7 +26,8 @@ struct midi_ump midi1_note_off(uint8_t channel, uint8_t key, uint8_t velocity)
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
 				       UMP_MIDI_NOTE_OFF,
 				       channel & 0x0F,
-				       key & MIDI_DATA, velocity & MIDI_DATA);
+				       key & MIDI_DATA,
+				       velocity & MIDI_DATA);
 }
 
 struct midi_ump midi1_controlchange(uint8_t channel,
@@ -34,7 +36,8 @@ struct midi_ump midi1_controlchange(uint8_t channel,
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
 				       UMP_MIDI_CONTROL_CHANGE,
 				       channel & 0x0F,
-				       controller & MIDI_DATA, val & MIDI_DATA);
+				       controller & MIDI_DATA,
+				       val & MIDI_DATA);
 }
 
 /*
@@ -44,7 +47,8 @@ struct midi_ump midi1_channelaftertouch(uint8_t channel, uint8_t val)
 {
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
 				       UMP_MIDI_CHAN_AFTERTOUCH,
-				       channel & 0x0F, val & MIDI_DATA, 0);
+				       channel & 0x0F,
+				       val & MIDI_DATA, 0);
 }
 
 /*
@@ -56,7 +60,8 @@ struct midi_ump midi1_polyaftertouch(uint8_t channel, uint8_t key, uint8_t val)
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
 				       UMP_MIDI_AFTERTOUCH,
 				       channel & 0x0F,
-				       key & MIDI_DATA, val & MIDI_DATA);
+				       key & MIDI_DATA,
+				       val & MIDI_DATA);
 }
 
 /**
@@ -88,7 +93,8 @@ struct midi_ump midi1_pitchwheel(uint8_t channel, uint16_t val)
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
 				       UMP_MIDI_PITCH_BEND,
 				       channel & 0x0F,
-				       val & MIDI_DATA, (val >> 7) & MIDI_DATA);
+				       val & MIDI_DATA,
+				       (val >> 7) & MIDI_DATA);
 }
 
 /**
@@ -148,43 +154,51 @@ struct midi_ump midi1_reset(void)
  * Done so we can run it on a ARM M0+ without a FPU and the need
  * to compile in single precision math.
  * By Jan-Willem Smaal <usenet@gispen.org> 20251214
+ *
+ * Because microseconds is a bit too course for timing some of these calculations
+ * will be slightly off.
+ *
+ * It's better to use clock ticks.  so the spbm_to_ticks 
  */
 #define BPM_SCALE      100u
 #define US_PER_SECOND  1000000u
 
-#if OLD_CODE
 uint32_t sbpm_to_us_interval(uint16_t sbpm)
 {
 	if (sbpm == 0) {
 		return 0u;
 	} else {
 		uint64_t numer = (uint64_t) US_PER_SECOND * 60u * BPM_SCALE;
-		uint64_t res = numer / (uint64_t) sbpm;
+		//uint64_t res = (numer + (sbpm / 2u)) / (uint64_t) sbpm;
+		// Removed rounding due to double rounding  
+		uint64_t res = numer  / (uint64_t) sbpm;
 		return (uint32_t) res;
 	}
 }
 
-uint16_t us_interval_to_sbpm(uint32_t interval)
-{
-	if (interval == 0) {
-		return 0u;
-	} else {
-		uint64_t numer = (uint64_t) US_PER_SECOND * 60u * BPM_SCALE;
-		uint64_t res = numer / (uint64_t) interval;
-		return (uint32_t) res;
-	}
-}
-#endif
 
-uint32_t sbpm_to_us_interval(uint16_t sbpm)
+/* 
+ *Formula:
+ * ticks_per_pulse = (clock_hz * 60 * BPM_SCALE) / (24 * sbpm)
+ *
+ * BPM_SCALE = 100 (scaled BPM format)
+ * 60 / 24 = 2.5 → multiply by 5, divide by 2
+ *
+ * keep everything in 64-bit to avoid overflow.
+ */
+uint32_t sbpm_to_ticks(uint16_t sbpm, uint32_t clock_hz)
 {
-	if (sbpm == 0) {
+	if (sbpm == 0 || clock_hz == 0) {
 		return 0u;
-	} else {
-		uint64_t numer = (uint64_t) US_PER_SECOND * 60u * BPM_SCALE;
-		uint64_t res = (numer + (sbpm / 2u)) / (uint64_t) sbpm;
-		return (uint32_t) res;
 	}
+
+	const uint64_t numer = (uint64_t)clock_hz * 5ULL * 100ULL;  // 5 * BPM_SCALE
+	const uint64_t denom = (uint64_t)sbpm * 2ULL;               // divide by 2
+
+	/* Rounded division */
+	uint64_t ticks = (numer + (denom / 2ULL)) / denom;
+
+	return (uint32_t)ticks;
 }
 
 uint16_t us_interval_to_sbpm(uint32_t interval)

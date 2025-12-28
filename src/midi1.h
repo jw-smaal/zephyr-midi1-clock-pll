@@ -178,6 +178,7 @@ struct midi_ump midi1_reset(void);
 #define BPM_SCALE      100u
 #define US_PER_SECOND  1000000u
 uint32_t sbpm_to_us_interval(uint16_t sbpm);
+uint32_t sbpm_to_ticks(uint16_t sbpm, uint32_t clock_hz);
 uint16_t us_interval_to_sbpm(uint32_t interval);
 uint32_t us_interval_to_24pqn(uint32_t interval);
 uint32_t pqn24_to_us_interval(uint32_t pqn24);

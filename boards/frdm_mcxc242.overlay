@@ -15,6 +15,10 @@
 	};
 };
 
+&gpioc {
+    status = "okay";
+};
+
 / {
 	usb_midi: usb_midi {
 		compatible = "zephyr,midi2-device";
@@ -27,6 +31,14 @@
 			reg = <0 1>;
 			protocol = "midi1-up-to-128b";
 			label = "MIDI-IN-OUT";
+		};
+	};
+	leds {
+		compatible = "gpio-leds";
+		freq_out: freq_out {
+			/* PTC3 = port C, pin 3 */
+			gpios = <&gpioc 8 GPIO_ACTIVE_HIGH>;
+			label = "FREQ_OUT";
 		};
 	};
 };

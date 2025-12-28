@@ -89,6 +89,9 @@ static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 		LOG_INF("Send back MIDI1 message %02X %02X %02X",
 			UMP_MIDI_STATUS(ump), UMP_MIDI1_P1(ump),
 			UMP_MIDI1_P2(ump));
+		printk("Send back MIDI1 message %02X %02X %02X\n",
+			UMP_MIDI_STATUS(ump), UMP_MIDI1_P1(ump),
+			UMP_MIDI1_P2(ump));
 		usbd_midi_send(dev, ump);
 		break;
 	case UMP_MT_UMP_STREAM:
@@ -99,12 +102,14 @@ static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 
 static void on_device_ready(const struct device *dev, const bool ready)
 {
+#if 0 
 	/* Light up the LED (if any) when USB-MIDI2.0 is enabled */
 	if (led0.port) {
 		gpio_pin_set_dt(&led0, ready);
 		k_msleep(700);
 		gpio_pin_toggle_dt(&led0);
 	}
+#endif 
 }
 
 static const struct usbd_midi_ops ops = {
@@ -124,10 +129,10 @@ int main_midi_init()
 		return -1;
 	}
 	if (led0.port && led1.port && led2.port) {
-		if (gpio_pin_configure_dt(&led0, GPIO_OUTPUT)) {
-			LOG_ERR("Unable to setup LED0, not using it");
-			memset(&led0, 0, sizeof(led0));
-		}
+//		if (gpio_pin_configure_dt(&led0, GPIO_OUTPUT)) {
+//			LOG_ERR("Unable to setup LED0, not using it");
+//			memset(&led0, 0, sizeof(led0));
+//		}
 		if (gpio_pin_configure_dt(&led1, GPIO_OUTPUT)) {
 			LOG_ERR("Unable to setup LED1, not using it");
 			memset(&led1, 0, sizeof(led1));
@@ -159,7 +164,7 @@ int main_midi_init()
  */
 int main(void)
 {
-	uint8_t channel = 7;
+	uint8_t channel = 7; /* This is MIDI Channel 8 ! */
 	uint8_t controller = 1;
 	uint8_t value = 63;
 	uint8_t val = 32;
@@ -174,41 +179,33 @@ int main(void)
 	}
 	LOG_INF("main: MIDI ready entering main() loop");
 
-	//midi1_clock_init(midi);
 	midi1_clock_cntr_init(midi);
 
 	while (1) {
-		/* Test tempo  */
+		midi1_clock_cntr_stop();
+		midi1_clock_cntr_init(midi);
+		/* Test tempo changes  */
 		for (int i = 4000u; i < 19000; i = i + 1000) {
-			if (led1.port) {
-				gpio_pin_toggle_dt(&led1);
-			}
-
-			/* Software timer implementation */
-			//midi1_clock_stop();
-			// midi1_clock_init(midi);
-			//midi1_clock_start(sbpm_to_24pqn(i));
-
 			/* Hardware timer implementation */
-			midi1_clock_cntr_stop();
-			midi1_clock_cntr_init(midi);
-			midi1_clock_cntr_start(sbpm_to_24pqn(i));
 
+			printk("BPM is: %d clock_freq: %d\n",
+			       i,
+			       midi1_clock_cntr_cpu_frequency());
+			midi1_clock_cntr_ticks_start(
+				sbpm_to_ticks( i,
+					      midi1_clock_cntr_cpu_frequency()
+					      )
+				);
 			k_msleep(7000);
 			controller = 1;
 			val = 0;
-
 			for (int i = 0; i < 127; i++) {
-				/* usbd_midi_send(midi, midi1_timing_clock()); */
 				usbd_midi_send(midi,
 					       midi1_controlchange(channel,
 								   controller,
 								   val));
 				val++;
 				k_msleep(100);
-				if (led2.port) {
-					gpio_pin_toggle_dt(&led2);
-				}
 			}
 		}
 	}

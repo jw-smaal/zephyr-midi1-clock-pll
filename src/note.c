@@ -60,6 +60,7 @@ int noteToOct(uint8_t midinote)
 /*
  * This function converts a MIDI note to a frequency
  * it can use a custom pitch for the A4 note.
+ * TODO: implement in MCU friendly way....
  */
 float noteToFreqCustomA4(uint8_t midinote, int base_a4_note_freq)
 {
@@ -72,7 +73,7 @@ float noteToFreqCustomA4(uint8_t midinote, int base_a4_note_freq)
  * pow() match functions I use a precomputed lookup table.
  * A=440Hz is a given then.
  * TODO: possibly create multiple tables with some
- * TODO: variation in pitch of A4.
+ * TODO: variation in pitch of A4.  Flash size tradeoff.   
  */
 #include "midi_freq_table.h"
 float noteToFreq(uint8_t midinote)
