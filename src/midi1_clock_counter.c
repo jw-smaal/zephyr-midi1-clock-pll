@@ -160,7 +160,10 @@ void midi1_clock_cntr_start(uint32_t interval_us)
 	uint32_t ticks = counter_us_to_ticks(g_counter_dev, interval_us); 
 
 
-	/* Configure top value when it overflows the midi1_cntr_handler is called as an ISR */
+	/*
+	 * Configure top value when it overflows the midi1_cntr_handler is
+	 * called as an ISR
+	 */
 	struct counter_top_cfg top_cfg = {
 		.callback = midi1_cntr_handler,
 		.user_data = g_midi1_dev,
