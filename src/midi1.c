@@ -239,6 +239,20 @@ uint32_t sbpm_to_24pqn(uint16_t sbpm)
 	}
 }
 
+uint16_t pqn24_to_sbpm(uint32_t pqn24)
+{
+	if (pqn24 == 0u) {
+		return 0u;
+	}
+	
+	/* pqn24 = microseconds per tick
+	 * quarter-note interval = pqn24 * 24
+	 * SBPM = (60,000,000 * 100) / quarter-note interval
+	 */
+	uint32_t qn_interval_us = pqn24 * 24u;
+	return us_interval_to_sbpm(qn_interval_us);
+}
+
 
 const char *sbpm_to_str(uint16_t sbpm)
 {

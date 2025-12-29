@@ -53,6 +53,9 @@ uint32_t midi1_clock_meas_get_sbpm(void);
  */
 bool midi1_clock_meas_is_valid(void);
 
-/* -------------------------------------------------------------------------- */
+
+uint32_t midi1_clock_meas_last_timestamp(void);
+
+/*------------------------------------------------------------------- */
 #endif				/* MIDI1_CLOCK_MEASURE_H */
 /* EOF */

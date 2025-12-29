@@ -35,6 +35,9 @@ static uint32_t g_last_ts_us;
 static uint32_t g_scaled_bpm;
 static bool g_valid;
 
+/* Store timestamp of last MIDI clock tick */
+static uint32_t last_tick_timestamp_us = 0;
+
 /**
  * @code
  * Constant derived from:
@@ -62,7 +65,7 @@ void midi1_clock_meas_init(void)
 }
 
 /*
- * Get current monotonic timestamp in microseconds.
+ * Get current timestamp in microseconds.
  * Uses Zephyr's cycle counter and conversion helper.
  */
 static inline uint32_t midi1_clock_meas_get_us(void)
@@ -73,7 +76,11 @@ static inline uint32_t midi1_clock_meas_get_us(void)
 
 void midi1_clock_meas_pulse(void)
 {
+	
 	uint32_t now_us = midi1_clock_meas_get_us();
+	
+	/* Record timestamp for PLL */
+	last_tick_timestamp_us = now_us;
 	
 	if (g_last_ts_us != 0u) {
 		/* wrap-safe in uint32_t */
@@ -81,11 +88,6 @@ void midi1_clock_meas_pulse(void)
 		if (interval_us > 0u) {
 			uint32_t sbpm =
 			    MIDI1_SCALED_BPM_NUMERATOR / interval_us;
-
-			/* Optional simple smoothing:
-			 * g_scaled_bpm = (g_scaled_bpm * 3u + sbpm) / 4u;
-			 * For now, just take the latest value.
-			 */
 			g_scaled_bpm = sbpm;
 			g_valid = true;
 		}
@@ -105,4 +107,9 @@ uint32_t midi1_clock_meas_get_sbpm(void)
 bool midi1_clock_meas_is_valid(void)
 {
 	return g_valid;
+}
+
+uint32_t midi1_clock_meas_last_timestamp(void)
+{
+	return last_tick_timestamp_us;
 }

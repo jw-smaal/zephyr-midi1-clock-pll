@@ -39,7 +39,6 @@
  * #include "midi1_clock_timer.h"
  */
 
-
 /*
  * Functions for the MIDI clock timer.
  */
@@ -50,12 +49,10 @@
  */
 #include "midi1_clock_measure.h"
 
-
 /*
  * Functions to the MIDI incoming PLL sync
  */
 #include "midi1_clock_pll.h"
-
 
 /*
  * -- == Device Tree stuff == --
@@ -118,9 +115,13 @@ static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 		switch (status) {
 		case RT_TIMING_CLOCK:	/* MIDI Clock */
 			midi1_clock_meas_pulse();
+			/* Feed PLL with timestamp */
+			uint32_t t_in_us = midi1_clock_meas_last_timestamp();
+			midi1_pll_process_tick(t_in_us);
 			break;
 		case RT_START:	/* Start */
 			midi1_clock_meas_init();
+			midi1_pll_init(12000);   /* nominal 120.00 BPM */
 			break;
 		case RT_CONTINUE:	/* Continue */
 			/* optional: resume measurement */
@@ -240,6 +241,29 @@ void test_midi_implementation(void)
 	return;
 }
 
+/*
+ * Generate a clock loop it back to itself (externally e.g.
+ * using MIDI patchbay then measure the PLL
+ */
+void test_pll_clock(void)
+{
+	for(uint16_t lsbpm = 1000; lsbpm < 30000; lsbpm += 1000) {
+		
+		printk("Setting the generated BPM to %u\n", lsbpm);
+		midi1_clock_cntr_gen(midi, lsbpm);
+		/* Let it stabelize a bit */
+		k_msleep(2000);
+		
+		/* Take 10 samples over the next 10 seconds */
+		for (int i = 0; i < 10; i++ ) {
+			uint32_t tick_interval_pqn24 = midi1_pll_get_interval_us();
+			uint16_t sbpm = pqn24_to_sbpm(tick_interval_pqn24);
+			printk("PLL BPM: %s\n", sbpm_to_str(sbpm));
+			k_msleep(1000);
+		}
+	}
+	return;
+}
 
 
 /**
@@ -257,9 +281,9 @@ int main(void)
 
 	while (1) {
 		//test_midi_implementation();
-		midi1_clock_cntr_gen(midi, 6000);
-		/* Keep a stable clock for 10 seconds */
-		k_msleep(10000);
+		test_pll_clock();
+		/* Keep a stable clock for 1 second */
+		k_msleep(1000);
 	}
 	return 0;
 }

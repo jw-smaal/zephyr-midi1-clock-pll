@@ -25,9 +25,9 @@ void midi1_pll_init(uint16_t sbpm);
 void midi1_pll_process_tick(uint32_t t_in_us);
 
 /**
- * @brief Get the current PLL‑corrected interval in microseconds.
+ * @brief Get the current PLL‑corrected 24pqn interval in microseconds.
  *
- * @return Interval in microseconds for the next internal tick.
+ * @return Interval in microseconds for the next 24pqn internal tick.
  */
 uint32_t midi1_pll_get_interval_us(void);
 
