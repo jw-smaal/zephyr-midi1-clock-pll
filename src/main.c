@@ -271,18 +271,23 @@ void test_pll_clock(void)
 }
 
 /*
- * Sync the internal MIDI clock to the external PLL received one. 
+ * Sync the internal MIDI clock to the external PLL received one.
  */
 void test_external_sync(void)
 {
+	uint16_t previous_sbpm = 0;
 	
 	for (int i = 0; i < 10; i++ ) {
 		uint32_t tick_interval_pqn24 = midi1_pll_get_interval_us();
 		uint16_t sbpm = pqn24_to_sbpm(tick_interval_pqn24);
-		printk("PLL BPM: %s\n", sbpm_to_str(sbpm));
-		printk("Generated BPM: %s\n", sbpm_to_str(sbpm));
-		midi1_clock_cntr_gen(midi, sbpm);
-		k_msleep(300);
+		if (previous_sbpm/10 != sbpm/10 ) {
+			printk("PLL BPM: %s\n", sbpm_to_str(sbpm));
+			previous_sbpm = sbpm;
+		}
+		//printk("Generated BPM: %s\n", sbpm_to_str(sbpm));
+		//midi1_clock_cntr_gen(midi, sbpm);
+		midi1_clock_cntr_gen_sbpm(sbpm);
+		k_msleep(100);
 	}
 
 	return;
@@ -343,13 +348,13 @@ int main(void)
 		return -1;
 	}
 	printk("main: MIDI ready entering main() loop\n");
-
+	midi1_clock_cntr_gen(midi, 12000);
 	while (1) {
 		//test_midi_implementation();
 		//test_pll_clock();
+		
 		test_external_sync();
-		/* Keep a stable clock for 100 milli second */
-		k_msleep(100);
+		k_msleep(30);
 	}
 	return 0;
 }

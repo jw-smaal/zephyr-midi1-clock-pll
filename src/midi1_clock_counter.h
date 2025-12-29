@@ -41,5 +41,7 @@ void midi1_clock_cntr_stop(void);
  */
 void midi1_clock_cntr_gen(const struct device *midi, uint16_t sbpm);
 
+void midi1_clock_cntr_gen_sbpm(uint16_t sbpm);
+
 #endif				/* MIDI1_CLOCK_TIMER */
 /* EOF */

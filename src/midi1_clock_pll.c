@@ -10,8 +10,8 @@
 #include "midi1.h"		/* my sbpm_to_us_interval() */
 
 /* Loop filter constants */
-#define MIDI1_PLL_FILTER_K   16	/* Low‑pass filter strength */
-#define MIDI1_PLL_GAIN_G     32	/* Correction gain */
+#define MIDI1_PLL_FILTER_K   20	/* Low‑pass filter strength */
+#define MIDI1_PLL_GAIN_G     8	/* Correction gain */
 
 static uint32_t midi1_nominal_interval_us;
 static uint32_t midi1_internal_interval_us;

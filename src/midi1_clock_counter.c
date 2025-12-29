@@ -119,8 +119,8 @@ void midi1_clock_cntr_ticks_start(uint32_t ticks)
 	}
 	atomic_set(&g_midi1_running_cntr, 1);
 #if MIDI_CLOCK_ON_PIN
-	printk("Ticks requested: %u\n", ticks);
-#endif 
+	//printk("Ticks requested: %u\n", ticks);
+#endif
 	struct counter_top_cfg top_cfg = {
 		.callback = midi1_cntr_handler,
 		.user_data = (void *) g_midi1_dev,
@@ -201,6 +201,14 @@ void midi1_clock_cntr_gen(const struct device *midi_ptr, uint16_t sbpm) {
 				       sbpm,
 				       midi1_clock_cntr_cpu_frequency()
 				       );
+	
+	midi1_clock_cntr_ticks_start(ticks);
+}
+
+void midi1_clock_cntr_gen_sbpm(uint16_t sbpm) {
+	uint32_t ticks = sbpm_to_ticks(
+				sbpm,
+				midi1_clock_cntr_cpu_frequency());
 	
 	midi1_clock_cntr_ticks_start(ticks);
 }
