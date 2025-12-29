@@ -18,7 +18,7 @@
  * Initialize MIDI clock subsystem with your MIDI device handle. Call once at
  * startup before starting the clock.
  */
-void midi1_clock_cntr_init(struct device *midi1_dev);
+void midi1_clock_cntr_init(const struct device *midi1_dev);
 
 uint32_t midi1_clock_cntr_cpu_frequency(void);
 

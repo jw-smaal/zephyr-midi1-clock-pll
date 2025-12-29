@@ -6,6 +6,7 @@
  * @updated 20241224
  * @license SPDX-License-Identifier: Apache-2.0
  */
+#include <stdio.h>
 #include <zephyr/audio/midi.h>
 #include "midi1.h"
 

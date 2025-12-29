@@ -26,7 +26,7 @@
 #include "midi1_clock_counter.h"
 
 static atomic_t g_midi1_running_cntr = ATOMIC_INIT(0);
-static struct device *g_midi1_dev; 
+static const struct device *g_midi1_dev;
 const struct device *g_counter_dev;
 
 
@@ -91,10 +91,8 @@ uint32_t midi1_clock_cntr_cpu_frequency(void)
  * Initialize MIDI clock subsystem with the MIDI device handle. Call once at
  * startup before starting the clock.
  */
-void midi1_clock_cntr_init(struct device *midi1_dev_arg)
+void midi1_clock_cntr_init(const struct device *midi1_dev_arg)
 {
-	int err = 0;
-
 	atomic_set(&g_midi1_running_cntr, 0);
 	g_counter_dev = DEVICE_DT_GET(DT_NODELABEL(COUNTER_DEVICE));
 	if (!device_is_ready(g_counter_dev)) {
@@ -125,7 +123,7 @@ void midi1_clock_cntr_ticks_start(uint32_t ticks)
 #endif 
 	struct counter_top_cfg top_cfg = {
 		.callback = midi1_cntr_handler,
-		.user_data = g_midi1_dev,
+		.user_data = (void *) g_midi1_dev,
 		.ticks = ticks,
 		.flags = 0,
 	};
@@ -166,7 +164,7 @@ void midi1_clock_cntr_start(uint32_t interval_us)
 	 */
 	struct counter_top_cfg top_cfg = {
 		.callback = midi1_cntr_handler,
-		.user_data = g_midi1_dev,
+		.user_data = (void *) g_midi1_dev,
 		.ticks = ticks,
 		.flags = 0,
 	};
