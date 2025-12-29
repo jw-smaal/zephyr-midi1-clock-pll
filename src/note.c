@@ -1,5 +1,5 @@
 /** 
- * note.c 
+ * @file note.c 
  * 
  * @brief Generic MIDI and harmony related functions 
  * implemented in support of embedded systems in c. 
@@ -95,7 +95,7 @@ uint8_t freqToMidiNote(float freq)
 #endif
 
 /**
- * Convert a frequency value to the nearest MIDI note number.
+ * @brief Convert a frequency value to the nearest MIDI note number.
  *
  * This function uses a binary search over the precomputed MIDI note
  * frequency table (0–127).

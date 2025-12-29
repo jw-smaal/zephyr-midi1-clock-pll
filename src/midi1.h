@@ -1,11 +1,12 @@
 /**
- * midi1.h  
+ * @file midi1.h
+ * @brief MIDI1 helpers
  *
  * Created in 2014 for ATMEL AVR MCU's ported
  * to Zephyr RTOS in 2024 mainly for ARM based MCU's. 
  * @author Jan-Willem Smaal <usenet@gispen.org>
- * @updated 20241224
- * @updated 20252810  -> for Zephyr use with USB. 
+ * updated 20241224
+ * @date 20252810  -> for Zephyr use with USB.
  * @license SPDX-License-Identifier: Apache-2.0
  */
 #ifndef MIDI1_H

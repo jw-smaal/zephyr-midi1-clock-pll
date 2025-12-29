@@ -1,14 +1,16 @@
 /**
- * MIDI 1.0 into Universal MIDI Packet over USB by J-W Smaal
+ * @brief MIDI 1.0 into Universal MIDI Packet over USB by J-W Smaal
  * using a sensor value's to send MIDI1.0 encapsulated into UMP
- * over USB.
+ * over USB. Doing various things such as measure MIDI clock.
+ * generate a stable MIDI clock send some control changes etc...
+ *
  * @author Jan-Willem Smaal <usenet@gispen.org>
  *
- *
+ * ---
  * Adapted Original: Sample application for USB MIDI 2.0 device class
- * Copyright (c) 2024 Titouan Christophe
+ * @author Copyright (c) 2024 Titouan Christophe
  *
- * SPDX-License-Identifier: Apache-2.0
+ * @license SPDX-License-Identifier: Apache-2.0
  */
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
@@ -18,36 +20,37 @@
 
 /*
  * This is part of the MIDI2 library prj.conf
- * CONFIG_MIDI2_UMP_STREAM_RESPONDER=y /zephyr/lib/midi2/ump_stream_responder.h
- * it gets linked in and is required for the USB MIDI suppor.
+ * CONFIG_MIDI2_UMP_STREAM_RESPONDER=y
+ * /zephyr/lib/midi2/ump_stream_responder.h
+ * it gets linked in and is required for the USB MIDI support.
  */
 #include <sample_usbd.h>
 #include <zephyr/usb/class/usbd_midi2.h>
 #include <ump_stream_responder.h>
 
-/**
+/*
  * Functions for MIDI1 encapulation into UMP
  * by Jan-Willem Smaal <usenet@gispen.org>
  */
 #include "midi1.h"
 
-/**
+/*
  * Functions for the MIDI clock timer.
  * #include "midi1_clock_timer.h"
  */
 
 
-/**
+/*
  * Functions for the MIDI clock timer.
  */
 #include "midi1_clock_counter.h"
 
-/**
+/*
  * Functions for measuring incoming MIDI clock
  */
 #include "midi1_clock_measure.h"
 
-/**
+/*
  * -- == Device Tree stuff == --
  */
 #define USB_MIDI_DT_NODE DT_NODELABEL(usb_midi)
@@ -146,7 +149,7 @@ static const struct usbd_midi_ops ops = {
 	.ready_cb = on_device_ready,
 };
 
-/**
+/*
  * Init all the USB MIDI stuff in main.
  */
 int main_midi_init()
@@ -159,8 +162,8 @@ int main_midi_init()
 	}
 	if (led0.port && led1.port && led2.port) {
 		if (gpio_pin_configure_dt(&led0, GPIO_OUTPUT)) {
-                      LOG_ERR("Unable to setup LED0, not using it");
-                      memset(&led0, 0, sizeof(led0));
+			LOG_ERR("Unable to setup LED0, not using it");
+			memset(&led0, 0, sizeof(led0));
 		}
 		if (gpio_pin_configure_dt(&led1, GPIO_OUTPUT)) {
 			LOG_ERR("Unable to setup LED1, not using it");

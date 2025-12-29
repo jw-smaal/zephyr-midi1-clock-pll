@@ -1,11 +1,12 @@
-/*
- * MIDI 1.0 Clock BPM measurement (integer only, no FPU)
- *
+/**
+ * @brief MIDI 1.0 Clock BPM measurement (integer only, no FPU)
+ * @note
  * Scaled BPM representation (sbpm):
  *   1.00 BPM   -> 100
  *   100.00 BPM -> 10000
  *
- * Implementation notes:
+ * @note Implementation notes:
+ * @code
  *   - Uses Zephyr's cycle counter and k_cyc_to_us_floor32() for timing.
  *   - Pure integer math, no floating point, safe on ARM M0+.
  *   - Formula:
@@ -16,9 +17,11 @@
  *     With T_pulse in microseconds:
  *       scaledBPM = (60 * 1_000_000 * 100) / (24 * interval_us)
  *                 = 250000000 / interval_us
+ * @endcode
  *
- * By Jan-Willem Smaal <usenet@gispen.org>
- * 2025-12-14
+ * @author Jan-Willem Smaal <usenet@gispen.org>
+ * @date 20251214
+ * @license SPDX-License-Identifier: Apache-2.0
  */
 #include <zephyr/kernel.h>
 
@@ -32,14 +35,18 @@ static uint32_t g_last_ts_us;
 static uint32_t g_scaled_bpm;
 static bool g_valid;
 
-/*
+/**
+ * @code
  * Constant derived from:
  * scaledBPM = (60 * 1_000_000 * 100) / (24 * interval_us)
  *           = 250000000 / interval_us
  *
+ *
  * so there are defined in "midi1.h"
  * #define BPM_SCALE      100u
  * #define US_PER_SECOND  1000000u
+ * @endcode
+ * 
  * Normally this should be:   250000000u
  * and the result can be stored in a uint32_t
  * however the intermediate value cannot fit into uint32_t
