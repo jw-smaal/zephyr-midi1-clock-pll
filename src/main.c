@@ -16,6 +16,7 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/input/input.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/kernel.h>
 #include <stdio.h>
 
 /*
@@ -147,7 +148,11 @@ static void on_device_ready(const struct device *dev, const bool ready)
 	/* Light up the LED (if any) when USB-MIDI2.0 is enabled */
 	if (led0.port) {
 		gpio_pin_set_dt(&led0, ready);
-		k_msleep(700);
+		k_msleep(100);
+		gpio_pin_toggle_dt(&led0);
+		k_msleep(100);
+		gpio_pin_toggle_dt(&led0);
+		k_msleep(100);
 		gpio_pin_toggle_dt(&led0);
 	}
 }
@@ -173,10 +178,10 @@ int main_midi_init()
 			LOG_ERR("Unable to setup LED0, not using it");
 			memset(&led0, 0, sizeof(led0));
 		}
-		if (gpio_pin_configure_dt(&led1, GPIO_OUTPUT)) {
-			LOG_ERR("Unable to setup LED1, not using it");
-			memset(&led1, 0, sizeof(led1));
-		}
+		//if (gpio_pin_configure_dt(&led1, GPIO_OUTPUT)) {
+		//	LOG_ERR("Unable to setup LED1, not using it");
+		//	memset(&led1, 0, sizeof(led1));
+		//}
 		if (gpio_pin_configure_dt(&led2, GPIO_OUTPUT)) {
 			LOG_ERR("Unable to setup LED2, not using it");
 			memset(&led2, 0, sizeof(led2));
@@ -265,6 +270,66 @@ void test_pll_clock(void)
 	return;
 }
 
+/*
+ * Sync the internal MIDI clock to the external PLL received one. 
+ */
+void test_external_sync(void)
+{
+	
+	for (int i = 0; i < 10; i++ ) {
+		uint32_t tick_interval_pqn24 = midi1_pll_get_interval_us();
+		uint16_t sbpm = pqn24_to_sbpm(tick_interval_pqn24);
+		printk("PLL BPM: %s\n", sbpm_to_str(sbpm));
+		printk("Generated BPM: %s\n", sbpm_to_str(sbpm));
+		midi1_clock_cntr_gen(midi, sbpm);
+		k_msleep(300);
+	}
+
+	return;
+}
+
+
+/*-------------------- THREADS ------------------ */
+void led_blink_thread(void)
+{
+	if (!device_is_ready(led2.port)) {
+		printk("LED device not ready\n");
+		return;
+	}
+	
+	gpio_pin_configure_dt(&led2, GPIO_OUTPUT_INACTIVE);
+	gpio_pin_toggle_dt(&led2);
+	
+	while (1) {
+		/* Get current PLL tick interval (1/24 QN) */
+		uint32_t tick_us = midi1_pll_get_interval_us();
+		
+		/* Convert to quarter-note interval */
+		uint32_t qn_us = tick_us * 24u;
+		
+		/* Toggle LED */
+		gpio_pin_toggle_dt(&led2);
+		
+		/* if the qn_us is below like 4 seconds */
+		if(qn_us < 4000000) {
+			/* Sleep for 1/2  quarter note */
+			k_usleep(qn_us/2);
+		}
+		else {
+			/*
+			 * Sleep for one second if we get
+			 * strange values for qn_us > 4 seconds
+			 */
+			k_msleep(1000);
+			continue;
+		}
+	}
+}
+
+K_THREAD_DEFINE(led_blink_tid, 1024,
+		led_blink_thread, NULL, NULL, NULL,
+		5, 0, 0);
+
 
 /**
  * Main thread - this may actually terminate normally (code 0) in zephyr.
@@ -281,9 +346,10 @@ int main(void)
 
 	while (1) {
 		//test_midi_implementation();
-		test_pll_clock();
-		/* Keep a stable clock for 1 second */
-		k_msleep(1000);
+		//test_pll_clock();
+		test_external_sync();
+		/* Keep a stable clock for 100 milli second */
+		k_msleep(100);
 	}
 	return 0;
 }
