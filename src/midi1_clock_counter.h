@@ -1,9 +1,11 @@
 #ifndef MIDI1_CLOCK_TIMER
 #define MIDI1_CLOCK_TIMER
-/*
- * MIDI1.0 clock for zephyr RTOS using software timer.
+/**
+ * @brief MIDI1.0 clock for zephyr RTOS using software timer.
  *
- * By Jan-Willem Smaal <usenet@gispen.org> 20251214
+ * @author Jan-Willem Smaal <usenet@gispen.org>
+ * @date 20251214
+ * @license SPDX-License-Identifier: Apache-2.0
  */
 #include <zephyr/kernel.h>	/* k_timer */
 #include <zephyr/sys/atomic.h>	/* atomic_t, atomic_get/set */

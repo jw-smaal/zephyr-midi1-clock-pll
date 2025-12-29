@@ -1,7 +1,9 @@
-/*
- * implementation of midi1_clock_timer by Jan-Willem Smaal <usenet@gispen.org
- * this is a software timer in zephyr.  
- * 20251214
+/**
+ * @brief implementation of midi1_clock_timer software timer in zephyr.
+ * @author by Jan-Willem Smaal <usenet@gispen.org
+ *
+ * @date 20251214
+ * @license SPDX-License-Identifier: Apache-2.0
  */
 #include <zephyr/audio/midi.h>
 
