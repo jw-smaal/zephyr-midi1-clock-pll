@@ -189,4 +189,20 @@ void midi1_clock_cntr_stop(void)
 	atomic_set(&g_midi1_running_cntr, 0);
 }
 
+
+/**
+ * @brief Generate MIDI1.0 clock
+ */
+void midi1_clock_cntr_gen(const struct device *midi_ptr, uint16_t sbpm) {
+	midi1_clock_cntr_stop();
+	midi1_clock_cntr_init(midi_ptr);
+	
+	uint32_t ticks = sbpm_to_ticks(
+				       sbpm,
+				       midi1_clock_cntr_cpu_frequency()
+				       );
+	
+	midi1_clock_cntr_ticks_start(ticks);
+}
+
 /* EOF */

@@ -1,4 +1,3 @@
-
 /**
  * @file midi1_clock_pll.h
  * @brief Simple integer PLL for MIDI clock synchronization (24 PPQN).
@@ -6,8 +5,8 @@
  * @date 20251229
  * @license SPDX-License-Identifier: Apache-2.0
  */
-#ifndef MIDI1_PLL_H
-#define MIDI1_PLL_H
+#ifndef MIDI1_CLOCK_PLL_H
+#define MIDI1_CLOCK_PLL_H
 
 #include <stdint.h>
 

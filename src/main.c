@@ -50,6 +50,13 @@
  */
 #include "midi1_clock_measure.h"
 
+
+/*
+ * Functions to the MIDI incoming PLL sync
+ */
+#include "midi1_clock_pll.h"
+
+
 /*
  * -- == Device Tree stuff == --
  */
@@ -234,6 +241,7 @@ void test_midi_implementation(void)
 }
 
 
+
 /**
  * Main thread - this may actually terminate normally (code 0) in zephyr.
  * and the rest of threads keeps running just fine.
@@ -248,7 +256,10 @@ int main(void)
 	printk("main: MIDI ready entering main() loop\n");
 
 	while (1) {
-		test_midi_implementation();
+		//test_midi_implementation();
+		midi1_clock_cntr_gen(midi, 6000);
+		/* Keep a stable clock for 10 seconds */
+		k_msleep(10000);
 	}
 	return 0;
 }

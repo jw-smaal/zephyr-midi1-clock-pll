@@ -9,8 +9,8 @@
  * @updated 20241224
  * @license SPDX-License-Identifier: Apache-2.0
  */
-#ifndef HARMONY_NOTE_H
-#define HARMONY_NOTE_H
+#ifndef NOTE_H
+#define NOTE_H
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -33,5 +33,5 @@ float noteToFreq(uint8_t midinote, int base_a4_note_freq);
 float noteToFreq(uint8_t midinote);
 uint8_t freqToMidiNote(float freq);
 
-#endif				/* HARMONY_NOTE_H */
+#endif				/* NOTE_H */
 /* EOF */

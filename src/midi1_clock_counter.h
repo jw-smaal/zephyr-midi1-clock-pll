@@ -1,5 +1,5 @@
-#ifndef MIDI1_CLOCK_TIMER
-#define MIDI1_CLOCK_TIMER
+#ifndef MIDI1_CLOCK_COUNTER
+#define MIDI1_CLOCK_COUNTER
 /**
  * @brief MIDI1.0 clock for zephyr RTOS using software timer.
  *
@@ -34,6 +34,12 @@ void midi1_clock_cntr_ticks_start(uint32_t ticks);
 
 /* Stop the clock */
 void midi1_clock_cntr_stop(void);
+
+
+/**
+ * @brief Generate MIDI1.0 clock
+ */
+void midi1_clock_cntr_gen(const struct device *midi, uint16_t sbpm);
 
 #endif				/* MIDI1_CLOCK_TIMER */
 /* EOF */

@@ -6,7 +6,7 @@
  * @license SPDX-License-Identifier: Apache-2.0
  */
 
-#include "midi1_pll.h"
+#include "midi1_clock_pll.h"
 #include "midi1.h"		/* my sbpm_to_us_interval() */
 
 /* Loop filter constants */
@@ -21,7 +21,7 @@ static int32_t midi1_filtered_error = 0;
 
 void midi1_pll_init(uint16_t sbpm)
 {
-	midi1_nominal_interval_us = midi1_sbpm_to_us_interval(sbpm);
+	midi1_nominal_interval_us = sbpm_to_us_interval(sbpm);
 	midi1_internal_interval_us = midi1_nominal_interval_us;
 	midi1_next_expected_us = 0;
 	midi1_filtered_error = 0;
