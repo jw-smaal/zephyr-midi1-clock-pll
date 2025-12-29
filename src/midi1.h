@@ -160,6 +160,7 @@ struct midi_ump midi1_stop(void);
 struct midi_ump midi1_active_sensing(void);
 struct midi_ump midi1_reset(void);
 
+
 /*
  *------------------------------------------------------------------------------
  * MIDI tempo helpers.
@@ -173,17 +174,66 @@ struct midi_ump midi1_reset(void);
  * i.e. multiplied by 1000000
  * Done so we can run it on a ARM M0+ without a FPU and the need
  * to compile in single precision math.
- * By Jan-Willem Smaal <usenet@gispen.org> 20251214
+ *
  */
 #define BPM_SCALE      100u
 #define US_PER_SECOND  1000000u
-uint32_t sbpm_to_us_interval(uint16_t sbpm);
-uint32_t sbpm_to_ticks(uint16_t sbpm, uint32_t clock_hz);
-uint16_t us_interval_to_sbpm(uint32_t interval);
-uint32_t us_interval_to_24pqn(uint32_t interval);
-uint32_t pqn24_to_us_interval(uint32_t pqn24);
-uint32_t sbpm_to_24pqn(uint16_t sbpm);
-/* -------------------------------------------------------------------------- */
 
+/**
+ * @brief returns the interval in microseconds (us) for a given sbpm
+ * @param  sbpm   Scaled BPM value (e.g. 12000 for 120.00 BPM)
+ * @return interval in microseconds (us)
+ */
+uint32_t sbpm_to_us_interval(uint16_t sbpm);
+
+/**
+ * @brief returns the interval in clock ticks for a given sbpm
+ * @param sbpm   Scaled BPM value (e.g. 12000 for 120.00 BPM)
+ * @param clock_hz clock speed of the current processor
+ * @return interval clock ticks
+ */
+uint32_t sbpm_to_ticks(uint16_t sbpm, uint32_t clock_hz);
+
+/**
+ * @brief Convert a measured interval in microseconds to scaled BPM (sbpm).
+ *
+ * @param interval  Interval duration in microseconds (us)
+ * @return Scaled BPM value (e.g. 12000 for 120.00 BPM)
+ */
+uint16_t us_interval_to_sbpm(uint32_t interval);
+
+/**
+ * @brief Convert a measured interval in microseconds to 24‑PPQN period units.
+ *
+ * @param interval  Interval duration in microseconds (us)
+ * @return 24‑PPQN period value corresponding to the interval
+ */
+uint32_t us_interval_to_24pqn(uint32_t interval);
+
+/**
+ * @brief Convert a 24‑PPQN period value to an interval in microseconds.
+ *
+ * @param pqn24  24‑PPQN period value
+ * @return Interval duration in microseconds (us)
+ */
+uint32_t pqn24_to_us_interval(uint32_t pqn24);
+
+/**
+ * @brief Convert scaled BPM (sbpm) to a 24‑PPQN period value.
+ *
+ * @param sbpm  Scaled BPM value (e.g. 12000 for 120.00 BPM)
+ * @return 24‑PPQN period value corresponding to the BPM
+ */
+uint32_t sbpm_to_24pqn(uint16_t sbpm);
+
+/**
+ * @brief  Returns static string with the BPM formattted like 123.45
+ *
+ * @param  sbpm   Scaled BPM value (e.g. 12000 for 120.00 BPM)
+ * @return Pointer to a static buffer containing the formatted string "xxx.yy"
+ */
+const char *sbpm_to_str(uint16_t sbpm);
+
+/* -------------------------------------------------------------------------- */
 #endif
 /* EOF */

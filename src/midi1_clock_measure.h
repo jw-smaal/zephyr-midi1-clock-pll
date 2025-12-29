@@ -23,7 +23,8 @@
 
 /*
  * Initialize/reset the measurement state.
- * Call once at startup and whenever transport is restarted (MIDI Start, Stop, Continue).
+ * Call once at startup and whenever transport is restarted
+ * (MIDI Start, Stop, Continue).
  */
 void midi1_clock_meas_init(void);
 
@@ -47,4 +48,6 @@ uint32_t midi1_clock_meas_get_sbpm(void);
  */
 bool midi1_clock_meas_is_valid(void);
 
-#endif /* MIDI1_CLOCK_MEASURE_H */
+/* -------------------------------------------------------------------------- */
+#endif				/* MIDI1_CLOCK_MEASURE_H */
+/* EOF */

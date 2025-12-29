@@ -155,8 +155,8 @@ struct midi_ump midi1_reset(void)
  * to compile in single precision math.
  * By Jan-Willem Smaal <usenet@gispen.org> 20251214
  *
- * Because microseconds is a bit too course for timing some of these calculations
- * will be slightly off.
+ * Because microseconds is a bit too course for timing some of these
+ * calculations will be slightly off.
  *
  * It's better to use clock ticks.  so the spbm_to_ticks 
  */
@@ -176,7 +176,7 @@ uint32_t sbpm_to_us_interval(uint16_t sbpm)
 
 
 /* 
- *Formula:
+ * Formula:
  * ticks_per_pulse = (clock_hz * 60 * BPM_SCALE) / (24 * sbpm)
  *
  * BPM_SCALE = 100 (scaled BPM format)
@@ -190,8 +190,9 @@ uint32_t sbpm_to_ticks(uint16_t sbpm, uint32_t clock_hz)
 		return 0u;
 	}
 
-	const uint64_t numer = (uint64_t)clock_hz * 5ULL * 100ULL;  // 5 * BPM_SCALE
-	const uint64_t denom = (uint64_t)sbpm * 2ULL;               // divide by 2
+	
+	const uint64_t numer = (uint64_t)clock_hz * 5ULL * 100ULL;
+	const uint64_t denom = (uint64_t)sbpm * 2ULL;
 
 	/* Rounded division */
 	uint64_t ticks = (numer + (denom / 2ULL)) / denom;
@@ -237,6 +238,20 @@ uint32_t sbpm_to_24pqn(uint16_t sbpm)
 	}
 }
 
-/* -------------------------------------------------------------------------- */
 
+const char *sbpm_to_str(uint16_t sbpm)
+{
+	/* Enough for "12345.67" + null */
+	static char buf[16];
+	
+	uint32_t whole = sbpm / 100u;   /* integer BPM */
+	uint32_t frac  = sbpm % 100u;   /* fractional part */
+	
+	/* Format:  whole.frac  (e.g. 120.00) */
+	snprintf(buf, sizeof(buf), "%u.%02u", whole, frac);
+	
+	return buf;
+}
+
+/* -------------------------------------------------------------------------- */
 /* EOF */

@@ -19,7 +19,7 @@
 /*
  * This is part of the MIDI2 library prj.conf
  * CONFIG_MIDI2_UMP_STREAM_RESPONDER=y /zephyr/lib/midi2/ump_stream_responder.h
- * it get's linked in.
+ * it gets linked in and is required for the USB MIDI suppor.
  */
 #include <sample_usbd.h>
 #include <zephyr/usb/class/usbd_midi2.h>
@@ -33,14 +33,14 @@
 
 /**
  * Functions for the MIDI clock timer.
+ * #include "midi1_clock_timer.h"
  */
-//#include "midi1_clock_timer.h"
+
 
 /**
  * Functions for the MIDI clock timer.
  */
 #include "midi1_clock_counter.h"
-
 
 /**
  * Functions for measuring incoming MIDI clock
@@ -96,8 +96,8 @@ static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 			UMP_MIDI_STATUS(ump), UMP_MIDI1_P1(ump),
 			UMP_MIDI1_P2(ump));
 		printk("Send back MIDI1 message %02X %02X %02X\n",
-			UMP_MIDI_STATUS(ump), UMP_MIDI1_P1(ump),
-			UMP_MIDI1_P2(ump));
+		       UMP_MIDI_STATUS(ump), UMP_MIDI1_P1(ump),
+		       UMP_MIDI1_P2(ump));
 		usbd_midi_send(dev, ump);
 		break;
 	case UMP_MT_UMP_STREAM:
@@ -106,26 +106,26 @@ static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 	case UMP_MT_SYS_RT_COMMON:
 		uint8_t status = UMP_MIDI_STATUS(ump);
 		switch (status) {
-			case RT_TIMING_CLOCK:   /* MIDI Clock */
-				midi1_clock_meas_pulse();
-				break;
-			case RT_START:   	/* Start */
-				midi1_clock_meas_init();
-				break;
-			case RT_CONTINUE:   	/* Continue */
-				/* optional: resume measurement */
-				break;
-			case RT_STOP:   	/* Stop */
-				midi1_clock_meas_init();
-				break;
-			default:
-				break;
+		case RT_TIMING_CLOCK:	/* MIDI Clock */
+			midi1_clock_meas_pulse();
+			break;
+		case RT_START:	/* Start */
+			midi1_clock_meas_init();
+			break;
+		case RT_CONTINUE:	/* Continue */
+			/* optional: resume measurement */
+			break;
+		case RT_STOP:	/* Stop */
+			midi1_clock_meas_init();
+			break;
+		default:
+			break;
 		}
 		break;
 	default:
 		printk("Unimplemented message %02X %02X %02X\n",
-			UMP_MIDI_STATUS(ump), UMP_MIDI1_P1(ump),
-			UMP_MIDI1_P2(ump));
+		       UMP_MIDI_STATUS(ump), UMP_MIDI1_P1(ump),
+		       UMP_MIDI1_P2(ump));
 		break;
 	}
 
@@ -133,14 +133,12 @@ static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 
 static void on_device_ready(const struct device *dev, const bool ready)
 {
-#if 0 
 	/* Light up the LED (if any) when USB-MIDI2.0 is enabled */
 	if (led0.port) {
 		gpio_pin_set_dt(&led0, ready);
 		k_msleep(700);
 		gpio_pin_toggle_dt(&led0);
 	}
-#endif 
 }
 
 static const struct usbd_midi_ops ops = {
@@ -160,10 +158,10 @@ int main_midi_init()
 		return -1;
 	}
 	if (led0.port && led1.port && led2.port) {
-//		if (gpio_pin_configure_dt(&led0, GPIO_OUTPUT)) {
-//			LOG_ERR("Unable to setup LED0, not using it");
-//			memset(&led0, 0, sizeof(led0));
-//		}
+		if (gpio_pin_configure_dt(&led0, GPIO_OUTPUT)) {
+                      LOG_ERR("Unable to setup LED0, not using it");
+                      memset(&led0, 0, sizeof(led0));
+		}
 		if (gpio_pin_configure_dt(&led1, GPIO_OUTPUT)) {
 			LOG_ERR("Unable to setup LED1, not using it");
 			memset(&led1, 0, sizeof(led1));
@@ -190,60 +188,64 @@ int main_midi_init()
 }
 
 /**
+ * We generate some tempo changes (wait 7 seconds) measure them as well
+ * sending some control changes for a while all 127 with 100ms intervals.
+ */
+void test_midi_implementation(void)
+{
+	uint8_t channel = 7;	/* This is MIDI Channel 8 ! */
+	uint8_t controller = 1;
+	uint8_t val = 32;
+	
+	midi1_clock_cntr_stop();
+	midi1_clock_cntr_init(midi);
+	
+	/* Test tempo changes  */
+	for (int i = 4000u; i < 19000; i = i + 1000) {
+		midi1_clock_meas_init();
+		/* Hardware timer implementation */
+		printk("BPM is: %d clock_freq: %d\n",
+		       i, midi1_clock_cntr_cpu_frequency());
+		midi1_clock_cntr_ticks_start(sbpm_to_ticks(i,
+							   midi1_clock_cntr_cpu_frequency
+							   ()
+							   )
+					     );
+		printk("Pretty print BPM: %s\n", sbpm_to_str(i));
+		k_msleep(7000);
+		controller = 1;
+		val = 0;
+		/* Test control changes */
+		for (int i = 0; i < 127; i++) {
+			usbd_midi_send(midi,
+				       midi1_controlchange(channel,
+							   controller,
+							   val));
+			val++;
+			k_msleep(100);
+			printk("Measured BPM during: %u\n",
+			       midi1_clock_meas_get_sbpm());
+		}
+	}
+	return;
+}
+
+
+/**
  * Main thread - this may actually terminate normally (code 0) in zephyr.
  * and the rest of threads keeps running just fine.
  */
 int main(void)
 {
-	uint8_t channel = 7; /* This is MIDI Channel 8 ! */
-	uint8_t controller = 1;
-	uint8_t value = 63;
-	uint8_t val = 32;
-	uint8_t key = 100;
-	uint8_t velocity = 100;
-	int ret;
-
 	/* Init the USB MIDI */
 	if (main_midi_init()) {
-		LOG_ERR("Failed to main_midi_init()");
+		printk("Failed to main_midi_init()\n");
 		return -1;
 	}
-	LOG_INF("main: MIDI ready entering main() loop");
-
-	midi1_clock_cntr_init(midi);
+	printk("main: MIDI ready entering main() loop\n");
 
 	while (1) {
-		midi1_clock_cntr_stop();
-		midi1_clock_cntr_init(midi);
-		/* Test tempo changes  */
-		for (int i = 4000u; i < 19000; i = i + 1000) {
-			midi1_clock_meas_init();
-			/* Hardware timer implementation */
-			printk("BPM is: %d clock_freq: %d\n",
-			       i,
-			       midi1_clock_cntr_cpu_frequency());
-			midi1_clock_cntr_ticks_start(
-				sbpm_to_ticks( i,
-					      midi1_clock_cntr_cpu_frequency()
-					      )
-				);
-			k_msleep(7000);
-			controller = 1;
-			val = 0;
-			for (int i = 0; i < 127; i++) {
-				usbd_midi_send(midi,
-					       midi1_controlchange(channel,
-								   controller,
-								   val));
-				val++;
-				k_msleep(100);
-				/* Don't print this too often */
-				if(!(i%10)) {
-					printk("Measured BPM during: %u\n",
-					       midi1_clock_meas_get_sbpm());
-				}
-			}
-		}
+		test_midi_implementation();
 	}
 	return 0;
 }

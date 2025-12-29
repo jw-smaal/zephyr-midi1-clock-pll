@@ -36,8 +36,13 @@
 	leds {
 		compatible = "gpio-leds";
 		freq_out: freq_out {
-			/* PTC3 = port C, pin 3 */
+			/* PTC8 = port C, pin 8 */
 			gpios = <&gpioc 8 GPIO_ACTIVE_HIGH>;
+			label = "FREQ_OUT";
+		};
+		rx_midi_clk: rx_midi_clk{
+			/* PTC3 = port A, pin 13 */
+			gpios = <&gpioa 13 GPIO_ACTIVE_HIGH>;
 			label = "FREQ_OUT";
 		};
 	};

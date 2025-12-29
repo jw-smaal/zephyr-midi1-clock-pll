@@ -20,17 +20,17 @@
  * By Jan-Willem Smaal <usenet@gispen.org>
  * 2025-12-14
  */
+#include <zephyr/kernel.h>
 
 #include "midi1_clock_measure.h"
+
 /* Some helper functions for MIDI1.0 by J-W Smaal */
 #include "midi1.h"
-
-#include <zephyr/kernel.h>
 
 /* Internal state */
 static uint32_t g_last_ts_us;
 static uint32_t g_scaled_bpm;
-static bool     g_valid;
+static bool g_valid;
 
 /*
  * Constant derived from:
@@ -47,12 +47,11 @@ static bool     g_valid;
  */
 #define MIDI1_SCALED_BPM_NUMERATOR ((60ull * US_PER_SECOND * BPM_SCALE)/24ull)
 
-
 void midi1_clock_meas_init(void)
 {
 	g_last_ts_us = 0u;
 	g_scaled_bpm = 0u;
-	g_valid      = false;
+	g_valid = false;
 }
 
 /*
@@ -70,11 +69,12 @@ void midi1_clock_meas_pulse(void)
 	uint32_t now_us = midi1_clock_meas_get_us();
 	
 	if (g_last_ts_us != 0u) {
-		uint32_t interval_us = now_us - g_last_ts_us; /* wrap-safe in uint32_t */
-		
+		/* wrap-safe in uint32_t */
+		uint32_t interval_us = now_us - g_last_ts_us;
 		if (interval_us > 0u) {
-			uint32_t sbpm = MIDI1_SCALED_BPM_NUMERATOR / interval_us;
-			
+			uint32_t sbpm =
+			    MIDI1_SCALED_BPM_NUMERATOR / interval_us;
+
 			/* Optional simple smoothing:
 			 * g_scaled_bpm = (g_scaled_bpm * 3u + sbpm) / 4u;
 			 * For now, just take the latest value.
@@ -83,8 +83,8 @@ void midi1_clock_meas_pulse(void)
 			g_valid = true;
 		}
 	}
-	
 	g_last_ts_us = now_us;
+	return;
 }
 
 uint32_t midi1_clock_meas_get_sbpm(void)
