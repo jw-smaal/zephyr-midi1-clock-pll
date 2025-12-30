@@ -55,6 +55,22 @@
  */
 #include "midi1_clock_pll.h"
 
+/* Provide the received 24pqn MIDI clock on a pin */
+#define RX_MIDI_CLOCK_ON_PIN 1
+#if RX_MIDI_CLOCK_ON_PIN
+#define RX_MIDI_CLK DT_NODELABEL(rx_midi_clk)
+static const struct gpio_dt_spec rx_midi_clk_pin = GPIO_DT_SPEC_GET(RX_MIDI_CLK, gpios);
+
+static void main_rx_midi_clk_gpio_init(void)
+{
+	int ret = gpio_pin_configure_dt(&rx_midi_clk_pin, GPIO_OUTPUT_INACTIVE);
+	if (ret < 0){
+		printk("Error configing pin\n");
+		return;
+	}
+}
+#endif
+
 /*
  * -- == Device Tree stuff == --
  */
@@ -119,10 +135,18 @@ static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 			/* Feed PLL with timestamp */
 			uint32_t t_in_us = midi1_clock_meas_last_timestamp();
 			midi1_pll_process_tick(t_in_us);
+#if RX_MIDI_CLOCK_ON_PIN
+			/*
+			 * Also toggle a PIN so we can measure
+			 * on the scope
+			 */
+			gpio_pin_toggle_dt(&rx_midi_clk_pin);
+#endif
+				
 			break;
 		case RT_START:	/* Start */
 			midi1_clock_meas_init();
-			midi1_pll_init(12000);   /* nominal 120.00 BPM */
+			//midi1_pll_init(12000);   /* nominal 120.00 BPM */
 			break;
 		case RT_CONTINUE:	/* Continue */
 			/* optional: resume measurement */
@@ -281,13 +305,12 @@ void test_external_sync(void)
 		uint32_t tick_interval_pqn24 = midi1_pll_get_interval_us();
 		uint16_t sbpm = pqn24_to_sbpm(tick_interval_pqn24);
 		if (previous_sbpm/10 != sbpm/10 ) {
-			printk("PLL BPM: %s\n", sbpm_to_str(sbpm));
+			//printk("PLL BPM: %s\n", sbpm_to_str(sbpm));
 			previous_sbpm = sbpm;
 		}
-		//printk("Generated BPM: %s\n", sbpm_to_str(sbpm));
-		//midi1_clock_cntr_gen(midi, sbpm);
-		midi1_clock_cntr_gen_sbpm(sbpm);
-		k_msleep(100);
+		//midi1_clock_cntr_gen_sbpm(sbpm);
+		midi1_clock_cntr_gen(midi, sbpm);
+		k_msleep(300);
 	}
 
 	return;
@@ -315,17 +338,18 @@ void led_blink_thread(void)
 		/* Toggle LED */
 		gpio_pin_toggle_dt(&led2);
 		
-		/* if the qn_us is below like 4 seconds */
-		if(qn_us < 4000000) {
+		/* if the qn_us makes somewhat sense */
+		if(qn_us < 2500000) {
 			/* Sleep for 1/2  quarter note */
 			k_usleep(qn_us/2);
 		}
 		else {
 			/*
-			 * Sleep for one second if we get
-			 * strange values for qn_us > 4 seconds
+			 * if we get strange large values for
+			 * qn_us > 2.5 seconds (1 BPM)
 			 */
-			k_msleep(1000);
+			k_msleep(100);
+			printk("Large value qn_us: %u\n", qn_us);
 			continue;
 		}
 	}
@@ -347,9 +371,15 @@ int main(void)
 		printk("Failed to main_midi_init()\n");
 		return -1;
 	}
+#if RX_MIDI_CLOCK_ON_PIN
+	main_rx_midi_clk_gpio_init();
+#endif
 	printk("main: MIDI ready entering main() loop\n");
-	midi1_clock_cntr_gen(midi, 12000);
+	//midi1_clock_cntr_gen(midi, 12000);
 	while (1) {
+		//printk("Generate MIDI at 120.00 BPM\n");
+		//midi1_clock_cntr_gen(midi, 12000);
+		//k_msleep(30000);
 		//test_midi_implementation();
 		//test_pll_clock();
 		

@@ -41,8 +41,8 @@
 			label = "FREQ_OUT";
 		};
 		rx_midi_clk: rx_midi_clk{
-			/* PTC3 = port A, pin 13 */
-			gpios = <&gpioa 13 GPIO_ACTIVE_HIGH>;
+			/* PTC3 = port A, pin 12 */
+			gpios = <&gpioa 12 GPIO_ACTIVE_HIGH>;
 			label = "FREQ_OUT";
 		};
 	};

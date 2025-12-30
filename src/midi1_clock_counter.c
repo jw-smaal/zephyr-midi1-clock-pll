@@ -56,22 +56,9 @@ static void midi1_debug_gpio_init(void)
  */ 
 static void midi1_cntr_handler(const struct device *dev, void *midi1_dev_arg)
 {
-	//g_midi1_dev = (struct device *)midi1_dev_arg;
-	static uint8_t cntr; 
 #if MIDI_CLOCK_ON_PIN
-	if (cntr >= 12) {
-		cntr = 1; 
-		/* Turn the PIN PTC8 on every MIDI clock ticks.
-		 * We use 12 instead of 24 so we get a nice
-		 * square wave exactly matching with
-		 */
-		gpio_pin_toggle_dt(&clock_pin);
-	}
-	else {
-		cntr++;
-		gpio_pin_toggle_dt(&clock_pin);
-	}
-#endif 
+	gpio_pin_toggle_dt(&clock_pin);
+#endif
 
 	if (!atomic_get(&g_midi1_running_cntr)) {
 		return;
@@ -88,8 +75,8 @@ uint32_t midi1_clock_cntr_cpu_frequency(void)
 }
 
 /*
- * Initialize MIDI clock subsystem with the MIDI device handle. Call once at
- * startup before starting the clock.
+ * Initialize MIDI clock subsystem with the MIDI device handle. Call
+ * once at startup before starting the clock.
  */
 void midi1_clock_cntr_init(const struct device *midi1_dev_arg)
 {

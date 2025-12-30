@@ -70,6 +70,11 @@ void midi1_clock_meas_init(void)
  */
 static inline uint32_t midi1_clock_meas_get_us(void)
 {
+	/*
+	 * TODO:
+	 * This is where it goes wrong !!!
+	 * should be using the PIT0 channel 1 counter instead.
+	 */
 	uint32_t cycles = k_cycle_get_32();
 	return k_cyc_to_us_floor32(cycles);
 }
