@@ -130,7 +130,23 @@ void midi1_clock_cntr_ticks_start(uint32_t ticks)
 	}
 }
 
-
+/* TODO: is not working with PIT!! BUG in my thinking */
+void midi1_clock_cntr_update_ticks(uint32_t new_ticks)
+{
+	struct counter_top_cfg top_cfg = {
+		.callback = midi1_cntr_handler,
+		.user_data = (void *)g_midi1_dev,
+		.ticks = new_ticks,
+		.flags = COUNTER_TOP_CFG_DONT_RESET,   /* <-- KEY */
+	};
+	
+	int err = counter_set_top_value(g_counter_dev, &top_cfg);
+	if (err != 0) {
+		printk("Failed to set top value: %d\n", err);
+		return;
+	}
+	//printk("Updating ticks to: %u\n", new_ticks);
+}
 
 /*
  * Start periodic MIDI clock. interval_us must be > 0. 
@@ -193,6 +209,7 @@ void midi1_clock_cntr_gen(const struct device *midi_ptr, uint16_t sbpm) {
 	midi1_clock_cntr_ticks_start(ticks);
 }
 
+
 void midi1_clock_cntr_gen_sbpm(uint16_t sbpm) {
 	uint32_t ticks = sbpm_to_ticks(
 				sbpm,
@@ -200,5 +217,17 @@ void midi1_clock_cntr_gen_sbpm(uint16_t sbpm) {
 	
 	midi1_clock_cntr_ticks_start(ticks);
 }
+
+#if 0
+void midi1_clock_cntr_gen_sbpm(uint16_t sbpm)
+{
+	uint32_t ticks = sbpm_to_ticks(
+				sbpm,
+				midi1_clock_cntr_cpu_frequency());
+	midi1_clock_cntr_update_ticks(ticks);   /* <-- new */
+}
+#endif
+
+
 
 /* EOF */

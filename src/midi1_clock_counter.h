@@ -32,6 +32,8 @@ void midi1_clock_cntr_start(uint32_t interval_us);
 /* Start clock with MIDI ticks as argument (more accurate) */ 
 void midi1_clock_cntr_ticks_start(uint32_t ticks);
 
+void midi1_clock_cntr_update_ticks(uint32_t new_ticks);
+
 /* Stop the clock */
 void midi1_clock_cntr_stop(void);
 

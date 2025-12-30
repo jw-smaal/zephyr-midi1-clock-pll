@@ -317,13 +317,14 @@ void test_external_sync(void)
 		uint32_t tick_interval_pqn24 = midi1_pll_get_interval_us();
 		uint16_t sbpm = pqn24_to_sbpm(tick_interval_pqn24);
 		if (previous_sbpm/10 != sbpm/10 ) {
-			printk("PLL BPM: %s\n", sbpm_to_str(sbpm));
+			//printk("PLL BPM: %s\n", sbpm_to_str(sbpm));
 			previous_sbpm = sbpm;
 		}
 		// Make sure cntr_gen is called somewhere earlier
-		midi1_clock_cntr_gen_sbpm(sbpm);
-		//midi1_clock_cntr_gen(midi, sbpm);
+		//midi1_clock_cntr_gen_sbpm(sbpm);
+		midi1_clock_cntr_gen(midi, sbpm);
 		k_msleep(3000);
+		//k_msleep(3000);
 	}
 
 	return;
@@ -388,16 +389,16 @@ int main(void)
 	main_rx_midi_clk_gpio_init();
 #endif
 	printk("main: MIDI ready entering main() loop\n");
-	//midi1_clock_cntr_gen(midi, 12000);
+	midi1_clock_cntr_gen(midi, 12000);
 	while (1) {
-		printk("Generate MIDI at 120.00 BPM\n");
-		midi1_clock_cntr_gen(midi, 12000);
+		//printk("Generate MIDI at 120.00 BPM\n");
+		//midi1_clock_cntr_gen(midi, 12000);
 		//k_msleep(10000);
 		//test_midi_implementation();
 		//test_pll_clock();
 		
 		test_external_sync();
-		k_msleep(30);
+		//k_msleep(300);
 	}
 	return 0;
 }
