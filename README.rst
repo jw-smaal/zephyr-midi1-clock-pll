@@ -5,6 +5,10 @@ Zephyr MIDI 1.0 Clock + PLL (MCX / FRDM)
 A hardware-accurate, integer-only MIDI 1.0 clock generator, PLL, and
 measurement subsystem for NXP MCX microcontrollers running Zephyr RTOS.
 
+based on usb-midi zephyr code from: 
+Copyright (c) 2024 Titouan Christophe
+SPDX-License-Identifier: Apache-2.0
+
 This project provides:
 
 * A **MIDI 1.0 clock generator** using a Zephyr ``counter`` device

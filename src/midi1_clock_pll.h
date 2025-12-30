@@ -29,6 +29,6 @@ void midi1_pll_process_tick(uint32_t t_in_us);
  *
  * @return Interval in microseconds for the next 24pqn internal tick.
  */
-uint32_t midi1_pll_get_interval_us(void);
+int32_t midi1_pll_get_interval_us(void);
 
 #endif				/* MIDI1_PLL_H */

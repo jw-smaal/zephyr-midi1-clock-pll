@@ -17,7 +17,7 @@
 /* ------------------------------------------------------------------ */
 /* Internal state */
 
-static const struct device *g_counter_dev = NULL;
+static const struct device *g_counter_dev_ch1 = NULL;
 
 static uint32_t g_last_ts_us = 0;
 static uint32_t g_scaled_bpm = 0;
@@ -36,33 +36,33 @@ static uint32_t g_last_tick_timestamp_us = 0;
 
 /* ------------------------------------------------------------------ */
 /* Read free-running counter and convert to microseconds */
-static inline uint32_t meas_now_us(void)
+static inline uint32_t midi1_clock_meas_now_us(void)
 {
 	uint32_t ticks = 0;
 
-	int err = counter_get_value(g_counter_dev, &ticks);
+	int err = counter_get_value(g_counter_dev_ch1, &ticks);
 	if (err != 0) {
 		return 0;
 	}
 
-	return counter_ticks_to_us(g_counter_dev, ticks);
+	return counter_ticks_to_us(g_counter_dev_ch1, ticks);
 }
 
 /* ------------------------------------------------------------------ */
 void midi1_clock_meas_cntr_init(void)
 {
 	g_last_ts_us = 0;
-	g_scaled_bpm = 0;
+	g_scaled_bpm = 12000;
 	g_valid = false;
 
-	g_counter_dev = DEVICE_DT_GET(DT_NODELABEL(COUNTER_DEVICE));
-	if (!device_is_ready(g_counter_dev)) {
+	g_counter_dev_ch1 = DEVICE_DT_GET(DT_NODELABEL(COUNTER_DEVICE_CH1));
+	if (!device_is_ready(g_counter_dev_ch1)) {
 		printk("Clock measurement counter device not ready\n");
 		return;
 	}
 
 	/* Start free-running counter */
-	int err = counter_start(g_counter_dev);
+	int err = counter_start(g_counter_dev_ch1);
 	if (err != 0) {
 		printk("Failed to start measurement counter: %d\n", err);
 	}
@@ -71,7 +71,7 @@ void midi1_clock_meas_cntr_init(void)
 /* ------------------------------------------------------------------ */
 void midi1_clock_meas_cntr_pulse(void)
 {
-	uint32_t now_us = meas_now_us();
+	uint32_t now_us = midi1_clock_meas_now_us();
 	g_last_tick_timestamp_us = now_us;
 
 	if (g_last_ts_us != 0) {
