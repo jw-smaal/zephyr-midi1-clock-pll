@@ -16,12 +16,16 @@
  * @date 20251230
  * @license SPDX-License-Identifier: Apache-2.0
  */
-
 #ifndef MIDI1_CLOCK_MEAS_CNTR_H
 #define MIDI1_CLOCK_MEAS_CNTR_H
 
 #include <stdint.h>
 #include <stdbool.h>
+
+
+#ifndef COUNTER_DEVICE_CH1
+#define COUNTER_DEVICE_CH1 pit0_channel1
+#endif
 
 /**
  * @brief Initialize the measurement subsystem.
@@ -47,9 +51,9 @@ uint32_t midi1_clock_meas_cntr_get_sbpm(void);
 bool midi1_clock_meas_cntr_is_valid(void);
 
 /**
- * @brief Returns the timestamp (µs) of the last MIDI Clock tick.
+ * @brief Returns the timestamp (microseconds) of the last MIDI Clock tick.
  * This is used by the PLL.
  */
 uint32_t midi1_clock_meas_cntr_last_timestamp(void);
 
-#endif /* MIDI1_CLOCK_MEAS_CNTR_H */
+#endif				/* MIDI1_CLOCK_MEAS_CNTR_H */

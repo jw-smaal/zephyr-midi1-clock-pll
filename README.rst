@@ -1,84 +1,148 @@
-.. zephyr:code-sample:: usb-midi2-device
-   :name: USB MIDI2 device
-   :relevant-api: usbd_api usbd_midi2 input_events
+===========================================
+Zephyr MIDI 1.0 Clock + PLL (MCX / FRDM)
+===========================================
 
-   Implements a simple USB MIDI loopback and keyboard device.
+A hardware-accurate, integer-only MIDI 1.0 clock generator, PLL, and
+measurement subsystem for NXP MCX microcontrollers running Zephyr RTOS.
 
-Overview
-********
+This project provides:
 
-This sample demonstrates how to implement a USB MIDI device. It can run on
-any board with a USB device controller. This sample sends all MIDI1 messages
-sent to the device back to the host. In addition, presses and release on
-input keys (such as the board user buttons) are sent as MIDI1 note on and
-note off events.
+* A **MIDI 1.0 clock generator** using a Zephyr ``counter`` device
+* A **hardware-timestamped MIDI clock measurement module**
+* A **fixed‑point PLL** for stabilizing incoming MIDI clock
+* Clean, explicit, maintainable C code suitable for ARM M0+
+* Verified timing on FRDM-MCXC242 using GPIO + oscilloscope
 
-The application exposes a single USB-MIDI interface with a single bidirectional
-group terminal. This allows exchanging data with the host on a "virtual wire"
-that carries MIDI1 messages, pretty much like a standard USB-MIDI in/out adapter
-would provide. The loopback acts as if a real MIDI cable was connected between
-the output and the input, and the input keys act as a MIDI keyboard.
+The design avoids ``k_cycle_get_32()`` and other OS‑scheduled timing
+sources. All timing is derived from a **free‑running hardware counter**
+for microsecond‑accurate measurement.
 
-Building and Running
-********************
+---------------------------------------
+Features
+---------------------------------------
 
-The code can be found in :zephyr_file:`samples/subsys/usb/midi`.
+* **24 PPQN MIDI clock generation**
+* **PLL‑based MIDI clock following**
+* **Hardware timestamping** of incoming MIDI Clock (0xF8)
+* **Integer‑only BPM math** (no FPU required)
+* **Scaled BPM representation** (e.g. 123.45 BPM → ``12345``)
+* **Zephyr‑compliant device model**
+* **USB‑MIDI 2.0 UMP support** (via Zephyr MIDI2 library)
+* Optional **GPIO clock output** for oscilloscope verification
 
-To build and flash the application:
+---------------------------------------
+Hardware Requirements
+---------------------------------------
 
-.. zephyr-app-commands::
-   :zephyr-app: samples/subsys/usb/midi
-   :board: nucleo_f429zi
-   :goals: build flash
-   :compact:
+Tested on:
 
-Using the MIDI interface
-************************
+* **NXP FRDM-MCXC242**
+* Zephyr RTOS (3.6+ recommended)
+* Any Zephyr-supported ``counter`` device with microsecond resolution
 
-Once this sample is flashed, connect the device USB port to a host computer
-with MIDI support. For example, on Linux, you can use alsa to access the device:
+The design is portable to other MCX boards or any MCU with a suitable
+hardware counter.
 
-.. code-block:: console
+---------------------------------------
+Repository Structure
+---------------------------------------
 
-  $ amidi -l
-  Dir Device    Name
-  IO  hw:2,1,0  Group 1 (USBD MIDI Sample)
+::
 
-On Mac OS you can use the system tool "Audio MIDI Setup" to view the device,
-see https://support.apple.com/guide/audio-midi-setup/set-up-midi-devices-ams875bae1e0/mac
+    src/
+      midi1_clock_counter.c        # MIDI clock generator (Zephyr counter)
+      midi1_clock_meas_cntr.c      # Hardware-timestamped measurement
+      midi1_pll.c                  # Fixed-point PLL
+      midi1.c / midi1.h            # MIDI helpers
+      main.c                       # UMP responder + integration
 
-The "USBD MIDI Sample" interface should also appear in any program with MIDI
-support; like your favorite Digital Audio Workstation or synthetizer. If you
-don't have any such program at hand, there are some webmidi programs online,
-for example: https://muted.io/piano/.
+    include/
+      midi1_clock_counter.h
+      midi1_clock_meas_cntr.h
+      midi1_pll.h
+      midi1.h
 
-Testing loopback
-****************
+---------------------------------------
+MIDI Clock Generation
+---------------------------------------
 
-Open a first shell, and start dumping MIDI events:
+Clock generation uses a Zephyr ``counter`` device configured with a
+periodic top value. Each overflow triggers an ISR that sends a MIDI
+Clock byte (0xF8).
 
-.. code-block:: console
+Example:
 
-  $ amidi -p hw:2,1,0 -d
+.. code-block:: c
+
+   uint32_t ticks = sbpm_to_ticks(sbpm, midi1_clock_cntr_cpu_frequency());
+   midi1_clock_cntr_ticks_start(ticks);
+
+The generator is fully hardware-driven and does not rely on threads or
+software timers.
+
+---------------------------------------
+MIDI Clock Measurement
+---------------------------------------
+
+Incoming MIDI Clock pulses are timestamped using a **free-running
+hardware counter**:
+
+.. code-block:: c
+
+   void midi1_clock_meas_cntr_pulse(void)
+   {
+       uint32_t now_us = meas_now_us();
+       ...
+   }
 
 
-Then, in a second shell, send some MIDI events (for example note-on/note-off):
+The BPM is computed using:
 
-.. code-block:: console
+.. code-block:: c
 
-  $ amidi -p hw:2,1,0 -S "90427f 804200"
+   scaledBPM = 250000000 / interval_us;
 
-These events should then appear in the first shell (dump)
+---------------------------------------
+PLL (Phase-Locked Loop)
+---------------------------------------
 
-On devboards with a user button, press it and observe that there are some note
-on/note off events delivered to the first shell (dump)
+The PLL smooths incoming MIDI clock timing and produces a stable,
+low-jitter internal tempo. It is designed for:
 
-.. code-block:: console
+* USB MIDI clock (jittery)
+* DIN MIDI clock (stable)
+* Internal loopback testing
 
-  $ amidi -p hw:2,1,0 -d
+The PLL operates entirely in integer math and is safe for ARM M0+.
 
-  90 40 7F
-  80 40 7F
-  90 40 7F
-  80 40 7F
-  [...]
+---------------------------------------
+Building
+---------------------------------------
+
+Standard Zephyr build:
+
+.. code-block:: sh
+
+   west build -b frdm_mcxc242
+
+---------------------------------------
+Running
+---------------------------------------
+
+Connect the board via USB. The project exposes:
+
+* USB-MIDI 2.0 UMP endpoint
+* Optional GPIO clock output for oscilloscope verification
+* PLL-stabilized internal tempo
+
+---------------------------------------
+License
+---------------------------------------
+
+Apache-2.0
+
+---------------------------------------
+Author
+---------------------------------------
+
+Jan-Willem Smaal <usenet@gispen.org>

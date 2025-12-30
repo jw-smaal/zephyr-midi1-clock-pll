@@ -17,9 +17,13 @@
 #define MIDI_CLOCK_ON_PIN 1
 
 #if MIDI_CLOCK_ON_PIN
-/* To measure MIDI clock externally we toggle a PIN and measure with the oscilloscope */ 
+/*
+ * To measure MIDI clock externally we toggle a PIN and measure with
+ * the oscilloscope
+ */
 #include <zephyr/drivers/gpio.h>
 #endif 
+
 
 /* MIDI helpers by J-W Smaal*/
 #include "midi1.h"
@@ -36,10 +40,7 @@ const struct device *g_counter_dev;
  */
 #if MIDI_CLOCK_ON_PIN
 #define CLOCK_FREQ_OUT DT_NODELABEL(freq_out)
-
-
 static const struct gpio_dt_spec clock_pin = GPIO_DT_SPEC_GET(CLOCK_FREQ_OUT, gpios);
-
 
 static void midi1_debug_gpio_init(void)
 {
