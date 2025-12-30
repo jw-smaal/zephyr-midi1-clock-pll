@@ -1,7 +1,7 @@
 
 /*
  * @file midi_clock_measure_counter.c
- * @brief MIDI 1.0 Clock BPM measurement using Zephyr counter device.
+ * @brief MIDI 1.0 Clock BPM measurement using Zephyr counter device.    (TODO: NOT TESTED! ) 
  * Hardware-accurate
  *
  * @author Jan-Willem Smaal <usenet@gispen.org>

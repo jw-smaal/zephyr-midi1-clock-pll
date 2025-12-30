@@ -3,6 +3,7 @@
  * @file midi_clock_measure_counter.h
  * @brief MIDI 1.0 Clock BPM measurement using Zephyr counter device.
  * @details
+ *  (TODO: NOT TESTED! ) 
  * Uses a free-running hardware counter to timestamp incoming MIDI Clock
  * (0xF8) pulses with microsecond precision.
  *
