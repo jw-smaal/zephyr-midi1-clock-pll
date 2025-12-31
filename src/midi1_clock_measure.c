@@ -36,14 +36,10 @@ static uint32_t g_last_interval_us;
 static uint16_t g_scaled_bpm;
 static bool g_valid;
 
-/* Store timestamp of last MIDI clock tick */
-//static uint32_t last_tick_timestamp_us = 0;
-//static uint32_t last_tick_interval_us = 0;
-
 /**
  * @code
  * Constant derived from:
- * scaledBPM = (60 * 1_000_000 * 100) / (24 * interval_us)
+ * scaledBPM = (60 seconds * 1_000_000 us * 100sbpm *) / (24 * interval_us)
  *           = 250000000 / interval_us
  *
  *
@@ -85,9 +81,6 @@ void midi1_clock_meas_pulse(void)
 {
 	
 	uint32_t now_us = midi1_clock_meas_get_us();
-	
-	/* Record timestamp for PLL */
-	//last_tick_timestamp_us = now_us;
 	
 	if (g_last_ts_us != 0u) {
 		/* wrap-safe in uint32_t */

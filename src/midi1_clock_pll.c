@@ -5,13 +5,18 @@
  * @date 20251229
  * @license SPDX-License-Identifier: Apache-2.0
  */
+#include <stdint.h>
+/* For printk only */
+#include <zephyr/kernel.h>
 
 #include "midi1_clock_pll.h"
 #include "midi1.h"		/* my sbpm_to_us_interval() */
 
 /* Loop filter constants */
-#define MIDI1_PLL_FILTER_K   16 /* Low‑pass filter strength */
-#define MIDI1_PLL_GAIN_G     8	/* Correction gain */
+#define MIDI1_PLL_FILTER_K   32 /* Low‑pass filter strength */
+#define MIDI1_PLL_GAIN_G     16	/* Correction gain */
+
+#define DEBUG_PLL 0
 
 static uint32_t midi1_nominal_interval_us;
 static int32_t midi1_internal_interval_us;
@@ -21,7 +26,7 @@ static int32_t midi1_filtered_error = 0;
 
 void midi1_pll_init(uint16_t sbpm)
 {
-	midi1_nominal_interval_us = sbpm_to_us_interval(sbpm);
+	midi1_nominal_interval_us = sbpm_to_24pqn(sbpm);
 	midi1_internal_interval_us = midi1_nominal_interval_us;
 	midi1_next_expected_us = 0;
 	midi1_filtered_error = 0;
@@ -39,28 +44,53 @@ void midi1_pll_process_tick(uint32_t t_in_us)
 	int32_t phase_error =
 	    (int32_t) t_in_us - (int32_t) midi1_next_expected_us;
 
+#if 0
+	/*
+	 * Wrap the phase error we constrain it into the range [-T, +T],
+	 * where T is the current interval:
+	 */
+	int32_t t = midi1_internal_interval_us;
+	//int32_t halft = t / 2;
+	
+	while (phase_error >  t) {
+		phase_error = phase_error - t;
+	}
+	while (phase_error < -t) {
+		phase_error = phase_error + t;
+	}
+#endif
+	
 	/* 2. Low‑pass filter the phase error */
 	midi1_filtered_error +=
 	    (phase_error - midi1_filtered_error) / MIDI1_PLL_FILTER_K;
+	
 
 	/* 3. Adjust internal interval */
 	int32_t correction = midi1_filtered_error / MIDI1_PLL_GAIN_G;
 	midi1_internal_interval_us = midi1_nominal_interval_us + correction;
 	
-#if 0
+#if MIDI1_CLOCK_PLL_CLAMP_TO_SANE_VALUES
 	/* Clamp to 20–300 BPM */
 	const int32_t MIN_INTERVAL_US = 2000000 / 20;
 	const int32_t MAX_INTERVAL_US = 2000000 / 300;
 
-	if (midi1_internal_interval_us < MAX_INTERVAL_US)
-		midi1_internal_interval_us = MAX_INTERVAL_US;
-	
-	if (midi1_internal_interval_us > MIN_INTERVAL_US)
+	if (midi1_internal_interval_us < MIN_INTERVAL_US)
 		midi1_internal_interval_us = MIN_INTERVAL_US;
+	
+	if (midi1_internal_interval_us > MAX_INTERVAL_US)
+		midi1_internal_interval_us = MAX_INTERVAL_US;
 #endif
 	
 	/* 4. Advance expected timestamp */
 	midi1_next_expected_us += midi1_internal_interval_us;
+	
+#if DEBUG_PLL
+	printk("PLL t=%u us  err=%d  filt=%d  int=%d\n",
+	       t_in_us,
+	       phase_error,
+	       midi1_filtered_error,
+	       midi1_internal_interval_us);
+#endif
 }
 
 int32_t midi1_pll_get_interval_us(void)

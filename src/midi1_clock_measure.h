@@ -52,8 +52,17 @@ uint16_t midi1_clock_meas_get_sbpm(void);
  */
 bool midi1_clock_meas_is_valid(void);
 
+/**
+ * @brief return the last measured interval
+ * @return interval in us
+ */
 uint32_t midi1_clock_meas_last_interval(void);
 
+
+/**
+ * @brief return the last timestamp
+ * @return free‑running 32‑bit timestamp in microseconds.
+ */
 uint32_t midi1_clock_meas_last_timestamp(void);
 
 /*------------------------------------------------------------------- */

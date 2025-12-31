@@ -41,19 +41,15 @@
 #include "midi1_clock_timer.h"
 
 /*
- * Functions for the MIDI clock timer.
- */
-//#include "midi1_clock_counter.h"
-
-/*
- * Functions for measuring incoming MIDI clock
+ * Functions for measuring incoming MIDI clock signals
+ * TODO: Note that #include "midi1_clock_measure_counter.h"  is
+ * TODO: not working! don't use
+ * TODO: this one.  Use only "midi1_clock_measure.h"
  */
 #include "midi1_clock_measure.h"
-//#include "midi1_clock_measure_counter.h"
-
 
 /*
- * Functions to the MIDI incoming PLL sync
+ * A Phase Locked Loop for MIDI.
  */
 #include "midi1_clock_pll.h"
 
@@ -81,7 +77,6 @@ static const struct device *const midi = DEVICE_DT_GET(USB_MIDI_DT_NODE);
 
 /* LED's */
 static struct gpio_dt_spec led0 = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
-//static struct gpio_dt_spec led1 = GPIO_DT_SPEC_GET(DT_ALIAS(led1), gpios);
 static struct gpio_dt_spec led2 = GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios);
 
 /* We want logging */
@@ -141,17 +136,14 @@ static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 			gpio_pin_toggle_dt(&rx_midi_clk_pin);
 #endif
 			midi1_clock_meas_pulse();
+			midi1_pll_process_tick(midi1_clock_meas_last_timestamp());
 			break;
 		case RT_START:	/* Start */
-			//midi1_clock_meas_init();
-			//midi1_clock_meas_cntr_init();
 			break;
 		case RT_CONTINUE:	/* Continue */
 			/* optional: resume measurement */
 			break;
 		case RT_STOP:	/* Stop */
-			//midi1_clock_meas_init();
-			//midi1_clock_meas_cntr_init();
 			break;
 		default:
 			break;
@@ -223,108 +215,18 @@ int main_midi_init()
 	/* Init the clock measurement system */
 	midi1_clock_init(midi);
 	midi1_clock_meas_init();
+	/* We init the PLL with something and adjust from there */
+	midi1_pll_init(12000);
 	
 	return 0;
 }
 
-#if USE_OBSOLETE_CODE
-/**
- * We generate some tempo changes (wait 7 seconds) measure them as well
- * sending some control changes for a while all 127 with 100ms intervals.
- */
-void test_midi_implementation(void)
-{
-	uint8_t channel = 7;	/* This is MIDI Channel 8 ! */
-	uint8_t controller = 1;
-	uint8_t val = 32;
-	
-	midi1_clock_cntr_stop();
-	midi1_clock_cntr_init(midi);
-	
-	/* Test tempo changes  */
-	for (int i = 4000u; i < 19000; i = i + 1000) {
-		midi1_clock_meas_init();
-		//midi1_clock_meas_cntr_init();
-		/* Hardware timer implementation */
-		printk("BPM is: %d clock_freq: %d\n",
-		       i, midi1_clock_cntr_cpu_frequency());
-		midi1_clock_cntr_ticks_start(sbpm_to_ticks(i,
-							   midi1_clock_cntr_cpu_frequency
-							   ()
-							   )
-					     );
-		printk("Pretty print BPM: %s\n", sbpm_to_str(i));
-		k_msleep(7000);
-		controller = 1;
-		val = 0;
-		/* Test control changes */
-		for (int i = 0; i < 127; i++) {
-			usbd_midi_send(midi,
-				       midi1_controlchange(channel,
-							   controller,
-							   val));
-			val++;
-			k_msleep(100);
-			printk("Measured BPM during: %u\n",
-			       midi1_clock_meas_get_sbpm());
-		}
-	}
-	return;
-}
-
-/*
- * Generate a clock loop it back to itself (externally e.g.
- * using MIDI patchbay then measure the PLL
- */
-void test_pll_clock(void)
-{
-	for(uint16_t lsbpm = 1000; lsbpm < 30000; lsbpm += 1000) {
-		
-		printk("Setting the generated BPM to %u\n", lsbpm);
-		midi1_clock_cntr_gen(midi, lsbpm);
-		/* Let it stabelize a bit */
-		k_msleep(2000);
-		
-		/* Take 10 samples over the next 10 seconds */
-		for (int i = 0; i < 10; i++ ) {
-			uint32_t tick_interval_pqn24 = midi1_pll_get_interval_us();
-			uint16_t sbpm = pqn24_to_sbpm(tick_interval_pqn24);
-			printk("PLL BPM: %s\n", sbpm_to_str(sbpm));
-			k_msleep(1000);
-		}
-	}
-	return;
-}
-
-/*
- * Sync the internal MIDI clock to the external PLL received one.
- */
-void test_external_sync(void)
-{
-	uint16_t previous_sbpm = 0;
-	midi1_clock_meas_init();
-	//midi1_clock_meas_cntr_init();
-	
-	for (int i = 0; i < 60; i++ ) {
-		uint32_t tick_interval_pqn24 = midi1_pll_get_interval_us();
-		uint16_t sbpm = pqn24_to_sbpm(tick_interval_pqn24);
-		if (previous_sbpm/10 != sbpm/10 ) {
-			printk("PLL BPM: %s\n", sbpm_to_str(sbpm));
-			previous_sbpm = sbpm;
-		}
-		// Make sure cntr_gen is called somewhere earlier
-		//midi1_clock_cntr_gen_sbpm(sbpm);
-		midi1_clock_cntr_gen(midi, sbpm);
-		k_msleep(3000);
-		//k_msleep(3000);
-	}
-
-	return;
-}
-#endif
-
-
 /*-------------------- THREADS ------------------ */
+
+/*
+ * This blinks LED2 (blue) in the interval received via MIDI on every
+ * quater note.
+ */
 void led_blink_thread(void)
 {
 	if (!device_is_ready(led2.port)) {
@@ -384,8 +286,12 @@ int main(void)
 	printk("main: Generate MIDI at 120.00 BPM\n");
 	midi1_clock_start_sbpm(12000);
 	while (1) {
-		printk("main: incoming BPM: %s\n",
-		       sbpm_to_str(midi1_clock_meas_get_sbpm()));
+		uint16_t raw_sbpm = midi1_clock_meas_get_sbpm();
+		printk("main:     BPM (raw): %s\n", sbpm_to_str(raw_sbpm));
+		uint16_t pll_sbpm = pqn24_to_sbpm(midi1_pll_get_interval_us());
+		printk("main: PLL BPM      : %s\n", sbpm_to_str(pll_sbpm));
+		uint32_t pll_int_pqn = midi1_pll_get_interval_us();
+		printk("main: PLL int [us] : %u\n", pll_int_pqn);
 		k_msleep(1000);
 	}
 	return 0;
