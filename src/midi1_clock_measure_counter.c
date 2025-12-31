@@ -19,12 +19,12 @@
 
 static const struct device *g_counter_dev_ch1 = NULL;
 
-static uint32_t g_last_ts_us = 0;
+static uint32_t g_last_ts_ticks = 0;
 static uint32_t g_scaled_bpm = 0;
 static bool g_valid = false;
 
 /* Timestamp exposed to PLL */
-static uint32_t g_last_tick_timestamp_us = 0;
+static uint32_t g_last_tick_timestamp_ticks = 0;
 
 /* ------------------------------------------------------------------ */
 /*
@@ -36,22 +36,24 @@ static uint32_t g_last_tick_timestamp_us = 0;
 
 /* ------------------------------------------------------------------ */
 /* Read free-running counter and convert to microseconds */
-static inline uint32_t midi1_clock_meas_now_us(void)
+static inline uint32_t midi1_clock_meas_now_ticks(void)
 {
 	uint32_t ticks = 0;
 
 	int err = counter_get_value(g_counter_dev_ch1, &ticks);
 	if (err != 0) {
 		return 0;
+		printk("counter_get_value error\n");
 	}
-
-	return counter_ticks_to_us(g_counter_dev_ch1, ticks);
+	//printk("number of ticks:%u\n", ticks);
+	/* Is decreasing over time */
+	return ticks;
 }
 
 /* ------------------------------------------------------------------ */
 void midi1_clock_meas_cntr_init(void)
 {
-	g_last_ts_us = 0;
+	g_last_ts_ticks = 0;
 	g_scaled_bpm = 12000;
 	g_valid = false;
 
@@ -71,19 +73,21 @@ void midi1_clock_meas_cntr_init(void)
 /* ------------------------------------------------------------------ */
 void midi1_clock_meas_cntr_pulse(void)
 {
-	uint32_t now_us = midi1_clock_meas_now_us();
-	g_last_tick_timestamp_us = now_us;
+	uint32_t now_ticks = midi1_clock_meas_now_ticks();
+	/* for the PLL to read e.g. */
+	g_last_tick_timestamp_ticks = now_ticks;
 
-	if (g_last_ts_us != 0) {
-		uint32_t interval_us = now_us - g_last_ts_us;	/* wrap-safe */
-		if (interval_us > 0) {
+	if (g_last_ts_ticks != 0) {
+		uint32_t interval_ticks = g_last_ts_ticks - now_ticks;
+		if (interval_ticks > 0) {
 			uint32_t sbpm =
-			    MIDI1_SCALED_BPM_NUMERATOR / interval_us;
+			    MIDI1_SCALED_BPM_NUMERATOR / interval_ticks;
 			g_scaled_bpm = sbpm;
+			/* Not correct because interval is now in ticks */
 			g_valid = true;
 		}
 	}
-	g_last_ts_us = now_us;
+	g_last_ts_ticks = now_ticks;
 }
 
 /* ------------------------------------------------------------------ */
@@ -99,7 +103,7 @@ bool midi1_clock_meas_cntr_is_valid(void)
 
 uint32_t midi1_clock_meas_cntr_last_timestamp(void)
 {
-	return g_last_tick_timestamp_us;
+	return g_last_tick_timestamp_ticks;
 }
 
 /* EOF */

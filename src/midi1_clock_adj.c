@@ -139,16 +139,12 @@ void midi1_clock_adj_start(uint32_t interval_us)
 
 	atomic_set(&g_interval_us, (atomic_val_t) interval_us);
 	g_sbpm = pqn24_to_sbpm(interval_us);
-
 	atomic_set(&g_running, 1);
-
 	k_work_schedule(&g_clk_work, K_USEC(interval_us));
 }
 
 void midi1_clock_adj_start_sbpm(uint16_t sbpm)
 {
-	// Removed: we need 24 pulses per quater note
-	//midi1_clock_adj_start(sbpm_to_us_interval(sbpm));
 	midi1_clock_adj_start(sbpm_to_24pqn(sbpm));
 }
 
@@ -165,8 +161,6 @@ void midi1_clock_adj_set_interval_us(uint32_t interval_us)
 	}
 
 	atomic_set(&g_interval_us, (atomic_val_t) interval_us);
-	// Removed the interval is in 24pqn not us
-	// g_sbpm = us_interval_to_sbpm(interval_us);
 	g_sbpm = pqn24_to_sbpm(interval_us);
 	
 	if (atomic_get(&g_running)) {

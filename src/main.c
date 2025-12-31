@@ -52,6 +52,7 @@
  * TODO: this one.  Use only "midi1_clock_measure.h"
  */
 #include "midi1_clock_measure.h"
+#include "midi1_clock_measure_counter.h"
 
 /*
  * A Phase Locked Loop for MIDI.
@@ -141,14 +142,16 @@ static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 			gpio_pin_toggle_dt(&rx_midi_clk_pin);
 #endif
 			midi1_clock_meas_pulse();
+			midi1_clock_meas_cntr_pulse();
 			uint32_t now_us = midi1_clock_meas_get_us();
 			midi1_pll_process_tick(now_us);
 			
-#if 0
+#if 1
 			/* Update generator right away */
 			uint32_t interval_us = midi1_pll_get_interval_us();
+				
+			/* Reschedule job as well */
 			midi1_clock_adj_set_interval_us(interval_us);
-			//midi1_pll_process_tick(midi1_clock_meas_last_timestamp());
 #endif
 			break;
 		case RT_START:	/* Start */
@@ -229,6 +232,7 @@ int main_midi_init()
 	// midi1_clock_init(midi);
 	midi1_clock_adj_init(midi);
 	midi1_clock_meas_init();
+	midi1_clock_meas_cntr_init();
 	/* We init the PLL with something and adjust from there */
 	midi1_pll_init(12000);
 	
@@ -297,13 +301,30 @@ int main(void)
 	main_rx_midi_clk_gpio_init();
 #endif
 	printk("main: MIDI ready entering main() loop\n");
-	printk("main: Generate MIDI at 120.00 BPM (for 30s) \n");
+	
+	
+	printk("main: Generate MIDI at 120.00 BPM\n");
 	//midi1_clock_start_sbpm(12000);
 	midi1_clock_adj_start_sbpm(12000);
+	
+#if 0
 	k_msleep(30000);
+	
+	printk("main: Generate MIDI at 20833 usec interval (for 30s) \n");
+	midi1_clock_adj_start(20833);
+	k_msleep(30000);
+	
+	printk("main: Generate MIDI at 41666 usec interval (for 30s) \n");
+	midi1_clock_adj_start(41666);
+	k_msleep(30000);
+#endif 
+	
 	while (1) {
 		uint16_t raw_sbpm = midi1_clock_meas_get_sbpm();
 		printk("main:     BPM (raw): %s\n", sbpm_to_str(raw_sbpm));
+		uint16_t raw_cntr_sbpm = midi1_clock_meas_cntr_get_sbpm();
+		printk("main cntr BPM (raw): %s\n", sbpm_to_str(raw_cntr_sbpm));
+		
 		uint16_t pll_sbpm = pqn24_to_sbpm(midi1_pll_get_interval_us());
 		printk("main: PLL BPM      : %s\n", sbpm_to_str(pll_sbpm));
 		/* Now adjust our own generated BPM... */
