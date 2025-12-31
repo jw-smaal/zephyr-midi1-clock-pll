@@ -42,7 +42,7 @@ void midi1_clock_meas_pulse(void);
  *
  * @return 0 if no valid measurement is available yet.
  */
-uint32_t midi1_clock_meas_get_sbpm(void);
+uint16_t midi1_clock_meas_get_sbpm(void);
 
 /**
  * @brief Returns true if the measurement has a valid BPM estimate.
@@ -52,6 +52,7 @@ uint32_t midi1_clock_meas_get_sbpm(void);
  */
 bool midi1_clock_meas_is_valid(void);
 
+uint32_t midi1_clock_meas_last_interval(void);
 
 uint32_t midi1_clock_meas_last_timestamp(void);
 

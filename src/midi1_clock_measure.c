@@ -32,11 +32,13 @@
 
 /* Internal state */
 static uint32_t g_last_ts_us;
-static uint32_t g_scaled_bpm;
+static uint32_t g_last_interval_us;
+static uint16_t g_scaled_bpm;
 static bool g_valid;
 
 /* Store timestamp of last MIDI clock tick */
-static uint32_t last_tick_timestamp_us = 0;
+//static uint32_t last_tick_timestamp_us = 0;
+//static uint32_t last_tick_interval_us = 0;
 
 /**
  * @code
@@ -60,6 +62,7 @@ static uint32_t last_tick_timestamp_us = 0;
 void midi1_clock_meas_init(void)
 {
 	g_last_ts_us = 0u;
+	g_last_interval_us = 0u;
 	g_scaled_bpm = 0u;
 	g_valid = false;
 }
@@ -72,8 +75,7 @@ static inline uint32_t midi1_clock_meas_get_us(void)
 {
 	/*
 	 * TODO:
-	 * This is where it goes wrong !!!
-	 * should be using the PIT0 channel 1 counter instead.
+	 * need to work on a free running clock implementation.
 	 */
 	uint32_t cycles = k_cycle_get_32();
 	return k_cyc_to_us_floor32(cycles);
@@ -85,11 +87,12 @@ void midi1_clock_meas_pulse(void)
 	uint32_t now_us = midi1_clock_meas_get_us();
 	
 	/* Record timestamp for PLL */
-	last_tick_timestamp_us = now_us;
+	//last_tick_timestamp_us = now_us;
 	
 	if (g_last_ts_us != 0u) {
 		/* wrap-safe in uint32_t */
 		uint32_t interval_us = now_us - g_last_ts_us;
+		g_last_interval_us = interval_us;
 		if (interval_us > 0u) {
 			uint32_t sbpm =
 			    MIDI1_SCALED_BPM_NUMERATOR / interval_us;
@@ -101,7 +104,7 @@ void midi1_clock_meas_pulse(void)
 	return;
 }
 
-uint32_t midi1_clock_meas_get_sbpm(void)
+uint16_t midi1_clock_meas_get_sbpm(void)
 {
 	if (!g_valid) {
 		return 0u;
@@ -114,7 +117,12 @@ bool midi1_clock_meas_is_valid(void)
 	return g_valid;
 }
 
+uint32_t midi1_clock_meas_last_interval(void)
+{
+	return g_last_interval_us;
+}
+
 uint32_t midi1_clock_meas_last_timestamp(void)
 {
-	return last_tick_timestamp_us;
+	return g_last_ts_us;
 }

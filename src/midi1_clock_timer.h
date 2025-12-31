@@ -25,5 +25,7 @@ void midi1_clock_start(uint32_t interval_us);
 /* Stop the clock */
 void midi1_clock_stop(void);
 
+void midi1_clock_start_sbpm(uint16_t sbpm);
+
 #endif				/* MIDI1_CLOCK_TIMER */
 /* EOF */
