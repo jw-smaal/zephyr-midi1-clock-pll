@@ -59,6 +59,25 @@ static uint16_t g_sbpm = 0;
 static atomic_t g_running = ATOMIC_INIT(0);
 
 
+/*
+ * MIDI clock measurement on a PIN.
+ * I used PTC8 on the FRDM_MCXC242 scope confirms correct implementation.
+ */
+#if MIDI_CLOCK_ON_PIN
+#define CLOCK_FREQ_OUT DT_NODELABEL(freq_out)
+static const struct gpio_dt_spec clock_pin = GPIO_DT_SPEC_GET(CLOCK_FREQ_OUT, gpios);
+
+static void midi1_debug_gpio_init(void)
+{
+	int ret = gpio_pin_configure_dt(&clock_pin, GPIO_OUTPUT_INACTIVE);
+	if (ret < 0){
+		printk("Error configing pin\n");
+		return;
+	}
+}
+#endif
+
+
 /* -------------------------------------------------------------------------- */
 /* MIDI send glue                                                             */
 /* -------------------------------------------------------------------------- */
@@ -66,7 +85,9 @@ static inline void midi1_clock_send_tick(const struct device *dev)
 {
 	if (dev) {
 		usbd_midi_send(dev, midi1_timing_clock());
-		//printk(".");
+#if MIDI_CLOCK_ON_PIN
+		gpio_pin_toggle_dt(&clock_pin);
+#endif
 	}
 }
 
@@ -104,7 +125,9 @@ void midi1_clock_adj_init(const struct device *midi1_dev)
 	atomic_set(&g_interval_us, 0);
 	atomic_set(&g_running, 0);
 	g_sbpm = 0;
-
+#if MIDI_CLOCK_ON_PIN
+	midi1_debug_gpio_init();
+#endif 
 	k_work_init_delayable(&g_clk_work, midi1_clk_work_handler);
 }
 

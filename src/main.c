@@ -141,7 +141,15 @@ static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 			gpio_pin_toggle_dt(&rx_midi_clk_pin);
 #endif
 			midi1_clock_meas_pulse();
-			midi1_pll_process_tick(midi1_clock_meas_last_timestamp());
+			uint32_t now_us = midi1_clock_meas_get_us();
+			midi1_pll_process_tick(now_us);
+			
+#if 0
+			/* Update generator right away */
+			uint32_t interval_us = midi1_pll_get_interval_us();
+			midi1_clock_adj_set_interval_us(interval_us);
+			//midi1_pll_process_tick(midi1_clock_meas_last_timestamp());
+#endif
 			break;
 		case RT_START:	/* Start */
 			break;
@@ -289,9 +297,10 @@ int main(void)
 	main_rx_midi_clk_gpio_init();
 #endif
 	printk("main: MIDI ready entering main() loop\n");
-	printk("main: Generate MIDI at 120.00 BPM\n");
+	printk("main: Generate MIDI at 120.00 BPM (for 30s) \n");
 	//midi1_clock_start_sbpm(12000);
 	midi1_clock_adj_start_sbpm(12000);
+	k_msleep(30000);
 	while (1) {
 		uint16_t raw_sbpm = midi1_clock_meas_get_sbpm();
 		printk("main:     BPM (raw): %s\n", sbpm_to_str(raw_sbpm));
@@ -304,7 +313,7 @@ int main(void)
 		midi1_clock_adj_set_interval_us(pll_int_pqn);
 		uint16_t gen_sbpm = midi1_clock_adj_get_sbpm();
 		printk("main: GEN BPM      : %s\n", sbpm_to_str(gen_sbpm));
-		k_msleep(1000);
+		k_msleep(10000);
 	}
 	return 0;
 }

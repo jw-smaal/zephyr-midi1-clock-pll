@@ -67,14 +67,15 @@ void midi1_clock_meas_init(void)
  * Get current timestamp in microseconds.
  * Uses Zephyr's cycle counter and conversion helper.
  */
-static inline uint32_t midi1_clock_meas_get_us(void)
+uint32_t midi1_clock_meas_get_us(void)
 {
 	/*
 	 * TODO:
 	 * need to work on a free running clock implementation.
 	 */
 	uint32_t cycles = k_cycle_get_32();
-	return k_cyc_to_us_floor32(cycles);
+	//return k_cyc_to_us_floor32(cycles);
+	return k_cyc_to_us_near32(cycles);
 }
 
 void midi1_clock_meas_pulse(void)

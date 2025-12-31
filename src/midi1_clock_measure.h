@@ -36,6 +36,8 @@ void midi1_clock_meas_init(void);
  */
 void midi1_clock_meas_pulse(void);
 
+uint32_t midi1_clock_meas_get_us(void);
+
 /**
  * @brief Get the last measured BPM in scaled form (BPM * 100).
  * Example: return value 12345 means 123.45 BPM.

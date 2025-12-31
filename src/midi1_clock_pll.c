@@ -18,12 +18,12 @@
  * Low‑pass filter strength keep it high... sudden tempo changes
  * should be followed though.
  */
-#define MIDI1_PLL_FILTER_K   32
+#define MIDI1_PLL_FILTER_K  32
 /*
  * Correction gain keep it low we want to move towards the value
  * but not overshoot
  */
-#define MIDI1_PLL_GAIN_G     4
+#define MIDI1_PLL_GAIN_G    4
 
 #define DEBUG_PLL 0
 

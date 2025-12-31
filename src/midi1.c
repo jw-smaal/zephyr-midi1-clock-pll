@@ -226,7 +226,7 @@ uint32_t pqn24_to_us_interval(uint32_t pqn24)
 	if (pqn24 == 0) {
 		return 0u;
 	} else {
-		return (pqn24 * 24) + 12;
+		return (pqn24 * 24u) + 12u;
 	}
 }
 
