@@ -13,8 +13,17 @@
 #include "midi1.h"		/* my sbpm_to_us_interval() */
 
 /* Loop filter constants */
-#define MIDI1_PLL_FILTER_K   32 /* Low‑pass filter strength */
-#define MIDI1_PLL_GAIN_G     16	/* Correction gain */
+
+/*
+ * Low‑pass filter strength keep it high... sudden tempo changes
+ * should be followed though.
+ */
+#define MIDI1_PLL_FILTER_K   32
+/*
+ * Correction gain keep it low we want to move towards the value
+ * but not overshoot
+ */
+#define MIDI1_PLL_GAIN_G     4
 
 #define DEBUG_PLL 0
 
@@ -68,18 +77,6 @@ void midi1_pll_process_tick(uint32_t t_in_us)
 	/* 3. Adjust internal interval */
 	int32_t correction = midi1_filtered_error / MIDI1_PLL_GAIN_G;
 	midi1_internal_interval_us = midi1_nominal_interval_us + correction;
-	
-#if MIDI1_CLOCK_PLL_CLAMP_TO_SANE_VALUES
-	/* Clamp to 20–300 BPM */
-	const int32_t MIN_INTERVAL_US = 2000000 / 20;
-	const int32_t MAX_INTERVAL_US = 2000000 / 300;
-
-	if (midi1_internal_interval_us < MIN_INTERVAL_US)
-		midi1_internal_interval_us = MIN_INTERVAL_US;
-	
-	if (midi1_internal_interval_us > MAX_INTERVAL_US)
-		midi1_internal_interval_us = MAX_INTERVAL_US;
-#endif
 	
 	/* 4. Advance expected timestamp */
 	midi1_next_expected_us += midi1_internal_interval_us;

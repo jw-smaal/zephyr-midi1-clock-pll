@@ -38,7 +38,12 @@
 /*
  * Functions for the MIDI software based clock timer.
  */
-#include "midi1_clock_timer.h"
+//#include "midi1_clock_timer.h"
+
+/*
+ * Adjustable MIDI clock we feed it with the PLL adjustments.
+ */
+#include "midi1_clock_adj.h"
 
 /*
  * Functions for measuring incoming MIDI clock signals
@@ -213,7 +218,8 @@ int main_midi_init()
 	LOG_INF("USB device support enabled");
 	
 	/* Init the clock measurement system */
-	midi1_clock_init(midi);
+	// midi1_clock_init(midi);
+	midi1_clock_adj_init(midi);
 	midi1_clock_meas_init();
 	/* We init the PLL with something and adjust from there */
 	midi1_pll_init(12000);
@@ -284,14 +290,20 @@ int main(void)
 #endif
 	printk("main: MIDI ready entering main() loop\n");
 	printk("main: Generate MIDI at 120.00 BPM\n");
-	midi1_clock_start_sbpm(12000);
+	//midi1_clock_start_sbpm(12000);
+	midi1_clock_adj_start_sbpm(12000);
 	while (1) {
 		uint16_t raw_sbpm = midi1_clock_meas_get_sbpm();
 		printk("main:     BPM (raw): %s\n", sbpm_to_str(raw_sbpm));
 		uint16_t pll_sbpm = pqn24_to_sbpm(midi1_pll_get_interval_us());
 		printk("main: PLL BPM      : %s\n", sbpm_to_str(pll_sbpm));
+		/* Now adjust our own generated BPM... */
 		uint32_t pll_int_pqn = midi1_pll_get_interval_us();
 		printk("main: PLL int [us] : %u\n", pll_int_pqn);
+		/* Adjust generated clock */
+		midi1_clock_adj_set_interval_us(pll_int_pqn);
+		uint16_t gen_sbpm = midi1_clock_adj_get_sbpm();
+		printk("main: GEN BPM      : %s\n", sbpm_to_str(gen_sbpm));
 		k_msleep(1000);
 	}
 	return 0;

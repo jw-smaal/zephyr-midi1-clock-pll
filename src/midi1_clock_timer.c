@@ -1,6 +1,12 @@
 /**
  * @brief implementation of midi1_clock_timer software timer in zephyr.
  * @author by Jan-Willem Smaal <usenet@gispen.org
+ * @note
+ * This is based on the k_timer
+ * as I found this cannot adjust the interval while running
+ * it's not useful for adjustable clock (.e.g if you need to sync
+ * a PLL to external MIDI clock).   Still keeping this code because
+ * it's rock solid for internal MIDI clock generated code.
  *
  * @date 20251214
  * @license SPDX-License-Identifier: Apache-2.0
@@ -30,9 +36,7 @@ static atomic_t g_midi1_running = ATOMIC_INIT(0);
 static void midi1_timer_handler(struct k_timer *t)
 {
 	const struct device *midi1_dev = k_timer_user_data_get(t);
-	/* Also toggle a pin */ 
-	
-	
+	/* Also toggle a pin somewhere so we can measure the phase lock */
 	
 	if (!atomic_get(&g_midi1_running)) {
 		return;
