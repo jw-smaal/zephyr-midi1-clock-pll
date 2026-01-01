@@ -346,8 +346,7 @@ int main(void)
 	}
 
 	printk("main: MIDI ready entering main() loop\n");
-	printk("main: Generate MIDI at 20833 usec interval (for 30s) \n");
-	
+	printk("main: Generate MIDI at 20833 usec interval \n");
 	
 	midi1_clock_cntr_start(20833);
 	printk("midi1_clock_cntr_get_sbpm: %s\n",
@@ -366,11 +365,12 @@ int main(void)
 		
 		/* Start the clock with the correct ticks */
 		midi1_clock_cntr_ticks_start(pll_ticks);
-		k_msleep(3000);
+		k_msleep(1000);
 	}
 	
 #if 0
 	k_msleep(30000);
+	
 	
 	printk("main: Generate MIDI at 20833 usec interval (for 30s) \n");
 	midi1_clock_adj_start(20833);
@@ -379,6 +379,7 @@ int main(void)
 	printk("main: Generate MIDI at 41666 usec interval (for 30s) \n");
 	midi1_clock_adj_start(41666);
 	k_msleep(30000);
+	
 
 	while (1) {
 		uint16_t raw_sbpm = midi1_clock_meas_get_sbpm();

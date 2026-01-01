@@ -43,8 +43,8 @@ static inline uint32_t midi1_clock_meas_now_ticks(void)
 
 	int err = counter_get_value(g_counter_dev_ch1, &ticks);
 	if (err != 0) {
-		return 0;
 		printk("counter_get_value error\n");
+		return 0;
 	}
 	//printk("number of ticks:%u\n", ticks);
 	/* Is decreasing over time */
@@ -71,10 +71,12 @@ void midi1_clock_meas_cntr_init(void)
 	if (err != 0) {
 		printk("Failed to start measurement counter: %d\n", err);
 	}
+	/* Initialize last timestamp to current counter value (down-counter) */
+	g_last_ts_ticks = midi1_clock_meas_now_ticks();
 }
 
 /* ------------------------------------------------------------------ */
-void midi1_clock_meas_cntr_pulse(void)
+void midi1_clock_meas_cntr_pulse_BROKEN(void)
 {
 	uint32_t now_ticks = midi1_clock_meas_now_ticks();
 	/* for the PLL to read e.g. */
@@ -91,6 +93,41 @@ void midi1_clock_meas_cntr_pulse(void)
 	}
 	g_last_ts_ticks = now_ticks;
 }
+
+void midi1_clock_meas_cntr_pulse(void)
+{
+	uint32_t now_ticks = midi1_clock_meas_now_ticks();
+	
+	/* Expose timestamp to PLL or other users */
+	g_last_tick_timestamp_ticks = now_ticks;
+	
+	/* First pulse after init: we have no previous timestamp yet */
+	if (g_last_ts_ticks == 0U) {
+		g_last_ts_ticks = now_ticks;
+		return;
+	}
+	
+	/* For a down-counter, elapsed = previous - current (unsigned wrap-safe) */
+	uint32_t interval_ticks = g_last_ts_ticks - now_ticks;
+	g_last_ts_ticks = now_ticks;
+	
+	/* Reject zero or obviously bogus intervals to avoid BPM math crashes */
+	if (interval_ticks == 0U) {
+		return;
+	}
+	
+	g_last_interval_ticks = interval_ticks;
+	
+	uint32_t interval_us = midi1_clock_meas_cntr_interval_us();
+	if (interval_us == 0U) {
+		return;
+	}
+	
+	uint32_t sbpm = MIDI1_SCALED_BPM_NUMERATOR / interval_us;
+	g_scaled_bpm = sbpm;
+	g_valid = true;
+}
+
 
 /* ------------------------------------------------------------------ */
 uint32_t midi1_clock_meas_cntr_get_sbpm(void)
