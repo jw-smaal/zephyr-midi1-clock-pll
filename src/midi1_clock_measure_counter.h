@@ -52,9 +52,15 @@ uint32_t midi1_clock_meas_cntr_get_sbpm(void);
 bool midi1_clock_meas_cntr_is_valid(void);
 
 /**
- * @brief Returns the timestamp (microseconds) of the last MIDI Clock tick.
+ * @brief Returns the timestamp (ticks) of the last MIDI Clock tick.
  * This is used by the PLL.
  */
 uint32_t midi1_clock_meas_cntr_last_timestamp(void);
+
+uint32_t midi1_clock_meas_cntr_interval_ticks(void);
+
+uint32_t midi1_clock_meas_cntr_interval_us(void);
+
+
 
 #endif				/* MIDI1_CLOCK_MEAS_CNTR_H */

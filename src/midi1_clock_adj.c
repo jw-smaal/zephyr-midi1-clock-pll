@@ -81,7 +81,7 @@ static void midi1_debug_gpio_init(void)
 /* -------------------------------------------------------------------------- */
 /* MIDI send glue                                                             */
 /* -------------------------------------------------------------------------- */
-static inline void midi1_clock_send_tick(const struct device *dev)
+static void midi1_clock_send_tick(const struct device *dev)
 {
 	if (dev) {
 		usbd_midi_send(dev, midi1_timing_clock());

@@ -30,8 +30,10 @@
 #include "midi1_clock_counter.h"
 
 static atomic_t g_midi1_running_cntr = ATOMIC_INIT(0);
+static uint16_t g_sbpm = 0;
 static const struct device *g_midi1_dev;
 const struct device *g_counter_dev;
+
 
 
 /*
@@ -97,7 +99,7 @@ void midi1_clock_cntr_init(const struct device *midi1_dev_arg)
 
 
 /*
- * Start periodic MIDI clock. interval_us must be > 0. 
+ * Start periodic MIDI clock. ticks must be > 0.
  */
 void midi1_clock_cntr_ticks_start(uint32_t ticks)
 {
@@ -160,7 +162,7 @@ void midi1_clock_cntr_start(uint32_t interval_us)
 	atomic_set(&g_midi1_running_cntr, 1);
 
 	uint32_t ticks = counter_us_to_ticks(g_counter_dev, interval_us); 
-
+	g_sbpm = us_interval_to_sbpm(interval_us);
 
 	/*
 	 * Configure top value when it overflows the midi1_cntr_handler is
@@ -218,16 +220,9 @@ void midi1_clock_cntr_gen_sbpm(uint16_t sbpm) {
 	midi1_clock_cntr_ticks_start(ticks);
 }
 
-#if 0
-void midi1_clock_cntr_gen_sbpm(uint16_t sbpm)
-{
-	uint32_t ticks = sbpm_to_ticks(
-				sbpm,
-				midi1_clock_cntr_cpu_frequency());
-	midi1_clock_cntr_update_ticks(ticks);   /* <-- new */
+uint16_t midi1_clock_cntr_get_sbpm() {
+	return g_sbpm;
 }
-#endif
-
 
 
 /* EOF */

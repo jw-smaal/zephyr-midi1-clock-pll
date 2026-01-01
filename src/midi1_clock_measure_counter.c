@@ -21,6 +21,7 @@ static const struct device *g_counter_dev_ch1 = NULL;
 
 static uint32_t g_last_ts_ticks = 0;
 static uint32_t g_scaled_bpm = 0;
+static uint32_t g_last_interval_ticks = 0;
 static bool g_valid = false;
 
 /* Timestamp exposed to PLL */
@@ -51,10 +52,12 @@ static inline uint32_t midi1_clock_meas_now_ticks(void)
 }
 
 /* ------------------------------------------------------------------ */
+/* TODO: has a BUG crashes when counter wraps around maybe unhandled IRQ */
 void midi1_clock_meas_cntr_init(void)
 {
 	g_last_ts_ticks = 0;
 	g_scaled_bpm = 12000;
+	g_last_interval_ticks = 0;
 	g_valid = false;
 
 	g_counter_dev_ch1 = DEVICE_DT_GET(DT_NODELABEL(COUNTER_DEVICE_CH1));
@@ -78,12 +81,11 @@ void midi1_clock_meas_cntr_pulse(void)
 	g_last_tick_timestamp_ticks = now_ticks;
 
 	if (g_last_ts_ticks != 0) {
-		uint32_t interval_ticks = g_last_ts_ticks - now_ticks;
-		if (interval_ticks > 0) {
+		g_last_interval_ticks = g_last_ts_ticks - now_ticks;
+		if (g_last_interval_ticks > 0) {
 			uint32_t sbpm =
-			    MIDI1_SCALED_BPM_NUMERATOR / interval_ticks;
+			    MIDI1_SCALED_BPM_NUMERATOR / midi1_clock_meas_cntr_interval_us();
 			g_scaled_bpm = sbpm;
-			/* Not correct because interval is now in ticks */
 			g_valid = true;
 		}
 	}
@@ -105,5 +107,23 @@ uint32_t midi1_clock_meas_cntr_last_timestamp(void)
 {
 	return g_last_tick_timestamp_ticks;
 }
+
+uint32_t midi1_clock_meas_cntr_interval_ticks(void)
+{
+	return g_last_interval_ticks;
+}
+
+
+uint32_t midi1_clock_meas_cntr_interval_us(void)
+{
+	return counter_ticks_to_us(g_counter_dev_ch1, midi1_clock_meas_cntr_interval_ticks());
+}
+
+
+
+
+
+
+
 
 /* EOF */

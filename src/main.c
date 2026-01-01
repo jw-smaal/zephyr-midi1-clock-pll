@@ -41,23 +41,28 @@
 //#include "midi1_clock_timer.h"
 
 /*
- * Adjustable MIDI clock we feed it with the PLL adjustments.
+ * Functions for the MIDI PIT0_CHANNEL0 hardware based clock timer.
  */
-#include "midi1_clock_adj.h"
+#include "midi1_clock_counter.h"
+
+/*
+ * Adjustable MIDI clock we feed it with the PLL adjustments.
+ * TODO: external measurements show this clock is too slow...
+ * TODO: maybe due to the adjustable scheduled work timer
+ */
+//#include "midi1_clock_adj.h"
 
 /*
  * Functions for measuring incoming MIDI clock signals
- * TODO: Note that #include "midi1_clock_measure_counter.h"  is
- * TODO: not working! don't use
- * TODO: this one.  Use only "midi1_clock_measure.h"
  */
-#include "midi1_clock_measure.h"
+//#include "midi1_clock_measure.h"
 #include "midi1_clock_measure_counter.h"
 
 /*
  * A Phase Locked Loop for MIDI.
  */
-#include "midi1_clock_pll.h"
+//#include "midi1_clock_pll.h"
+#include "midi1_clock_pll_ticks.h"
 
 /* Provide the received 24pqn MIDI clock on a pin */
 #define RX_MIDI_CLOCK_ON_PIN 1
@@ -112,6 +117,36 @@ UMP_ENDPOINT_DT_SPEC_GET(USB_MIDI_DT_NODE);
 const struct ump_stream_responder_cfg responder_cfg =
 UMP_STREAM_RESPONDER(midi, usbd_midi_send, &ump_ep_dt);
 
+
+/* TODO: work in progress handler for timing purposes */
+static void on_ump_packet(const struct device *dev, const struct midi_ump ump)
+{
+	switch (UMP_MT(ump)) {
+		case UMP_MT_SYS_RT_COMMON:
+			uint8_t status = UMP_MIDI_STATUS(ump);
+			switch (status) {
+				case RT_TIMING_CLOCK:	/* MIDI Clock */
+#if RX_MIDI_CLOCK_ON_PIN
+					/*
+					 * toggle a PIN so we can measure
+					 * on the scope the incoming clock.
+					 */
+					gpio_pin_toggle_dt(&rx_midi_clk_pin);
+#endif
+					midi1_clock_meas_cntr_pulse();
+					midi1_pll_ticks_process_interval(
+									 midi1_clock_meas_cntr_interval_ticks());
+					break;
+				default:
+					break;
+			}
+		default:
+			break;
+	}
+}
+
+#if 0
+/* handler for all */
 static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 {
 	LOG_INF("Received MIDI packet (MT=%X)", UMP_MT(ump));
@@ -141,18 +176,17 @@ static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 			 */
 			gpio_pin_toggle_dt(&rx_midi_clk_pin);
 #endif
-			midi1_clock_meas_pulse();
+			//midi1_clock_meas_pulse();
 			midi1_clock_meas_cntr_pulse();
-			uint32_t now_us = midi1_clock_meas_get_us();
-			midi1_pll_process_tick(now_us);
+			//uint32_t now_us = midi1_clock_meas_get_us();
+			//midi1_pll_process_tick(now_us);
 			
-#if 1
+
 			/* Update generator right away */
 			uint32_t interval_us = midi1_pll_get_interval_us();
 				
 			/* Reschedule job as well */
 			midi1_clock_adj_set_interval_us(interval_us);
-#endif
 			break;
 		case RT_START:	/* Start */
 			break;
@@ -173,6 +207,7 @@ static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 	}
 
 }
+#endif
 
 static void on_device_ready(const struct device *dev, const bool ready)
 {
@@ -188,10 +223,18 @@ static void on_device_ready(const struct device *dev, const bool ready)
 	}
 }
 
+/* different rx callback for the clock tests */
+static const struct usbd_midi_ops ump_ops = {
+	.rx_packet_cb = on_ump_packet,
+	.ready_cb = on_device_ready,
+};
+	
+/*
 static const struct usbd_midi_ops ops = {
 	.rx_packet_cb = on_midi_packet,
 	.ready_cb = on_device_ready,
 };
+*/
 
 /*
  * Init all the USB MIDI stuff in main.
@@ -200,10 +243,6 @@ int main_midi_init()
 {
 	struct usbd_context *sample_usbd;
 
-	if (!device_is_ready(midi)) {
-		LOG_ERR("MIDI device not ready");
-		return -1;
-	}
 	if (led0.port && led2.port) {
 		if (gpio_pin_configure_dt(&led0, GPIO_OUTPUT)) {
 			LOG_ERR("Unable to setup LED0, not using it");
@@ -214,9 +253,18 @@ int main_midi_init()
 			memset(&led2, 0, sizeof(led2));
 		}
 	}
-
-	usbd_midi_set_ops(midi, &ops);
-
+	
+#if RX_MIDI_CLOCK_ON_PIN
+	main_rx_midi_clk_gpio_init();
+#endif
+	
+	if (!device_is_ready(midi)) {
+		LOG_ERR("MIDI device not ready");
+		return -1;
+	}
+	//usbd_midi_set_ops(midi, &ump_ops);
+	// For timing tests
+	usbd_midi_set_ops(midi, &ump_ops);
 	sample_usbd = sample_usbd_init_device(NULL);
 	if (sample_usbd == NULL) {
 		LOG_ERR("Failed to initialize USB device");
@@ -229,12 +277,10 @@ int main_midi_init()
 	LOG_INF("USB device support enabled");
 	
 	/* Init the clock measurement system */
-	// midi1_clock_init(midi);
-	midi1_clock_adj_init(midi);
-	midi1_clock_meas_init();
+	midi1_clock_cntr_init(midi);
 	midi1_clock_meas_cntr_init();
 	/* We init the PLL with something and adjust from there */
-	midi1_pll_init(12000);
+	midi1_pll_ticks_init(12000);
 	
 	return 0;
 }
@@ -257,7 +303,8 @@ void led_blink_thread(void)
 	
 	while (1) {
 		/* Get current PLL tick interval (1/24 QN) */
-		int32_t tick_us = midi1_clock_meas_last_interval();
+		//int32_t tick_us = midi1_clock_meas_last_interval();
+		int32_t tick_us = midi1_clock_meas_cntr_interval_us();
 		
 		/* Convert to quarter-note interval */
 		int32_t qn_us = abs(tick_us * 24u);
@@ -275,7 +322,7 @@ void led_blink_thread(void)
 			 * if we get strange large values for
 			 * qn_us > 2.5 seconds (1 BPM)
 			 */
-			k_msleep(100);
+			k_msleep(2000);
 			printk("led_blink_thread: Large value qn_us: %d\n", qn_us);
 			continue;
 		}
@@ -292,20 +339,35 @@ K_THREAD_DEFINE(led_blink_tid, 1024,
  */
 int main(void)
 {
-	/* Init the USB MIDI */
+	/* Init the USB MIDI and the rest */
 	if (main_midi_init()) {
 		printk("Failed to main_midi_init()\n");
 		return -1;
 	}
-#if RX_MIDI_CLOCK_ON_PIN
-	main_rx_midi_clk_gpio_init();
-#endif
+
 	printk("main: MIDI ready entering main() loop\n");
+	printk("main: Generate MIDI at 20833 usec interval (for 30s) \n");
 	
 	
-	printk("main: Generate MIDI at 120.00 BPM\n");
-	//midi1_clock_start_sbpm(12000);
-	midi1_clock_adj_start_sbpm(12000);
+	midi1_clock_cntr_start(20833);
+	printk("midi1_clock_cntr_get_sbpm: %s\n",
+	       sbpm_to_str(midi1_clock_cntr_get_sbpm()));
+	
+	while (1) {
+		// measure incoming interval.
+		printk("interval measured as: %u us\n", midi1_clock_meas_cntr_interval_us() );
+		printk("interval measured as: %u ticks\n", midi1_clock_meas_cntr_interval_ticks() );
+		
+		uint16_t raw_cntr_sbpm = midi1_clock_meas_cntr_get_sbpm();
+		printk("main cntr BPM (raw): %s\n", sbpm_to_str(raw_cntr_sbpm));
+		
+		uint32_t pll_ticks = midi1_pll_ticks_get_interval_ticks();
+		printk("main: PLL ticks     : %d\n", pll_ticks);
+		
+		/* Start the clock with the correct ticks */
+		midi1_clock_cntr_ticks_start(pll_ticks);
+		k_msleep(3000);
+	}
 	
 #if 0
 	k_msleep(30000);
@@ -317,8 +379,7 @@ int main(void)
 	printk("main: Generate MIDI at 41666 usec interval (for 30s) \n");
 	midi1_clock_adj_start(41666);
 	k_msleep(30000);
-#endif 
-	
+
 	while (1) {
 		uint16_t raw_sbpm = midi1_clock_meas_get_sbpm();
 		printk("main:     BPM (raw): %s\n", sbpm_to_str(raw_sbpm));
@@ -336,5 +397,6 @@ int main(void)
 		printk("main: GEN BPM      : %s\n", sbpm_to_str(gen_sbpm));
 		k_msleep(10000);
 	}
+#endif
 	return 0;
 }
