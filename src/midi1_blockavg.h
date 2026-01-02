@@ -7,6 +7,7 @@
  *
  * @author Jan-Willem Smaal <usenet@gispen.org>
  * @date 20260102
+ * @license SPDX-License-Identifier: Apache-2.0
  */
 #include <stdint.h>
 

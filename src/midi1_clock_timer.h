@@ -6,6 +6,7 @@
  *
  * @author Jan-Willem Smaal <usenet@gispen.org>
  * @date 20251214
+ * @license SPDX-License-Identifier: Apache-2.0
  */
 #include <zephyr/kernel.h>	/* k_timer */
 #include <zephyr/sys/atomic.h>	/* atomic_t, atomic_get/set */
