@@ -23,10 +23,10 @@ static int32_t midi1_filtered_error = 0;
 void midi1_pll_ticks_init(uint16_t sbpm)
 {
 	// TODO: implement now set a static value
-	midi1_nominal_interval_ticks  = 503000;
-	midi1_internal_interval_ticks = (int32_t)midi1_nominal_interval_ticks;
-	midi1_filtered_error          = 0;
-	//midi1_slow_error_accum 	      = 0;
+	midi1_nominal_interval_ticks = 503000;
+	midi1_internal_interval_ticks = (int32_t) midi1_nominal_interval_ticks;
+	midi1_filtered_error = 0;
+	//midi1_slow_error_accum              = 0;
 }
 
 /*
@@ -38,20 +38,20 @@ void midi1_pll_ticks_process_interval(uint32_t measured_interval_ticks)
 		/* ignore bogus measurement */
 		return;
 	}
-	
+
 	/* 1. Interval error: measured - internal */
 	int32_t error =
-	(int32_t)measured_interval_ticks - midi1_internal_interval_ticks;
-	
+	    (int32_t) measured_interval_ticks - midi1_internal_interval_ticks;
+
 	/* 2. Low-pass filter the error */
 	midi1_filtered_error +=
-	(error - midi1_filtered_error) / MIDI1_PLL_FILTER_K;
-	
+	    (error - midi1_filtered_error) / MIDI1_PLL_FILTER_K;
+
 	/* 3. Adjust internal interval around nominal */
 	midi1_internal_interval_ticks =
-	(int32_t)midi1_nominal_interval_ticks +
-	midi1_filtered_error / MIDI1_PLL_GAIN_G;
-	
+	    (int32_t) midi1_nominal_interval_ticks +
+	    midi1_filtered_error / MIDI1_PLL_GAIN_G;
+
 	/*
 	 * Slow tracking: adapt nominal interval towards long-term average.
 	 *
@@ -59,15 +59,14 @@ void midi1_pll_ticks_process_interval(uint32_t measured_interval_ticks)
 	 * This makes nominal_interval_ticks follow real BPM over time.
 	 */
 	midi1_nominal_interval_ticks +=
-	(int32_t)midi1_filtered_error / MIDI1_PLL_TRACK_GAIN;
-	
+	    (int32_t) midi1_filtered_error / MIDI1_PLL_TRACK_GAIN;
+
 #if DEBUG_PLL
 	printk("PLL meas=%u  err=%d  filt=%d  int=%d nominal=%d\n",
 	       measured_interval_ticks,
 	       error,
 	       midi1_filtered_error,
-	       midi1_internal_interval_ticks,
-	       midi1_nominal_interval_ticks);
+	       midi1_internal_interval_ticks, midi1_nominal_interval_ticks);
 #endif
 }
 

@@ -28,7 +28,7 @@ void midi1_blockavg_add(uint32_t sample)
 		sum -= buf[index];
 		buf[index] = sample;
 		sum += sample;
-		
+
 		index++;
 		if (index >= MIDI1_BLOCKAVG_SIZE) {
 			index = 0;

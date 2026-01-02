@@ -68,12 +68,13 @@
 #define RX_MIDI_CLOCK_ON_PIN 1
 #if RX_MIDI_CLOCK_ON_PIN
 #define RX_MIDI_CLK DT_NODELABEL(rx_midi_clk)
-static const struct gpio_dt_spec rx_midi_clk_pin = GPIO_DT_SPEC_GET(RX_MIDI_CLK, gpios);
+static const struct gpio_dt_spec rx_midi_clk_pin =
+GPIO_DT_SPEC_GET(RX_MIDI_CLK, gpios);
 
 static void main_rx_midi_clk_gpio_init(void)
 {
 	int ret = gpio_pin_configure_dt(&rx_midi_clk_pin, GPIO_OUTPUT_INACTIVE);
-	if (ret < 0){
+	if (ret < 0) {
 		printk("Error configing pin\n");
 		return;
 	}
@@ -117,31 +118,30 @@ UMP_ENDPOINT_DT_SPEC_GET(USB_MIDI_DT_NODE);
 const struct ump_stream_responder_cfg responder_cfg =
 UMP_STREAM_RESPONDER(midi, usbd_midi_send, &ump_ep_dt);
 
-
 /* TODO: work in progress handler for timing purposes */
 static void on_ump_packet(const struct device *dev, const struct midi_ump ump)
 {
 	switch (UMP_MT(ump)) {
-		case UMP_MT_SYS_RT_COMMON:
-			uint8_t status = UMP_MIDI_STATUS(ump);
-			switch (status) {
-				case RT_TIMING_CLOCK:	/* MIDI Clock */
+	case UMP_MT_SYS_RT_COMMON:
+		uint8_t status = UMP_MIDI_STATUS(ump);
+		switch (status) {
+		case RT_TIMING_CLOCK:	/* MIDI Clock */
 #if RX_MIDI_CLOCK_ON_PIN
-					/*
-					 * toggle a PIN so we can measure
-					 * on the scope the incoming clock.
-					 */
-					gpio_pin_toggle_dt(&rx_midi_clk_pin);
+			/*
+			 * toggle a PIN so we can measure
+			 * on the scope the incoming clock.
+			 */
+			gpio_pin_toggle_dt(&rx_midi_clk_pin);
 #endif
-					midi1_clock_meas_cntr_pulse();
-					midi1_pll_ticks_process_interval(
-									 midi1_clock_meas_cntr_interval_ticks());
-					break;
-				default:
-					break;
-			}
+			midi1_clock_meas_cntr_pulse();
+			midi1_pll_ticks_process_interval
+			    (midi1_clock_meas_cntr_interval_ticks());
+			break;
 		default:
 			break;
+		}
+	default:
+		break;
 	}
 }
 
@@ -180,11 +180,10 @@ static void on_midi_packet(const struct device *dev, const struct midi_ump ump)
 			midi1_clock_meas_cntr_pulse();
 			//uint32_t now_us = midi1_clock_meas_get_us();
 			//midi1_pll_process_tick(now_us);
-			
 
 			/* Update generator right away */
 			uint32_t interval_us = midi1_pll_get_interval_us();
-				
+
 			/* Reschedule job as well */
 			midi1_clock_adj_set_interval_us(interval_us);
 			break;
@@ -228,7 +227,7 @@ static const struct usbd_midi_ops ump_ops = {
 	.rx_packet_cb = on_ump_packet,
 	.ready_cb = on_device_ready,
 };
-	
+
 /*
 static const struct usbd_midi_ops ops = {
 	.rx_packet_cb = on_midi_packet,
@@ -253,11 +252,10 @@ int main_midi_init()
 			memset(&led2, 0, sizeof(led2));
 		}
 	}
-	
 #if RX_MIDI_CLOCK_ON_PIN
 	main_rx_midi_clk_gpio_init();
 #endif
-	
+
 	if (!device_is_ready(midi)) {
 		LOG_ERR("MIDI device not ready");
 		return -1;
@@ -275,13 +273,13 @@ int main_midi_init()
 		return -1;
 	}
 	LOG_INF("USB device support enabled");
-	
+
 	/* Init the clock measurement system */
 	midi1_clock_cntr_init(midi);
 	midi1_clock_meas_cntr_init();
 	/* We init the PLL with something and adjust from there */
 	midi1_pll_ticks_init(12000);
-	
+
 	return 0;
 }
 
@@ -297,41 +295,40 @@ void led_blink_thread(void)
 		printk("LED device not ready\n");
 		return;
 	}
-	
+
 	gpio_pin_configure_dt(&led2, GPIO_OUTPUT_INACTIVE);
 	gpio_pin_toggle_dt(&led2);
-	
+
 	while (1) {
 		/* Get current PLL tick interval (1/24 QN) */
 		//int32_t tick_us = midi1_clock_meas_last_interval();
 		int32_t tick_us = midi1_clock_meas_cntr_interval_us();
-		
+
 		/* Convert to quarter-note interval */
 		int32_t qn_us = abs(tick_us * 24u);
-		
+
 		/* Toggle LED */
 		gpio_pin_toggle_dt(&led2);
-		
+
 		/* if the qn_us makes somewhat sense */
-		if(qn_us < 2500000) {
+		if (qn_us < 2500000) {
 			/* Sleep for 1/2  quarter note */
-			k_usleep(qn_us/2);
-		}
-		else {
+			k_usleep(qn_us / 2);
+		} else {
 			/*
 			 * if we get strange large values for
 			 * qn_us > 2.5 seconds (1 BPM)
 			 */
 			k_msleep(2000);
-			printk("led_blink_thread: Large value qn_us: %d\n", qn_us);
+			printk("led_blink_thread: Large value qn_us: %d\n",
+			       qn_us);
 			continue;
 		}
 	}
 }
 
 K_THREAD_DEFINE(led_blink_tid, 1024,
-		led_blink_thread, NULL, NULL, NULL,
-		5, 0, 0);
+		led_blink_thread, NULL, NULL, NULL, 5, 0, 0);
 
 /**
  * Main thread - this may actually terminate normally (code 0) in zephyr.
@@ -345,34 +342,55 @@ int main(void)
 		return -1;
 	}
 
+	/* Sleep for 6 seconds so we can get some measurements intervals */
+	k_msleep(6000);
+	printk("--== Clock glitch testing by Jan-Willem Smaal v0.5 ==-- \n\n");
 	printk("main: MIDI ready entering main() loop\n");
-	printk("main: Generate MIDI at 20833 usec interval \n");
-	
-	midi1_clock_cntr_start(20833);
 	printk("midi1_clock_cntr_get_sbpm: %s\n",
 	       sbpm_to_str(midi1_clock_cntr_get_sbpm()));
-	printk("midi1_clock_cntr_cpu_frequency: %u\n", midi1_clock_cntr_cpu_frequency());
+	printk("midi1_clock_cntr_cpu_frequency: %u\n",
+	       midi1_clock_cntr_cpu_frequency());
 	
+	/* Set the initial clock again because the PLL gets a init of 120 */
+	uint32_t pll_ticks = midi1_pll_ticks_get_interval_ticks();
+	midi1_clock_cntr_ticks_start(pll_ticks);
 	
+
 	while (1) {
 		/*  measure incoming interval. */
-		printk("interval measured as: %u us\n", midi1_clock_meas_cntr_interval_us() );
-		printk("interval measured as: %u ticks\n", midi1_clock_meas_cntr_interval_ticks() );
+		printk("interval measured as: %u us\n",
+		       midi1_clock_meas_cntr_interval_us());
+		printk("interval measured as: %u ticks\n",
+		       midi1_clock_meas_cntr_interval_ticks());
 		
 		uint16_t raw_cntr_sbpm = midi1_clock_meas_cntr_get_sbpm();
 		printk("main cntr BPM (raw): %s\n", sbpm_to_str(raw_cntr_sbpm));
 		
+		/* Get pll ticks */
 		uint32_t pll_ticks = midi1_pll_ticks_get_interval_ticks();
 		printk("main: PLL ticks     : %d\n", pll_ticks);
 		
-		//uint32_t timestamp_ticks = midi1_clock_meas_cntr_last_timestamp();
-		//printk("main: timestamp tick : %u\n", timestamp_ticks);
-		
-		/* Start the clock with the correct ticks */
-		midi1_clock_cntr_ticks_start(pll_ticks);
-		
-		k_msleep(10000);
+		/* Half a minute of correct phase */
+		for (int i = 0; i < 3; i++) {
+			
+			printk("main: -- in PHASE -- \n");
+			/* Start the clock with the correct ticks */
+			uint32_t pll_ticks = midi1_pll_ticks_get_interval_ticks();
+			midi1_clock_cntr_ticks_start(pll_ticks);
+			k_msleep(10000);
+		}
+#if 0
+		/* shifting phase */
+		for (int phases = 5000 ; phases <= 50000; phases += 2000) {
+			printk("main: shifting phase: %u\n", phases);
+			/* Start the clock with the phase shifted ticks */
+			uint32_t pll_ticks = midi1_pll_ticks_get_interval_ticks();
+			midi1_clock_cntr_ticks_start(pll_ticks - phases);
+			k_msleep(5000);
+		}
+#endif
 	}
-	
+ 
+
 	return 0;
 }

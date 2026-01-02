@@ -28,10 +28,7 @@
  */
 #define MIDI1_PLL_TRACK_GAIN 32
 
-
 #define DEBUG_PLL 0
-
-
 
 /**
  * @brief Initialize the MIDI1 PLL with a nominal BPM.
@@ -56,4 +53,4 @@ void midi1_pll_ticks_process_interval(uint32_t measured_interval_ticks);
 
 int32_t midi1_pll_ticks_get_interval_ticks(void);
 
-#endif	/* MIDI1_CLOCK_PLL_TICKS_H */
+#endif				/* MIDI1_CLOCK_PLL_TICKS_H */
