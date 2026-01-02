@@ -1,14 +1,43 @@
-/*
- * Copyright (c) 2024 Titouan Christophe
+/**
+ * @file frdm_k64f.overlay
+ * @brief overlay for this (older) NXP board
+ * it is using a MIDI arduino shield but I disconnected
+ * the 5V and connected it to 3.3V instead to protect the MCU inputs.
+ * I should lower the output and input resistors but it seems to work without
+ * that too.
  *
- * SPDX-License-Identifier: Apache-2.0
+ * @author Jan-Willem Smaal <usenet@gispen.org>
+ * @date 20260102
+ * @license SPDX-License-Identifier: Apache-2.0
  */
+
+/* Classic MIDI1.0 over DIN5 plug */
 &uart3 {
     status = "okay";
     /* Set it to the MIDI baud rate */
     current-speed = <31250>;
 };
 
+/* 
+ * Because on the FRDM_K64F each channel has it's own IRQ we need to be 
+ * specific here can't just enable pit0 and hope for the best. 
+ */ 
+&pit0 {
+    status = "okay";
+};
+
+&pit0_channel0 {
+    status = "okay";
+};
+
+&pit0_channel1 {
+    status = "okay";
+};
+
+/* Enable these for the scope outputs */
+&gpioc {
+    status = "okay";
+};
 
 / {
 	usb_midi: usb_midi {
@@ -22,6 +51,21 @@
 			reg = <0 1>;
 			protocol = "midi1-up-to-128b";
 			label = "MIDI-IN-OUT";
+		};
+	};
+	leds {
+		compatible = "gpio-leds";
+		/* Everytime a 0xF8 is sent we toggle pin PTC12  */
+		freq_out: freq_out {
+			/* PTC12 = port C, pin 12 */
+			gpios = <&gpioc 12 GPIO_ACTIVE_HIGH>;
+			label = "FREQ_GEN_OUT";
+		};
+		/* Everytime a 0xF8 is received we toggle pin PTC16  */
+		rx_midi_clk: rx_midi_clk{
+			/* PTC12 = port C, pin 16 */
+			gpios = <&gpioa 12 GPIO_ACTIVE_HIGH>;
+			label = "FREQ_RX_OUT";
 		};
 	};
     aliases {
