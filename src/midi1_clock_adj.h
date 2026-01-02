@@ -1,6 +1,7 @@
 #ifndef MIDI1_CLOCK_TIMER_ADJUSTABLE
 #define MIDI1_CLOCK_TIMER_ADJUSTABLE
-/*
+/**
+ * @file midi1_clock_adj.h 
  * @brief MIDI1.0 adjustable clock generator for Zephyr RTOS.
  *
  * @note 

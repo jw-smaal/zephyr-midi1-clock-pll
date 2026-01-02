@@ -1,5 +1,5 @@
 /**
- *
+ * @file midi1_clock_adj.c 
  * @brief Adjustable MIDI1.0 Clock Generator for Zephyr RTOS
  * using k_work_delayable for smooth interval changes.
  *

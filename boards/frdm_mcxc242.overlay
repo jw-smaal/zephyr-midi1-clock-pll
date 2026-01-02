@@ -1,18 +1,27 @@
 /*
- * Test with the FRDM-MCXW242 board and the VL53L0X sensor
- * Overlay provided by Jan-Willem Smaal on 20250101
+ * @brief FRDM-MCXW242 board configuration for the MIDI clock
+ * @note Overlay provided by
+ * @author Jan-Willem Smaal
+ * @date 20250101
  */
 
+/* We are using the periodic interrupt timer so switch it on */ 
 &pit0 {
 	status = "okay";
 };
 
+/* Not used in the current setup */
 &i2c1 {
  	status = "okay";
 	vl53l0x@29 {
 		compatible = "st,vl53l0x";
 		reg = <0x29>;
 	};
+};
+
+/* Might be that GPIO portA and C is not active by default */
+&gpioa {
+    status = "okay";
 };
 
 &gpioc {
@@ -25,7 +34,7 @@
 		status = "okay";
 		#address-cells = <1>;
 		#size-cells = <1>;
-		label = "Zephyr USB-MIDI Sample";
+		label = "Zephyr USB-MIDI";
 
 		midi_in_out@0 {
 			reg = <0 1>;
@@ -35,15 +44,17 @@
 	};
 	leds {
 		compatible = "gpio-leds";
+		/* Everytime a 0xF8 is sent we toggle pin C8  */
 		freq_out: freq_out {
 			/* PTC8 = port C, pin 8 */
 			gpios = <&gpioc 8 GPIO_ACTIVE_HIGH>;
-			label = "FREQ_OUT";
+			label = "FREQ_GEN_OUT";
 		};
+		/* Everytime a 0xF8 is received we toggle pin A12  */
 		rx_midi_clk: rx_midi_clk{
-			/* PTC3 = port A, pin 12 */
+			/* PTA12 = port A, pin 12 */
 			gpios = <&gpioa 12 GPIO_ACTIVE_HIGH>;
-			label = "FREQ_OUT";
+			label = "FREQ_RX_OUT";
 		};
 	};
 };

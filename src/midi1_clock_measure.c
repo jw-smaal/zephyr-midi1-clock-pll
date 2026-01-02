@@ -1,4 +1,5 @@
 /**
+ * @file midi1_clock_measure.c 
  * @brief MIDI 1.0 Clock BPM measurement (integer only, no FPU)
  * @note
  * Scaled BPM representation (sbpm):

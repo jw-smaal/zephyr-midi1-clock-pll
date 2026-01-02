@@ -1,4 +1,5 @@
-/*
+/**
+ * @file midi1_clock_counter.c
  * @brief implementation of midi1_clock_clock
  * this is a _hardware_ based counter PIT0 channel 0
  * tested with NXP FRDM_MCXC242 in zephyr.

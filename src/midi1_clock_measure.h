@@ -1,4 +1,5 @@
 /**
+ * @file midi1_clock_measure.h 
  * @brief MIDI 1.0 Clock BPM measurement (integer only, no FPU)
  * @details
  * Scaled BPM representation (sbpm):
@@ -36,6 +37,10 @@ void midi1_clock_meas_init(void);
  */
 void midi1_clock_meas_pulse(void);
 
+/**
+ * @brief get current measurement in us
+ * @return us interval between each received 0xF8 timing clock.
+ */
 uint32_t midi1_clock_meas_get_us(void);
 
 /**
@@ -59,8 +64,6 @@ bool midi1_clock_meas_is_valid(void);
  * @return interval in us
  */
 uint32_t midi1_clock_meas_last_interval(void);
-
-
 
 /**
  * @brief return the last timestamp

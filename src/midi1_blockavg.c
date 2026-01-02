@@ -1,6 +1,15 @@
+/**
+ * @file midi1_blockavg.c
+ * @brief average the BPM measurement samples
+ * @note used by the midi_clock_measure_counter.c and .h
+ *
+ * @author Jan-Willem Smaal <usenet@gispen.org>
+ * @date 20260102
+ */
 #include <stdint.h>
 #include "midi1_blockavg.h"
 
+/* Measurement buffer */
 static uint32_t buf[MIDI1_BLOCKAVG_SIZE];
 static uint32_t sum = 0;
 static uint32_t index = 0;
@@ -8,6 +17,7 @@ static uint32_t count = 0;
 
 void midi1_blockavg_init(void)
 {
+	/* Make sure the memory is empty when starting */
 	for (uint32_t i = 0; i < MIDI1_BLOCKAVG_SIZE; i++) {
 		buf[i] = 0;
 	}
@@ -48,3 +58,5 @@ uint32_t midi1_blockavg_count(void)
 {
 	return count;
 }
+
+/* EOF */

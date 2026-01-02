@@ -227,8 +227,13 @@ uint32_t pqn24_to_us_interval(uint32_t pqn24);
  */
 uint32_t sbpm_to_24pqn(uint16_t sbpm);
 
+/**
+ * @brief convert pulses per quater note to scaled bpm
+ *
+ * @param 24‑PPQN period value
+ * @return pqn24 pulses per quater note in us
+ */
 uint16_t pqn24_to_sbpm(uint32_t pqn24);
-
 
 /**
  * @brief  Returns static string with the BPM formattted like 123.45

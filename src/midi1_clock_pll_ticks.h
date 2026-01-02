@@ -48,9 +48,15 @@ void midi1_pll_ticks_process_interval(uint32_t measured_interval_ticks);
  * @brief Get the current PLL‑corrected 24pqn interval in microseconds.
  *
  * @return Interval in microseconds for the next 24pqn internal tick.
+ * TODO: implement!
  */
 //int32_t midi1_pll_ticks_get_interval_us(void);
 
+/**
+ * @brief Get the current PLL‑corrected 24pqn tick interval in ticks.
+ *
+ * @return Interval in ticks for the next 24pqn MIDI clock tick.
+ */
 int32_t midi1_pll_ticks_get_interval_ticks(void);
 
 #endif				/* MIDI1_CLOCK_PLL_TICKS_H */
