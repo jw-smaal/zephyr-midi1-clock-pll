@@ -5,7 +5,8 @@
  * @details
  *  (TODO: NOT TESTED! ) 
  * Uses a free-running hardware counter to timestamp incoming MIDI Clock
- * (0xF8) pulses with microsecond precision.
+ * (0xF8) pulses with microsecond precision. uses PIT0 channel 1
+ * TODO: crashes currently possibly unhandled IRQ when counter hits zero. 
  *
  * Scaled BPM representation (sbpm):
  *   1.00 BPM   -> 100

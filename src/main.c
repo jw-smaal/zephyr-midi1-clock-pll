@@ -351,9 +351,11 @@ int main(void)
 	midi1_clock_cntr_start(20833);
 	printk("midi1_clock_cntr_get_sbpm: %s\n",
 	       sbpm_to_str(midi1_clock_cntr_get_sbpm()));
+	printk("midi1_clock_cntr_cpu_frequency: %u\n", midi1_clock_cntr_cpu_frequency());
+	
 	
 	while (1) {
-		// measure incoming interval.
+		/*  measure incoming interval. */
 		printk("interval measured as: %u us\n", midi1_clock_meas_cntr_interval_us() );
 		printk("interval measured as: %u ticks\n", midi1_clock_meas_cntr_interval_ticks() );
 		
@@ -363,41 +365,13 @@ int main(void)
 		uint32_t pll_ticks = midi1_pll_ticks_get_interval_ticks();
 		printk("main: PLL ticks     : %d\n", pll_ticks);
 		
+		uint32_t timestamp_ticks = midi1_clock_meas_cntr_last_timestamp();
+		printk("main: timestamp tick : %u\n", timestamp_ticks);
+		
 		/* Start the clock with the correct ticks */
 		midi1_clock_cntr_ticks_start(pll_ticks);
 		k_msleep(1000);
 	}
 	
-#if 0
-	k_msleep(30000);
-	
-	
-	printk("main: Generate MIDI at 20833 usec interval (for 30s) \n");
-	midi1_clock_adj_start(20833);
-	k_msleep(30000);
-	
-	printk("main: Generate MIDI at 41666 usec interval (for 30s) \n");
-	midi1_clock_adj_start(41666);
-	k_msleep(30000);
-	
-
-	while (1) {
-		uint16_t raw_sbpm = midi1_clock_meas_get_sbpm();
-		printk("main:     BPM (raw): %s\n", sbpm_to_str(raw_sbpm));
-		uint16_t raw_cntr_sbpm = midi1_clock_meas_cntr_get_sbpm();
-		printk("main cntr BPM (raw): %s\n", sbpm_to_str(raw_cntr_sbpm));
-		
-		uint16_t pll_sbpm = pqn24_to_sbpm(midi1_pll_get_interval_us());
-		printk("main: PLL BPM      : %s\n", sbpm_to_str(pll_sbpm));
-		/* Now adjust our own generated BPM... */
-		uint32_t pll_int_pqn = midi1_pll_get_interval_us();
-		printk("main: PLL int [us] : %u\n", pll_int_pqn);
-		/* Adjust generated clock */
-		midi1_clock_adj_set_interval_us(pll_int_pqn);
-		uint16_t gen_sbpm = midi1_clock_adj_get_sbpm();
-		printk("main: GEN BPM      : %s\n", sbpm_to_str(gen_sbpm));
-		k_msleep(10000);
-	}
-#endif
 	return 0;
 }

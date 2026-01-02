@@ -13,6 +13,7 @@
 
 #include "midi1.h"
 #include "midi1_clock_measure_counter.h"
+#include "midi1_blockavg.h"
 
 /* ------------------------------------------------------------------ */
 /* Internal state */
@@ -51,6 +52,15 @@ static inline uint32_t midi1_clock_meas_now_ticks(void)
 	return ticks;
 }
 
+/*
+ * defined but doing nothing I could not find the correct way to
+ * switch off the IRQ with the top_cfg...
+ */
+void midi1_clock_meas_callback(void)
+{
+	//printk("midi1_clock_meas_callback fired!\n");
+}
+
 /* ------------------------------------------------------------------ */
 /* TODO: has a BUG crashes when counter wraps around maybe unhandled IRQ */
 void midi1_clock_meas_cntr_init(void)
@@ -66,6 +76,17 @@ void midi1_clock_meas_cntr_init(void)
 		return;
 	}
 
+	/* Do this once and then let it run free no calbacks etc.. */
+	const struct counter_top_cfg top_cfg = {
+		.ticks = 0xFFFFFFFF,   /* full 32‑bit range */
+		.callback = (void *)midi1_clock_meas_callback,
+		//.callback = 0,
+		.user_data = 0,
+		.flags = 0,
+	};
+	counter_set_top_value(g_counter_dev_ch1, &top_cfg);
+	
+	
 	/* Start free-running counter */
 	int err = counter_start(g_counter_dev_ch1);
 	if (err != 0) {
@@ -76,24 +97,6 @@ void midi1_clock_meas_cntr_init(void)
 }
 
 /* ------------------------------------------------------------------ */
-void midi1_clock_meas_cntr_pulse_BROKEN(void)
-{
-	uint32_t now_ticks = midi1_clock_meas_now_ticks();
-	/* for the PLL to read e.g. */
-	g_last_tick_timestamp_ticks = now_ticks;
-
-	if (g_last_ts_ticks != 0) {
-		g_last_interval_ticks = g_last_ts_ticks - now_ticks;
-		if (g_last_interval_ticks > 0) {
-			uint32_t sbpm =
-			    MIDI1_SCALED_BPM_NUMERATOR / midi1_clock_meas_cntr_interval_us();
-			g_scaled_bpm = sbpm;
-			g_valid = true;
-		}
-	}
-	g_last_ts_ticks = now_ticks;
-}
-
 void midi1_clock_meas_cntr_pulse(void)
 {
 	uint32_t now_ticks = midi1_clock_meas_now_ticks();
@@ -107,7 +110,10 @@ void midi1_clock_meas_cntr_pulse(void)
 		return;
 	}
 	
-	/* For a down-counter, elapsed = previous - current (unsigned wrap-safe) */
+	/*
+	 * For a down-counter,
+	 * elapsed = previous - current (unsigned wrap-safe)
+	 */
 	uint32_t interval_ticks = g_last_ts_ticks - now_ticks;
 	g_last_ts_ticks = now_ticks;
 	
@@ -123,9 +129,25 @@ void midi1_clock_meas_cntr_pulse(void)
 		return;
 	}
 	
+	/*
+	 * Let average the BPM over 24 clock's 0xF8 received otherwise
+	 * it goes all over the place
+	 */
+	midi1_blockavg_add(interval_ticks);
+	
+	if (midi1_blockavg_count() == MIDI1_BLOCKAVG_SIZE) {
+		uint32_t avg_ticks = midi1_blockavg_average();
+		uint32_t interval_us = counter_ticks_to_us(g_counter_dev_ch1, avg_ticks);
+		g_scaled_bpm = MIDI1_SCALED_BPM_NUMERATOR / interval_us;
+		g_valid = true;
+	}
+	
+	/* old code */
+#if 0
 	uint32_t sbpm = MIDI1_SCALED_BPM_NUMERATOR / interval_us;
 	g_scaled_bpm = sbpm;
 	g_valid = true;
+#endif
 }
 
 
@@ -155,12 +177,5 @@ uint32_t midi1_clock_meas_cntr_interval_us(void)
 {
 	return counter_ticks_to_us(g_counter_dev_ch1, midi1_clock_meas_cntr_interval_ticks());
 }
-
-
-
-
-
-
-
 
 /* EOF */

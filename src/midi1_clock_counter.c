@@ -1,7 +1,10 @@
 /*
- * implementation of midi1_clock_clock by Jan-Willem Smaal <usenet@gispen.org
- * this is a hardware based counter tested with NXP FRDM_MCXC242 in zephyr.
- * 20251214
+ * @brief implementation of midi1_clock_clock
+ * this is a _hardware_ based counter PIT0 channel 0
+ * tested with NXP FRDM_MCXC242 in zephyr.
+ *
+ * @author Jan-Willem Smaal <usenet@gispen.org
+ * @date 20251214
  */
 #include <zephyr/audio/midi.h>
 #include <zephyr/drivers/counter.h>

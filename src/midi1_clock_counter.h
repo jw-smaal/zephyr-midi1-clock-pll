@@ -1,7 +1,8 @@
 #ifndef MIDI1_CLOCK_COUNTER
 #define MIDI1_CLOCK_COUNTER
 /**
- * @brief MIDI1.0 clock for zephyr RTOS using software timer.
+ * @brief MIDI1.0 clock for zephyr RTOS using hardware clock timer.
+ * pit0_channel0
  *
  * @author Jan-Willem Smaal <usenet@gispen.org>
  * @date 20251214
@@ -22,6 +23,9 @@
  */
 void midi1_clock_cntr_init(const struct device *midi1_dev);
 
+/*
+ * getter for the internal counter frequency
+ */
 uint32_t midi1_clock_cntr_cpu_frequency(void);
 
 /*
