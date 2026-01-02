@@ -365,12 +365,13 @@ int main(void)
 		uint32_t pll_ticks = midi1_pll_ticks_get_interval_ticks();
 		printk("main: PLL ticks     : %d\n", pll_ticks);
 		
-		uint32_t timestamp_ticks = midi1_clock_meas_cntr_last_timestamp();
-		printk("main: timestamp tick : %u\n", timestamp_ticks);
+		//uint32_t timestamp_ticks = midi1_clock_meas_cntr_last_timestamp();
+		//printk("main: timestamp tick : %u\n", timestamp_ticks);
 		
 		/* Start the clock with the correct ticks */
 		midi1_clock_cntr_ticks_start(pll_ticks);
-		k_msleep(1000);
+		
+		k_msleep(10000);
 	}
 	
 	return 0;

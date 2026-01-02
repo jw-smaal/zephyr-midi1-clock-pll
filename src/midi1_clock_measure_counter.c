@@ -1,8 +1,9 @@
 
 /*
  * @file midi_clock_measure_counter.c
- * @brief MIDI 1.0 Clock BPM measurement using Zephyr counter device.    (TODO: NOT TESTED! ) 
- * Hardware-accurate
+ * @brief MIDI 1.0 Clock BPM measurement using Zephyr counter device.
+ * Fully working and verified with external MIDI gear
+ * Hardware-accurate clock.
  *
  * @author Jan-Willem Smaal <usenet@gispen.org>
  * @license SPDX-License-Identifier: Apache-2.0
@@ -37,7 +38,9 @@ static uint32_t g_last_tick_timestamp_ticks = 0;
 #define MIDI1_SCALED_BPM_NUMERATOR ((60ull * US_PER_SECOND * BPM_SCALE) / 24ull)
 
 /* ------------------------------------------------------------------ */
-/* Read free-running counter and convert to microseconds */
+/*
+ * Read free-running counter note this is running down not up!
+ */
 static inline uint32_t midi1_clock_meas_now_ticks(void)
 {
 	uint32_t ticks = 0;
@@ -47,8 +50,6 @@ static inline uint32_t midi1_clock_meas_now_ticks(void)
 		printk("counter_get_value error\n");
 		return 0;
 	}
-	//printk("number of ticks:%u\n", ticks);
-	/* Is decreasing over time */
 	return ticks;
 }
 
@@ -58,11 +59,13 @@ static inline uint32_t midi1_clock_meas_now_ticks(void)
  */
 void midi1_clock_meas_callback(void)
 {
-	//printk("midi1_clock_meas_callback fired!\n");
+	return;
 }
 
-/* ------------------------------------------------------------------ */
-/* TODO: has a BUG crashes when counter wraps around maybe unhandled IRQ */
+/*
+ * It's working but I had to configure a callback to stop
+ * zephyr from crashing.  If I set the callback to 0 it crashes.
+ */
 void midi1_clock_meas_cntr_init(void)
 {
 	g_last_ts_ticks = 0;
@@ -76,7 +79,7 @@ void midi1_clock_meas_cntr_init(void)
 		return;
 	}
 
-	/* Do this once and then let it run free no calbacks etc.. */
+	/* Do this once and then let it run free .. */
 	const struct counter_top_cfg top_cfg = {
 		.ticks = 0xFFFFFFFF,   /* full 32‑bit range */
 		.callback = (void *)midi1_clock_meas_callback,
@@ -85,7 +88,6 @@ void midi1_clock_meas_cntr_init(void)
 		.flags = 0,
 	};
 	counter_set_top_value(g_counter_dev_ch1, &top_cfg);
-	
 	
 	/* Start free-running counter */
 	int err = counter_start(g_counter_dev_ch1);
@@ -151,7 +153,9 @@ void midi1_clock_meas_cntr_pulse(void)
 }
 
 
-/* ------------------------------------------------------------------ */
+/*
+ * Some convinience functions.
+ */
 uint32_t midi1_clock_meas_cntr_get_sbpm(void)
 {
 	return g_valid ? g_scaled_bpm : 0;
@@ -175,7 +179,8 @@ uint32_t midi1_clock_meas_cntr_interval_ticks(void)
 
 uint32_t midi1_clock_meas_cntr_interval_us(void)
 {
-	return counter_ticks_to_us(g_counter_dev_ch1, midi1_clock_meas_cntr_interval_ticks());
+	return counter_ticks_to_us(g_counter_dev_ch1,
+				   midi1_clock_meas_cntr_interval_ticks());
 }
 
 /* EOF */

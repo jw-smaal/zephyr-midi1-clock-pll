@@ -14,16 +14,14 @@
 
 static uint32_t midi1_nominal_interval_ticks;
 static int32_t midi1_internal_interval_ticks;
-//static uint32_t midi1_next_expected_ticks;
 static int32_t midi1_filtered_error = 0;
-//static int32_t midi1_slow_error_accum;
 
 /* TODO: must return PIT ticks, not microseconds */
 //extern uint32_t sbpm_to_24pqn_ticks(uint16_t sbpm);
 
+/* TODO: implement!!!  it's ignoring sbpm now! */
 void midi1_pll_ticks_init(uint16_t sbpm)
 {
-	//midi1_nominal_interval_ticks  = sbpm_to_24pqn_ticks(sbpm);
 	// TODO: implement now set a static value
 	midi1_nominal_interval_ticks  = 503000;
 	midi1_internal_interval_ticks = (int32_t)midi1_nominal_interval_ticks;
@@ -31,7 +29,9 @@ void midi1_pll_ticks_init(uint16_t sbpm)
 	//midi1_slow_error_accum 	      = 0;
 }
 
-/* measured_interval_ticks is the last "interval measured as: X" */
+/*
+ * measured_interval_ticks is in hardware clock ticks of course
+ */
 void midi1_pll_ticks_process_interval(uint32_t measured_interval_ticks)
 {
 	if (measured_interval_ticks == 0U) {
@@ -52,37 +52,10 @@ void midi1_pll_ticks_process_interval(uint32_t measured_interval_ticks)
 	(int32_t)midi1_nominal_interval_ticks +
 	midi1_filtered_error / MIDI1_PLL_GAIN_G;
 	
-#if 0
-	
-	/* Clamp to sane bounds: e.g., ±50% around nominal */
-	int32_t min_ticks = (int32_t)midi1_nominal_interval_ticks / 2;
-	int32_t max_ticks = (int32_t)midi1_nominal_interval_ticks * 2;
-	
-	if (midi1_internal_interval_ticks < min_ticks) {
-		midi1_internal_interval_ticks = min_ticks;
-	} else if (midi1_internal_interval_ticks > max_ticks) {
-		midi1_internal_interval_ticks = max_ticks;
-	}
-#endif
-	
-	/* Slow tracking: adapt nominal over time */
-	//midi1_slow_error_accum += midi1_filtered_error;
-
-#if 0
-	/* When slow_error_accum gets big enough, nudge nominal */
-	if (midi1_slow_error_accum > MIDI1_PLL_TRACK_H) {
-		midi1_nominal_interval_ticks++;
-		midi1_slow_error_accum -= MIDI1_PLL_TRACK_H;
-	} else if (midi1_slow_error_accum < -MIDI1_PLL_TRACK_H) {
-		midi1_nominal_interval_ticks--;
-		midi1_slow_error_accum += MIDI1_PLL_TRACK_H;
-	}
-#endif
-
 	/*
 	 * Slow tracking: adapt nominal interval towards long-term average.
 	 *
-	 * We add a small fraction of the filtered error each pulse.
+	 * Add a small fraction of the filtered error each pulse.
 	 * This makes nominal_interval_ticks follow real BPM over time.
 	 */
 	midi1_nominal_interval_ticks +=
