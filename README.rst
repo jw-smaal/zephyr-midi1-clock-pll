@@ -56,15 +56,15 @@ Repository Structure
     src/
       midi1_clock_counter.c        # MIDI clock generator (Zephyr counter)
       midi1_clock_meas_cntr.c      # Hardware-timestamped measurement
-      midi1_pll.c                  # Fixed-point PLL
       midi1.c / midi1.h            # MIDI helpers
       main.c                       # UMP responder + integration
+...
 
     include/
       midi1_clock_counter.h
       midi1_clock_meas_cntr.h
-      midi1_pll.h
       midi1.h
+...
 
 ---------------------------------------
 MIDI Clock Generation
@@ -127,7 +127,7 @@ Standard Zephyr build:
 
 .. code-block:: sh
 
-   west build -b frdm_mcxc242
+   west build -b frdm_mcxc242 -p always
 
 ---------------------------------------
 Running
