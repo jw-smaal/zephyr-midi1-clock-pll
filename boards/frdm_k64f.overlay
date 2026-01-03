@@ -35,6 +35,10 @@
 };
 
 /* Enable these for the scope outputs */
+&gpiob {
+    status = "okay";
+};
+
 &gpioc {
     status = "okay";
 };
@@ -55,16 +59,14 @@
 	};
 	leds {
 		compatible = "gpio-leds";
-		/* Everytime a 0xF8 is sent we toggle pin PTC12  */
+		/* Everytime a 0xF8 is sent we toggle pin PTC3  */
 		freq_out: freq_out {
-			/* PTC12 = port C, pin 12 */
-			gpios = <&gpioc 12 GPIO_ACTIVE_HIGH>;
+			gpios = <&gpioc 3 GPIO_ACTIVE_HIGH>;
 			label = "FREQ_GEN_OUT";
 		};
-		/* Everytime a 0xF8 is received we toggle pin PTC16  */
+		/* Everytime a 0xF8 is received we toggle pin PTB9  */
 		rx_midi_clk: rx_midi_clk{
-			/* PTC12 = port C, pin 16 */
-			gpios = <&gpioa 12 GPIO_ACTIVE_HIGH>;
+			gpios = <&gpiob 9 GPIO_ACTIVE_HIGH>;
 			label = "FREQ_RX_OUT";
 		};
 	};
