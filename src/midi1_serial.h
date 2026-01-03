@@ -55,14 +55,5 @@ void SerialMidiReset(void);
 /* Prototype for the ISR callback */
 void serial_isr_callback(const struct device *dev, void *user_data);
 
-#if 0
-/*
- * "private" functions used for the implementation.
- * TODO: hide from the public header
- */
-int midi_fifo_get(uint8_t * data);
-int midi_msgq_get(uint8_t * data);
-#endif
-
 #endif				/* MIDI1_SERIAL_H */
 /* EOF */

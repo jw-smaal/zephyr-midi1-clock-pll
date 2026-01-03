@@ -31,6 +31,22 @@
 	status = "okay";
 };
 
+/* 
+ * Using the Arduino connector so it's on I2C1 on the MCXC242 
+ */
+&i2c1 {
+	status = "disabled";
+
+	/* AUX display using LV to HV level convertor */ 
+	aux_display_gpio: pcf8574@27 {
+		compatible = "nxp,pcf857x";
+		reg = <0x27>;
+		gpio-controller;
+		ngpios = <8>;
+		#gpio-cells = <2>;
+	};
+};
+
 /*
  * Enable these GPIO's' for the scope outputs I use this to
  * measure the clock sync on ingress and egress.
@@ -69,6 +85,26 @@
 			gpios = <&gpioa 12 GPIO_ACTIVE_HIGH>;
 			label = "FREQ_RX_OUT";
 		};
+	};
+        auxdisplay_0: hd44780 {
+                compatible = "hit,hd44780";
+                status = "disabled";
+                columns = <42>;
+                rows = <2>;
+                mode = <4>;
+                /* boot-delay-ms = <15>; */  /* Works for the 32x2 LCD */
+                /* enable-line-rise-delay-us = <1000>;
+                enable-line-fall-delay-us = <1000>;
+                */
+                register-select-gpios = <&aux_display_gpio 0 (GPIO_ACTIVE_HIGH)>;
+                /* read-write-gpios    = <&aux_display_gpio 1 (GPIO_ACTIVE_HIGH)>; */
+                enable-gpios        = <&aux_display_gpio 2 (GPIO_ACTIVE_HIGH)>;
+                backlight-gpios     = <&aux_display_gpio 3 (GPIO_ACTIVE_HIGH)>;
+                data-bus-gpios      = <0>, <0>, <0>, <0>,
+                                <&aux_display_gpio 4 (GPIO_ACTIVE_HIGH)>,
+                                <&aux_display_gpio 5 (GPIO_ACTIVE_HIGH)>,
+                                <&aux_display_gpio 6 (GPIO_ACTIVE_HIGH)>,
+                                <&aux_display_gpio 7 (GPIO_ACTIVE_HIGH)>;
 	};
 	aliases {
 		midi = &lpuart0;

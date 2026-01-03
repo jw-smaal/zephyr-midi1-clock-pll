@@ -12,12 +12,12 @@
  *
  * @license SPDX-License-Identifier: Apache-2.0
  */
+#include <stdio.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/input/input.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
-#include <stdio.h>
 
 /*
  * This is part of the MIDI2 library prj.conf
@@ -69,6 +69,9 @@
 //#include "midi1_clock_pll.h"
 #include "midi1_clock_pll_ticks.h"
 
+
+/* ------------------------------------------------------------------------- */
+
 /* Provide the received 24pqn MIDI clock on a pin */
 #define RX_MIDI_CLOCK_ON_PIN 1
 #if RX_MIDI_CLOCK_ON_PIN
@@ -86,9 +89,7 @@ static void main_rx_midi_clk_gpio_init(void)
 }
 #endif
 
-/*
- * -- == Device Tree stuff == --
- */
+
 #define USB_MIDI_DT_NODE DT_NODELABEL(usb_midi)
 static const struct device *const midi = DEVICE_DT_GET(USB_MIDI_DT_NODE);
 
@@ -99,6 +100,9 @@ static struct gpio_dt_spec led2 = GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios);
 /* We want logging */
 LOG_MODULE_REGISTER(sample_usb_midi, LOG_LEVEL_INF);
 
+
+
+/* ----------------------- handlers callbacks  ----------------------------- */
 static void key_press(struct input_event *evt, void *user_data)
 {
 	/* Only handle key presses in the 7bit MIDI range */
@@ -278,6 +282,7 @@ void realtime_handler(uint8_t msg) {
 }
 
 
+/* ------------------------- INIT functions -------------------------------- */
 /*
  * Init all the USB MIDI stuff in main.
  */
@@ -334,9 +339,9 @@ int main_midi_init()
 	printk("MIDI1.0 serial initialized\n");
 	
 	/*
-	 * Send example MIDI messages to test the MIDI.
+	 * Send example MIDI messages to test the DIN5 MIDI1.0
 	 */
-#define TEST_MIDI_OUTPUT 1
+#define TEST_MIDI_OUTPUT 0
 #if TEST_MIDI_OUTPUT
 	for (int j =0 ; j < 16; j++ ) {
 		for (int i = 0; i < 16; i++) {
@@ -355,7 +360,7 @@ int main_midi_init()
 	return 0;
 }
 
-/*-------------------- THREADS ------------------ */
+/* ---------------------------- THREADS ------------------------------------ */
 
 /*
  * MIDI1.0 5PIN DIN serial receive parser thread. 
@@ -371,8 +376,8 @@ K_THREAD_DEFINE(midi1_serial_receive_tid, 512,
 
 
 /*
- * This blinks LED2 (blue) in the interval received via MIDI on every
- * quater note.
+ * This blinks LED2 (blue) in the interval received via MIDI-USB on
+ * every quater note.
  */
 void led_blink_thread(void)
 {
@@ -389,7 +394,7 @@ void led_blink_thread(void)
 		//int32_t tick_us = midi1_clock_meas_last_interval();
 		int32_t tick_us = midi1_clock_meas_cntr_interval_us();
 
-		/* Convert to quarter-note interval */
+		/* Convert to quarter-note interval so multiply by 24 */
 		int32_t qn_us = abs(tick_us * 24u);
 
 		/* Toggle LED */
@@ -402,26 +407,28 @@ void led_blink_thread(void)
 		} else {
 			/*
 			 * if we get strange large values for
-			 * qn_us > 2.5 seconds (1 BPM)
+			 * qn_us > 2.5 seconds (1 BPM) just ignore it.
 			 */
 			k_msleep(2000);
-			printk("led_blink_thread: Large value qn_us: %d\n",
-			       qn_us);
+			
+			/* printk("led_blink_thread: Large value qn_us: %d\n",
+			    qn_us); */
 			continue;
 		}
 	}
 }
-
 K_THREAD_DEFINE(led_blink_tid, 512,
 		led_blink_thread, NULL, NULL, NULL, 5, 0, 0);
 
+#include "banner.h"
 /**
  * Main thread - this may actually terminate normally (code 0) in zephyr.
  * and the rest of threads keeps running just fine.
  */
 int main(void)
 {
-	/* Init the USB MIDI and the rest */
+	printk("%s", banner);
+	/* Init the USB MIDI and the rest of the MIDI processes */
 	if (main_midi_init()) {
 		printk("Failed to main_midi_init()\n");
 		return -1;
@@ -466,8 +473,6 @@ int main(void)
 			midi1_clock_cntr_ticks_start(pll_ticks);
 			k_msleep(10000);
 		}
-		/* This one is blocking now */
-		SerialMidiReceiveParser();
 #if 0
 		/* shifting phase */
 		for (int phases = 5000 ; phases <= 50000; phases += 2000) {
@@ -483,3 +488,5 @@ int main(void)
 
 	return 0;
 }
+
+/* EOF */

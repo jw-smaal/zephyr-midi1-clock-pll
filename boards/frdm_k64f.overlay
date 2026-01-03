@@ -37,7 +37,10 @@
     status = "okay";
 };
 
-/* Enable these for the scope outputs */
+/*
+ * Enable these GPIO's' for the scope outputs I use this to
+ * measure the clock sync on ingress and egress.
+ */
 &gpiob {
     status = "okay";
 };
