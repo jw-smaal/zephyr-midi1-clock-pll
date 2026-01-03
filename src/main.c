@@ -36,6 +36,11 @@
 #include "midi1.h"
 
 /*
+ * MIDI1.0 serial 5 port DIN port support
+ */
+#include "midi1_serial.h"
+
+/*
  * Functions for the MIDI software based clock timer.
  */
 //#include "midi1_clock_timer.h"
@@ -235,6 +240,44 @@ static const struct usbd_midi_ops ops = {
 };
 */
 
+
+
+/**
+ * @brief Callbacks/delegates for 'midi1_serial.c' after parsing MIDI1.0
+ *
+ * @note
+ * Do not block in these function as they are called from the MIDI
+ * parser this one is blocked untill the delegate is finished.
+ */
+void note_on_handler(uint8_t note, uint8_t velocity) {
+	printk("Note  on: %03d %03d\n", note, velocity);
+}
+
+void note_off_handler(uint8_t note, uint8_t velocity) {
+	printk("Note off: %03d %03d\n", note, velocity);
+}
+
+void midi_pitchwheel_handler(uint8_t lsb, uint8_t msb) {
+	/* 14 bit value for the pitch wheel  */
+	int16_t pwheel = (int16_t)((msb << 7) | lsb) - PITCHWHEEL_CENTER ;
+	
+	/* print on the serial out */
+	printk("Pitchwheel: %d\n", pwheel);
+}
+
+void control_change_handler_model(uint8_t controller, uint8_t value) {
+	printk("Control change: %d %d\n", controller, value);
+}
+
+void control_change_handler(uint8_t controller, uint8_t value) {
+	printk("Control change: %d %d\n", controller, value);
+}
+
+void realtime_handler(uint8_t msg) {
+	printk("Realtime: %d\n", msg);
+}
+
+
 /*
  * Init all the USB MIDI stuff in main.
  */
@@ -277,13 +320,55 @@ int main_midi_init()
 	/* Init the clock measurement system */
 	midi1_clock_cntr_init(midi);
 	midi1_clock_meas_cntr_init();
+	
 	/* We init the PLL with something and adjust from there */
 	midi1_pll_ticks_init(12000);
-
+	
+	/* defined in midi1_serial.h */
+	/* Initialize the MIDI parser with the callbacks */
+	SerialMidiInit(&note_on_handler,
+		       &note_off_handler,
+		       &control_change_handler,
+		       &realtime_handler,
+		       &midi_pitchwheel_handler);
+	printk("MIDI1.0 serial initialized\n");
+	
+	/*
+	 * Send example MIDI messages to test the MIDI.
+	 */
+#define TEST_MIDI_OUTPUT 1
+#if TEST_MIDI_OUTPUT
+	for (int j =0 ; j < 16; j++ ) {
+		for (int i = 0; i < 16; i++) {
+			printk("MIDI1.0 serial NoteON\n");
+			SerialMidiNoteON(j,60,i);
+			k_msleep(100);
+		}
+		for (int i = 0; i < 16; i++) {
+			printk("MIDI1.0 serial NoteON (velocity=0)\n");
+			SerialMidiNoteON(j,60,0);
+			k_msleep(100);
+		}
+		k_msleep(2000);
+	}
+#endif
 	return 0;
 }
 
 /*-------------------- THREADS ------------------ */
+
+/*
+ * MIDI1.0 5PIN DIN serial receive parser thread. 
+ */
+void midi1_serial_receive_thread(void) {
+	while (1) {
+		/* This one is blocking now */
+		SerialMidiReceiveParser();
+	}
+}
+K_THREAD_DEFINE(midi1_serial_receive_tid, 1024,
+		midi1_serial_receive_thread, NULL, NULL, NULL, 5, 0, 0);
+
 
 /*
  * This blinks LED2 (blue) in the interval received via MIDI on every
@@ -370,6 +455,8 @@ int main(void)
 		uint32_t pll_ticks = midi1_pll_ticks_get_interval_ticks();
 		printk("main: PLL ticks     : %d\n", pll_ticks);
 		
+		
+		
 		/* Half a minute of correct phase */
 		for (int i = 0; i < 3; i++) {
 			
@@ -379,6 +466,8 @@ int main(void)
 			midi1_clock_cntr_ticks_start(pll_ticks);
 			k_msleep(10000);
 		}
+		/* This one is blocking now */
+		SerialMidiReceiveParser();
 #if 0
 		/* shifting phase */
 		for (int phases = 5000 ; phases <= 50000; phases += 2000) {

@@ -42,6 +42,25 @@
 #define C_CONTROL_CHANGE        0xB0
 #define C_PROGRAM_CHANGE        0xC0
 
+enum midi_channel {
+	CH1 = 0x00,
+	CH2 = 0x01,
+	CH3 = 0x02,
+	CH4 = 0x03,
+	CH5 = 0x04,
+	CH6 = 0x05,
+	CH7 = 0x06,
+	CH8 = 0x07,
+	CH9 = 0x08,
+	CH10 = 0x09,
+	CH11 = 0x0A,
+	CH12 = 0x0B,
+	CH13 = 0x0C,
+	CH14 = 0x0D,
+	CH15 = 0x0E,
+	CH16 = 0x0F
+};
+
 enum midi_control_change {
 	CTL_MSB_BANK = 0x00,	// Bank Selection
 	CTL_MSB_MODWHEEL = 0x01,	// Modulation
@@ -136,8 +155,9 @@ enum midi_control_change {
  * TODO: these only make sense when using USART/UART maybe need
  * TODO: implement when creating a UMP bridge. 
  */
-//static uint8_t global_running_status_tx;
-//static uint_t global_running_status_rx;
+/* static uint8_t global_running_status_tx;
+ * static uint8_t global_running_status_rx;
+ */
 
 /**
  * -- == Channel messages == --

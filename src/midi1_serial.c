@@ -18,22 +18,38 @@
  * Created in 2014 ported to Zephyr RTOS in 2024. 
  * @author Jan-Willem Smaal <usenet@gispen.org> 
  * @updated 20241224
+ * @updated 20260103
  * @license SPDX-License-Identifier: Apache-2.0
  */
+#include <zephyr/kernel.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/uart.h>
+#include <zephyr/sys/ring_buffer.h>
+
+
 #include "midi1_serial.h"
+#include "midi1.h"
 
 #define MSGQ_SIZE 128
 #define MSG_SIZE sizeof(uint8_t)
-
 K_MSGQ_DEFINE(midi_msgq, MSG_SIZE, MSGQ_SIZE, 4);
+
+
+/*-----------------------------------------------------------------------*/
+/* Global variables */
+static uint8_t global_running_status_tx;
+static uint8_t global_running_status_tx_count;
+static uint8_t global_running_status_rx;
+static uint8_t global_3rd_byte_flag;
+static uint8_t global_midi_c2;
+static uint8_t global_midi_c3;
 
 /* 
  * Make sure there is a  "midi" in the device tree overlay. 
  * We'll cover the multi port MIDI stuff later. for now just one MIDI port is 
- * supported per board.   
- * Also this is a UART device so make sure the UART is enabled in the device tree.
- * We have not tested any USB MIDI HID devices yet with this implementaiton. 
- */ 
+ * supported per board.   Also this is a UART device so make sure the UART
+ * is enabled in the device prj.conf
+ */
 #define UART_DEVICE_NODE DT_ALIAS(midi)
 static const struct device *const midi = DEVICE_DT_GET(UART_DEVICE_NODE);
 
@@ -96,7 +112,7 @@ void SerialMidiInit(void (*note_on_handler_ptr)(uint8_t note, uint8_t velocity),
  */
 void SerialMidiNoteON(uint8_t channel, uint8_t key, uint8_t velocity)
 {
-    if((C_NOTE_ON | channel) !=  global_running_status_tx) {    
+    if((C_NOTE_ON | channel) !=  global_running_status_tx) {
         uart_poll_out(midi, C_NOTE_ON | channel);
         global_running_status_tx = C_NOTE_ON | channel;
     }
