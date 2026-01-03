@@ -14,9 +14,9 @@
  * @license SPDX-License-Identifier: Apache-2.0
  */
 #ifndef MIDI1_SERIAL_H
-#define MIDI1_SERIAL_H 
+#define MIDI1_SERIAL_H
 /*-----------------------------------------------------------------------*/
-#include <string.h>  /* Check if really needed ? */
+#include <string.h>		/* Check if really needed ? */
 #include <stdint.h>
 
 /* MIDI1.0 definitions by Jan-Willem Smaal */
@@ -30,10 +30,11 @@ void SerialMidiReceiveParser(void);
 
 /* During the SerialMidiInit the delegate callback functions need to be assigned */
 void SerialMidiInit(void (*note_on_handler_ptr)(uint8_t note, uint8_t velocity),
-                    void (*note_off_handler_ptr)(uint8_t note, uint8_t velocity),
-                    void (*control_change_handler_ptr)(uint8_t controller, uint8_t value),
-                    void (*realtime_handler_ptr)(uint8_t msg),
-                    void (*midi_pitchwheel_ptr)(uint8_t lsb, uint8_t msb));
+		    void(*note_off_handler_ptr)(uint8_t note, uint8_t velocity),
+		    void(*control_change_handler_ptr)(uint8_t controller,
+						      uint8_t value),
+		    void(*realtime_handler_ptr)(uint8_t msg),
+		    void(*midi_pitchwheel_ptr)(uint8_t lsb, uint8_t msb));
 
 /* Channel mode messages */
 void SerialMidiNoteON(uint8_t channel, uint8_t key, uint8_t velocity);
@@ -51,7 +52,6 @@ void SerialMidiStop(void);
 void SerialMidiActive_Sensing(void);
 void SerialMidiReset(void);
 
-
 /* Prototype for the ISR callback */
 void serial_isr_callback(const struct device *dev, void *user_data);
 
@@ -60,10 +60,9 @@ void serial_isr_callback(const struct device *dev, void *user_data);
  * "private" functions used for the implementation.
  * TODO: hide from the public header
  */
-int midi_fifo_get(uint8_t *data);
-int midi_msgq_get(uint8_t *data);
+int midi_fifo_get(uint8_t * data);
+int midi_msgq_get(uint8_t * data);
 #endif
 
-
-#endif /* MIDI1_SERIAL_H */
+#endif				/* MIDI1_SERIAL_H */
 /* EOF */
