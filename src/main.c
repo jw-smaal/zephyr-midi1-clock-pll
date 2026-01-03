@@ -366,7 +366,7 @@ void midi1_serial_receive_thread(void) {
 		SerialMidiReceiveParser();
 	}
 }
-K_THREAD_DEFINE(midi1_serial_receive_tid, 1024,
+K_THREAD_DEFINE(midi1_serial_receive_tid, 512,
 		midi1_serial_receive_thread, NULL, NULL, NULL, 5, 0, 0);
 
 
@@ -412,7 +412,7 @@ void led_blink_thread(void)
 	}
 }
 
-K_THREAD_DEFINE(led_blink_tid, 1024,
+K_THREAD_DEFINE(led_blink_tid, 512,
 		led_blink_thread, NULL, NULL, NULL, 5, 0, 0);
 
 /**

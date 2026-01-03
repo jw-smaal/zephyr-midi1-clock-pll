@@ -1,9 +1,30 @@
 /*
  * @brief FRDM-MCXW242 board configuration for the MIDI clock
- * @note Overlay provided by
+ * @note
+ * it is using a MIDI arduino shield but I disconnected
+ * the 5V and connected it to 3.3V instead to protect the MCU inputs.
+ * I should lower the output and input from 220R resistors to 33R but it
+ * seems to "work" on some interfaces without that in some shape or form.
+ *
  * @author Jan-Willem Smaal
  * @date 20250101
  */
+ 
+/*
+ * Classic MIDI1.0 over DIN5 plug.
+ * note on the FRDM-MCXC242 the LPUART0 is shared with the MCU_LINK.
+ * so be aware!   If you send printk's you need to set the baud rate
+ * to 31250 from the default 115200 to see something usefull
+ *
+ * Also note anything you send out to the MCU_LINK will end up on the MIDI
+ * port!
+ *
+ */
+&lpuart0 {
+    status = "okay";
+    /* Set it to the MIDI baud rate */
+    current-speed = <31250>;
+};
 
 /* We are using the periodic interrupt timer  (PIT) so switch it on */
 &pit0 {
@@ -56,5 +77,8 @@
 			gpios = <&gpioa 12 GPIO_ACTIVE_HIGH>;
 			label = "FREQ_RX_OUT";
 		};
+	};
+	aliases {
+		midi = &lpuart0;
 	};
 };
