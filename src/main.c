@@ -16,8 +16,15 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/input/input.h>
-#include <zephyr/logging/log.h>
+//#include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
+
+/* ------------------------------------------------ */
+#include <zephyr/devicetree.h>
+#include <zephyr/drivers/display.h>
+#include <zephyr/display/cfb.h>
+#include <zephyr/sys/printk.h>
+/* ------------------------------------------------ */
 
 /*
  * This is part of the MIDI2 library prj.conf
@@ -360,6 +367,56 @@ int main_midi_init()
 	return 0;
 }
 
+
+
+/* Get the display device (DTS node must be named sh1106) */
+const struct device *display = DEVICE_DT_GET(DT_NODELABEL(sh1106));
+/* in the root of the device tree we need to point it to the sh1106 */ 
+const struct device *cfb = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
+
+int main_display_init(void)
+{
+	printk("SH1106 display init \n");
+
+	if (!device_is_ready(display)) {
+		printk("Display not ready\n");
+		return -1;
+	}
+
+	if (!device_is_ready(cfb)) {
+		printk("CFB not ready\n");
+		return -1;
+	}
+
+	/* Turn on the panel */
+	display_blanking_off(display);
+
+	/* Initialize the character framebuffer */
+	if (cfb_framebuffer_init(cfb)) {
+		printk("CFB init failed\n");
+		return -1;
+	}
+
+	/* Clear the framebuffer */
+	cfb_framebuffer_clear(cfb, true);
+
+	/* Select font index 0 (usually 8x8) */
+	cfb_framebuffer_set_font(cfb, 0);
+
+	/* Print default text */
+	cfb_print(cfb, "MIDIsync JWS", 0, 0);
+	cfb_print(cfb, "xxx.xx BPM  ", 0, 16);
+	cfb_print(cfb, "  -=init=-  ", 0, 32);
+
+	/* Push framebuffer to display */
+	cfb_framebuffer_finalize(cfb);
+	return 0; 
+}
+
+
+
+
+
 /* ---------------------------- THREADS ------------------------------------ */
 
 /*
@@ -375,9 +432,22 @@ K_THREAD_DEFINE(midi1_serial_receive_tid, 512,
 		midi1_serial_receive_thread, NULL, NULL, NULL, 5, 0, 0);
 
 
+/**
+ * @brief helper function to print the scaled BPM to the display
+ * @param sbpm scaled bpm parameter
+ * TODO: check return values
+ */
+void display_update_bpm_line(uint16_t sbpm) {
+	/* printk("display_update_bpm: %s\n", sbpm_to_str(sbpm)); */
+	cfb_print(cfb, sbpm_to_str(sbpm), 0, 16);
+	cfb_framebuffer_finalize(cfb);
+	return;
+}
+
 /*
  * This blinks LED2 (blue) in the interval received via MIDI-USB on
- * every quater note.
+ * every quater note. It also shows a spinner in the display and updates
+ * the measured BPM.
  */
 void led_blink_thread(void)
 {
@@ -388,10 +458,10 @@ void led_blink_thread(void)
 
 	gpio_pin_configure_dt(&led2, GPIO_OUTPUT_INACTIVE);
 	gpio_pin_toggle_dt(&led2);
-
+	int spinner = 0;
+	
 	while (1) {
 		/* Get current PLL tick interval (1/24 QN) */
-		//int32_t tick_us = midi1_clock_meas_last_interval();
 		int32_t tick_us = midi1_clock_meas_cntr_interval_us();
 
 		/* Convert to quarter-note interval so multiply by 24 */
@@ -399,9 +469,40 @@ void led_blink_thread(void)
 
 		/* Toggle LED */
 		gpio_pin_toggle_dt(&led2);
-
+				
 		/* if the qn_us makes somewhat sense */
 		if (qn_us < 2500000) {
+			/* Update the BPM display */
+			uint16_t cntr_sbpm = midi1_clock_meas_cntr_get_sbpm();
+			/* Show it on the tiny display */
+			display_update_bpm_line(cntr_sbpm);
+			
+			/* In the sync with the clock rotate the spinner */
+			switch(spinner ) {
+				case 0:
+					cfb_print(cfb, "/ (synced)", 0, 32);
+					cfb_framebuffer_finalize(cfb);
+					spinner++;
+					break;
+				case 1:
+					cfb_print(cfb, "- (synced)", 0, 32);
+					cfb_framebuffer_finalize(cfb);
+					spinner++;
+					break;
+				case 2:
+					cfb_print(cfb, "\\ (synced)", 0, 32);
+					cfb_framebuffer_finalize(cfb);
+					spinner++;
+					break;
+				case 3:
+					cfb_print(cfb, "| (synced)", 0, 32);
+					cfb_framebuffer_finalize(cfb);
+					spinner = 0;
+					break;
+				default:
+					spinner = 0;
+					break;
+			}
 			/* Sleep for 1/2  quarter note */
 			k_usleep(qn_us / 2);
 		} else {
@@ -415,6 +516,7 @@ void led_blink_thread(void)
 			    qn_us); */
 			continue;
 		}
+		/* Update the display */ 
 	}
 }
 K_THREAD_DEFINE(led_blink_tid, 512,
@@ -427,7 +529,15 @@ K_THREAD_DEFINE(led_blink_tid, 512,
  */
 int main(void)
 {
+	/* Serial boot screen */ 
 	printk("%s", banner);
+
+	/* Start the display stuff */
+	//main_display_init(); 
+	//if(main_display_init()) {
+	//	printk("Failed to main_display_init()\n");
+	//}	
+
 	/* Init the USB MIDI and the rest of the MIDI processes */
 	if (main_midi_init()) {
 		printk("Failed to main_midi_init()\n");
@@ -447,6 +557,8 @@ int main(void)
 	uint32_t pll_ticks = midi1_pll_ticks_get_interval_ticks();
 	midi1_clock_cntr_ticks_start(pll_ticks);
 	
+	/* Don't start the display straight after powerup (needs some time to settle */ 
+	main_display_init(); 
 
 	while (1) {
 		/*  measure incoming interval. */

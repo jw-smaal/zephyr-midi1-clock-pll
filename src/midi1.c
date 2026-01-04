@@ -263,7 +263,7 @@ const char *sbpm_to_str(uint16_t sbpm)
 	uint32_t frac  = sbpm % 100u;   /* fractional part */
 	
 	/* Format:  whole.frac  (e.g. 120.00) */
-	snprintf(buf, sizeof(buf), "%u.%02u", whole, frac);
+	snprintf(buf, sizeof(buf), "%03u.%02u", whole, frac);
 	
 	return buf;
 }

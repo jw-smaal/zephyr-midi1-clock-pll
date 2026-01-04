@@ -15,7 +15,7 @@
  * @note over which amount of samples do we take the
  * measurement.
  */
-#define MIDI1_BLOCKAVG_SIZE 64
+#define MIDI1_BLOCKAVG_SIZE 48
 
 /**
  * @brief init the block average system
