@@ -9,24 +9,27 @@
 /* For printk only */
 #include <zephyr/kernel.h>
 
+/* MIDI1.0 clock Phase Locked Loop (PLL) */
 #include "midi1_clock_pll_ticks.h"
-#include "midi1.h"		/* my sbpm_to_us_interval() */
+/* sbpm_to_us_interval() is defined here 1*/
+#include "midi1.h"
 
 static uint32_t midi1_nominal_interval_ticks;
 static int32_t midi1_internal_interval_ticks;
 static int32_t midi1_filtered_error = 0;
+static uint32_t midi1_clock_freq = 0;
+
 
 /* TODO: must return PIT ticks, not microseconds */
-//extern uint32_t sbpm_to_24pqn_ticks(uint16_t sbpm);
 
 /* TODO: implement!!!  it's ignoring sbpm now! */
-void midi1_pll_ticks_init(uint16_t sbpm)
+void midi1_pll_ticks_init(uint16_t sbpm, uint32_t clock_freq)
 {
 	// TODO: implement now set a static value
 	midi1_nominal_interval_ticks = 503000;
 	midi1_internal_interval_ticks = (int32_t) midi1_nominal_interval_ticks;
 	midi1_filtered_error = 0;
-	//midi1_slow_error_accum              = 0;
+	midi1_clock_freq = clock_freq;
 }
 
 /*
@@ -73,4 +76,15 @@ void midi1_pll_ticks_process_interval(uint32_t measured_interval_ticks)
 int32_t midi1_pll_ticks_get_interval_ticks(void)
 {
 	return midi1_nominal_interval_ticks;
+}
+
+/* TODO: implement */
+uint32_t midi1_pll_ticks_get_interval_us(void)
+{
+	if (midi1_clock_freq == 0) {
+		return 0;
+	}
+	
+	uint64_t us = ((uint64_t)midi1_nominal_interval_ticks * 1000000ULL) / midi1_clock_freq;
+	return (uint32_t) us; /* TODO: implement ! */
 }

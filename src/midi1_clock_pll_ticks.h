@@ -35,7 +35,7 @@
  *
  * @param sbpm  Scaled BPM value (e.g. 12000 for 120.00 BPM)
  */
-void midi1_pll_ticks_init(uint16_t sbpm);
+void midi1_pll_ticks_init(uint16_t sbpm, uint32_t clock_freq);
 
 /**
  * @brief Process an incoming MIDI clock tick interval.
@@ -50,7 +50,7 @@ void midi1_pll_ticks_process_interval(uint32_t measured_interval_ticks);
  * @return Interval in microseconds for the next 24pqn internal tick.
  * TODO: implement!
  */
-//int32_t midi1_pll_ticks_get_interval_us(void);
+uint32_t midi1_pll_ticks_get_interval_us(void);
 
 /**
  * @brief Get the current PLL‑corrected 24pqn tick interval in ticks.

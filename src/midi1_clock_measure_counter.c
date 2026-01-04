@@ -25,6 +25,7 @@ static uint32_t g_last_ts_ticks = 0;
 static uint32_t g_scaled_bpm = 0;
 static uint32_t g_last_interval_ticks = 0;
 static bool g_valid = false;
+static uint32_t g_clock_freq = 0;
 
 /* Timestamp exposed to PLL */
 static uint32_t g_last_tick_timestamp_ticks = 0;
@@ -72,13 +73,19 @@ void midi1_clock_meas_cntr_init(void)
 	g_scaled_bpm = 12000;
 	g_last_interval_ticks = 0;
 	g_valid = false;
-
+	g_clock_freq = 0;
+	
 	g_counter_dev_ch1 = DEVICE_DT_GET(DT_NODELABEL(COUNTER_DEVICE_CH1));
 	if (!device_is_ready(g_counter_dev_ch1)) {
 		printk("Clock measurement counter device not ready\n");
 		return;
 	}
-
+	g_clock_freq = counter_get_frequency(g_counter_dev_ch1);
+	if (!g_clock_freq) {
+		printk("Clock measurement counter unable to read frequency\n");
+		return;
+	}
+	
 	/* Do this once and then let it run free .. */
 	const struct counter_top_cfg top_cfg = {
 		.ticks = 0xFFFFFFFF,   /* full 32‑bit range */
@@ -176,6 +183,10 @@ uint32_t midi1_clock_meas_cntr_interval_ticks(void)
 	return g_last_interval_ticks;
 }
 
+uint32_t midi1_clock_meas_cntr_clock_freq(void)
+{
+	return g_clock_freq;
+}
 
 uint32_t midi1_clock_meas_cntr_interval_us(void)
 {

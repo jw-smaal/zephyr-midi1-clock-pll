@@ -82,6 +82,13 @@ uint32_t midi1_clock_meas_cntr_last_timestamp(void);
 uint32_t midi1_clock_meas_cntr_interval_ticks(void);
 
 /**
+ * @brief Returns the clock frequency of the counter
+ *
+ * @return clock_freq frequency in Hz.
+ */
+uint32_t midi1_clock_meas_cntr_clock_freq(void);
+
+/**
  * @brief Returns the interval us when the  MIDI Clock tick.
  * was received compared to the previous one.
  *
