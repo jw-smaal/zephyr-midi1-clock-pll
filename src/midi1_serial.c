@@ -33,6 +33,32 @@
 #define MSG_SIZE sizeof(uint8_t)
 K_MSGQ_DEFINE(midi_msgq, MSG_SIZE, MSGQ_SIZE, 4);
 
+/* TODO:Rebuilding this code to a instance based version */
+struct midi1_serial_inst {
+	const struct device *uart;
+
+	/* RX parser state */
+	uint8_t running_status_rx;
+	uint8_t third_byte_flag;
+	uint8_t midi_c2;
+	uint8_t midi_c3;
+
+	/* TX running status */
+	uint8_t running_status_tx;
+	uint8_t running_status_tx_count;
+
+	/* Message queue */
+	struct k_msgq msgq;
+	uint8_t msgq_buffer[MSGQ_SIZE];
+
+	/* Callback delegates */
+	void (*note_on)(uint8_t note, uint8_t velocity);
+	void (*note_off)(uint8_t note, uint8_t velocity);
+	void (*control_change)(uint8_t controller, uint8_t value);
+	void (*realtime)(uint8_t msg);
+	void (*pitchwheel)(uint8_t lsb, uint8_t msb);
+};
+
 /*-----------------------------------------------------------------------*/
 /* Global variables */
 static uint8_t global_running_status_tx;
@@ -62,17 +88,70 @@ void (*midi_pitchwheel_delegate)(uint8_t lsb, uint8_t msb);
 /**
  * Inits the serial USART with MIDI clock speed and 
  * registers delegates for the callbacks.
+ * TODO: work in progress
  */
+int midi_serial_init(struct midi1_serial_inst *inst,
+		     const struct device *uart_dev,
+		     void(*note_on)(uint8_t, uint8_t),
+		     void(*note_off)(uint8_t, uint8_t),
+		     void(*control_change)(uint8_t, uint8_t),
+		     void(*realtime)(uint8_t),
+		     void(*pitchwheel)(uint8_t, uint8_t))
+{
+	inst->uart = uart_dev;
+
+	inst->running_status_rx = 0;
+	inst->third_byte_flag = 0;
+	inst->midi_c2 = 0;
+	inst->midi_c3 = 0;
+
+	inst->running_status_tx = 0;
+	inst->running_status_tx_count = 0;
+
+	/* Assign delegate's */
+	inst->note_on = note_on;
+	inst->note_off = note_off;
+	inst->control_change = control_change;
+	inst->realtime = realtime;
+	inst->pitchwheel = pitchwheel;
+
+	/* Assign a MSQ to this instance */ 
+	k_msgq_init(&inst->msgq, inst->msgq_buffer, MSG_SIZE, MSGQ_SIZE);
+
+	if (!device_is_ready(inst->uart)) {
+		printk("UART device not found!");
+		return -1;
+	}
+	int ret =
+	    uart_irq_callback_user_data_set(inst->uart, serial_isr_callback, inst);
+	if (ret < 0) {
+		if (ret == -ENOTSUP) {
+			printk
+			    ("Interrupt-driven UART API support not enabled\n");
+		} else if (ret == -ENOSYS) {
+			printk
+			    ("UART device does not support interrupt-driven API\n");
+		} else {
+			printk("Error setting UART callback: %d\n", ret);
+		}
+		return ret;
+	}
+
+	uart_irq_rx_enable(inst->uart);
+	return 0;
+}
+
 void SerialMidiInit(void (*note_on_handler_ptr)(uint8_t note, uint8_t velocity),
-		    void(*note_off_handler_ptr)(uint8_t note, uint8_t velocity),
-		    void(*control_change_handler_ptr)(uint8_t controller,
-						      uint8_t value),
-		    void(*realtime_handler_delegate_ptr)(uint8_t msg),
-		    void(*midi_pitchwheel_delegate_ptr)(uint8_t lsb,
-							uint8_t msb))
+		    void (*note_off_handler_ptr)(uint8_t note,
+						 uint8_t velocity),
+		    void (*control_change_handler_ptr)(uint8_t controller,
+						       uint8_t value),
+		    void (*realtime_handler_delegate_ptr)(uint8_t msg),
+		    void (*midi_pitchwheel_delegate_ptr)(uint8_t lsb,
+							 uint8_t msb))
 {
 	/* Assign delegate's */
-	midi_note_on_delegate =(void *)note_on_handler_ptr;
+	midi_note_on_delegate = (void *)note_on_handler_ptr;
 	midi_note_off_delegate = (void *)note_off_handler_ptr;
 	midi_control_change_delegate = (void *)control_change_handler_ptr;
 	realtime_handler_delegate = (void *)realtime_handler_delegate_ptr;
@@ -111,6 +190,16 @@ void SerialMidiInit(void (*note_on_handler_ptr)(uint8_t note, uint8_t velocity),
 /* 
  * All functions related to sending MIDI messages to the serial USART
  */
+void midi1_serial_note_on(struct midi1_serial_inst *inst, uint8_t channel, uint8_t key, uint8_t velocity)
+{
+	 if ((C_NOTE_ON | channel) != inst->running_status_tx) {
+                uart_poll_out(inst->uart, C_NOTE_ON | channel);
+                inst->running_status_tx = C_NOTE_ON | channel;
+        }
+        uart_poll_out(inst->uart, key);
+        uart_poll_out(inst->uart, velocity);
+}
+
 void SerialMidiNoteON(uint8_t channel, uint8_t key, uint8_t velocity)
 {
 	if ((C_NOTE_ON | channel) != global_running_status_tx) {
@@ -119,6 +208,17 @@ void SerialMidiNoteON(uint8_t channel, uint8_t key, uint8_t velocity)
 	}
 	uart_poll_out(midi, key);
 	uart_poll_out(midi, velocity);
+}
+
+void midi1_serial_note_off(struct midi1_serial_inst *inst, uint8_t channel, uint8_t key, uint8_t velocity)
+{
+	if ((C_NOTE_ON | channel) != inst->running_status_tx) {
+		uart_poll_out(inst->uart, C_NOTE_OFF | channel);
+		inst->running_status_tx = C_NOTE_OFF | channel;
+	}
+	uart_poll_out(inst->uart, key);
+	uart_poll_out(inst->uart, velocity);
+
 }
 
 void SerialMidiNoteOFF(uint8_t channel, uint8_t key, uint8_t velocity)
@@ -136,6 +236,8 @@ void SerialMidiControlChange(uint8_t channel, uint8_t controller, uint8_t val)
 	/* 
 	 * Even though we keep running status on TX we retransmit every 16'th time 
 	 * to make sure the receiver is in sync even when some messages are lost. 
+	 * MIDI recommendations are also if no message was sent in the last 300ms 
+	 * to also include the status byte. 
 	 */
 	if (global_running_status_tx_count >= 16) {
 		global_running_status_tx_count = 0;
