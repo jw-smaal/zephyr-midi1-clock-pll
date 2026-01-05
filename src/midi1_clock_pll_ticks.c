@@ -78,7 +78,6 @@ int32_t midi1_pll_ticks_get_interval_ticks(void)
 	return midi1_nominal_interval_ticks;
 }
 
-/* TODO: implement */
 uint32_t midi1_pll_ticks_get_interval_us(void)
 {
 	if (midi1_clock_freq == 0) {
@@ -86,5 +85,5 @@ uint32_t midi1_pll_ticks_get_interval_us(void)
 	}
 	
 	uint64_t us = ((uint64_t)midi1_nominal_interval_ticks * 1000000ULL) / midi1_clock_freq;
-	return (uint32_t) us; /* TODO: implement ! */
+	return (uint32_t) us;
 }

@@ -16,7 +16,6 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/input/input.h>
-//#include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
 
 /* ------------------------------------------------ */
@@ -90,7 +89,7 @@ static void main_rx_midi_clk_gpio_init(void)
 {
 	int ret = gpio_pin_configure_dt(&rx_midi_clk_pin, GPIO_OUTPUT_INACTIVE);
 	if (ret < 0) {
-		printk("Error configing pin\n");
+		//LOG_ERR("Unable to configure pin");
 		return;
 	}
 }
@@ -104,8 +103,7 @@ static const struct device *const midi = DEVICE_DT_GET(USB_MIDI_DT_NODE);
 static struct gpio_dt_spec led0 = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
 static struct gpio_dt_spec led2 = GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios);
 
-/* We want logging */
-LOG_MODULE_REGISTER(sample_usb_midi, LOG_LEVEL_INF);
+//LOG_MODULE_REGISTER(sample_usb_midi, LOG_LEVEL_INF);
 
 
 
@@ -206,11 +204,11 @@ void midi_pitchwheel_handler(uint8_t lsb, uint8_t msb) {
 }
 
 void control_change_handler_model(uint8_t controller, uint8_t value) {
-	printk("Control change: %d %d\n", controller, value);
+	printk("CC: %d %d\n", controller, value);
 }
 
 void control_change_handler(uint8_t controller, uint8_t value) {
-	printk("Control change: %d %d\n", controller, value);
+	printk("CC: %d %d\n", controller, value);
 }
 
 void realtime_handler(uint8_t msg) {
@@ -228,11 +226,11 @@ int main_midi_init()
 
 	if (led0.port && led2.port) {
 		if (gpio_pin_configure_dt(&led0, GPIO_OUTPUT)) {
-			LOG_ERR("Unable to setup LED0, not using it");
+			//LOG_ERR("Unable to setup LED0, not using it");
 			memset(&led0, 0, sizeof(led0));
 		}
 		if (gpio_pin_configure_dt(&led2, GPIO_OUTPUT)) {
-			LOG_ERR("Unable to setup LED2, not using it");
+			//LOG_ERR("Unable to setup LED2, not using it");
 			memset(&led2, 0, sizeof(led2));
 		}
 	}
@@ -241,7 +239,7 @@ int main_midi_init()
 #endif
 
 	if (!device_is_ready(midi)) {
-		LOG_ERR("MIDI device not ready");
+		//LOG_ERR("MIDI device not ready");
 		return -1;
 	}
 	//usbd_midi_set_ops(midi, &ump_ops);
@@ -249,14 +247,14 @@ int main_midi_init()
 	usbd_midi_set_ops(midi, &ump_ops);
 	sample_usbd = sample_usbd_init_device(NULL);
 	if (sample_usbd == NULL) {
-		LOG_ERR("Failed to initialize USB device");
+		//LOG_ERR("Failed to initialize USB device");
 		return -1;
 	}
 	if (usbd_enable(sample_usbd)) {
-		LOG_ERR("Failed to enable device support");
+		//LOG_ERR("Failed to enable device support");
 		return -1;
 	}
-	LOG_INF("USB device support enabled");
+	//LOG_INF("USB device support enabled");
 
 	/* Init the clock measurement system */
 	midi1_clock_cntr_init(midi);
@@ -272,7 +270,7 @@ int main_midi_init()
 		       &control_change_handler,
 		       &realtime_handler,
 		       &midi_pitchwheel_handler);
-	printk("MIDI1.0 serial initialized\n");
+	//LOG_INF("MIDI1.0 serial initialized");
 	
 	/*
 	 * Send example MIDI messages to test the DIN5 MIDI1.0
@@ -305,7 +303,8 @@ const struct device *cfb = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 
 int main_display_init(void)
 {
-	printk("SH1106 display init \n");
+	//LOG_INF("SH1106 display init \n");
+	
 
 	if (!device_is_ready(display)) {
 		printk("Display not ready\n");
@@ -339,7 +338,8 @@ int main_display_init(void)
 	cfb_print(cfb, "            ", 0, 48);
 
 	/* Push framebuffer to display */
-	cfb_invert_area(cfb, 0, 0, 128, 64);
+	//cfb_invert_area(cfb, 0, 0, 128, 64);
+	cfb_framebuffer_invert(cfb); 
 	cfb_framebuffer_finalize(cfb);
 	
 	k_msleep(100);
@@ -435,7 +435,6 @@ void led_display_thread(void)
 					spinner = 0;
 					break;
 			}
-			cfb_invert_area(cfb, 0, 48, 16, 128);
 			cfb_framebuffer_finalize(cfb);
 			/* Sleep for 1/2  quarter note */
 			k_usleep(qn_us / 2);
@@ -455,16 +454,12 @@ void led_display_thread(void)
 K_THREAD_DEFINE(led_display_tid, 512,
 		led_display_thread, NULL, NULL, NULL, 5, 0, 0);
 
-#include "banner.h"
 /**
  * Main thread - this may actually terminate normally (code 0) in zephyr.
  * and the rest of threads keeps running just fine.
  */
 int main(void)
 {
-	/* Serial boot screen */ 
-	printk("%s", banner);
-
 	/* Init the USB MIDI and the rest of the MIDI processes */
 	if (main_midi_init()) {
 		printk("Failed to main_midi_init()\n");
