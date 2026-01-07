@@ -62,14 +62,11 @@
 		/* Had to enable this to mirror the image */ 
 		com-invdir;
 		/* prechargep = <0x22>; */
-		/* Used for the SH1106 */
-		/* prechargep = <0x1F>; */
-		/* Used for the SSD1306 */
-		prechargep = <0xF1>;
+		/* prechargep = <0x1F>; */ 
+		prechargep = <0xF1>; 
 		/* The next one was required to flip the image */
 		segment-remap;
 	        inversion-on;
-	        /* Critical part on the SSD1306 don't make this too long */
 	        ready-time-ms = <100>;
 	};
 };

@@ -12,8 +12,11 @@
  *  The MIDI USART implementation for the Zephyr RTOS
  *  and uses the ring buffer and UART driver.
  * 
- *  TODO:  - Change the parser to accept a MIDI channel number or OMNI mode. 
- * - Error handling for the parser right now it's ignored. 
+ *  TODO:  - Change the parser to accept a MIDI channel number or OMNI mode.
+ *  TODO:  - Use the return values from uart_send( and return them.
+ *  TODO:  - Extend callback functions to be channel aware (right now they are
+ *  TODO:  - OMNI ALL --> i.e. all channels).
+ * - Error handling for the parser right now it's ignored.
  *
  * Created in 2014 ported to Zephyr RTOS in 2024. 
  * @author Jan-Willem Smaal <usenet@gispen.org> 
@@ -26,38 +29,11 @@
 #include <zephyr/drivers/uart.h>
 #include <zephyr/sys/ring_buffer.h>
 
-#include "midi1_serial.h"
 #include "midi1.h"
+#include "midi1_serial.h"
 
-#define MSGQ_SIZE 128
-#define MSG_SIZE sizeof(uint8_t)
+/* Filled by the ISR routine */
 K_MSGQ_DEFINE(midi_msgq, MSG_SIZE, MSGQ_SIZE, 4);
-
-/* TODO:Rebuilding this code to a instance based version */
-struct midi1_serial_inst {
-	const struct device *uart;
-
-	/* RX parser state */
-	uint8_t running_status_rx;
-	uint8_t third_byte_flag;
-	uint8_t midi_c2;
-	uint8_t midi_c3;
-
-	/* TX running status */
-	uint8_t running_status_tx;
-	uint8_t running_status_tx_count;
-
-	/* Message queue */
-	struct k_msgq msgq;
-	uint8_t msgq_buffer[MSGQ_SIZE];
-
-	/* Callback delegates */
-	void (*note_on)(uint8_t note, uint8_t velocity);
-	void (*note_off)(uint8_t note, uint8_t velocity);
-	void (*control_change)(uint8_t controller, uint8_t value);
-	void (*realtime)(uint8_t msg);
-	void (*pitchwheel)(uint8_t lsb, uint8_t msb);
-};
 
 /*-----------------------------------------------------------------------*/
 /* Global variables */
@@ -123,14 +99,16 @@ int midi_serial_init(struct midi1_serial_inst *inst,
 		return -1;
 	}
 	int ret =
-	    uart_irq_callback_user_data_set(inst->uart, serial_isr_callback, inst);
+	    uart_irq_callback_user_data_set(inst->uart,
+					    serial_isr_callback,
+					    inst);
 	if (ret < 0) {
 		if (ret == -ENOTSUP) {
 			printk
 			    ("Interrupt-driven UART API support not enabled\n");
 		} else if (ret == -ENOSYS) {
 			printk
-			    ("UART device does not support interrupt-driven API\n");
+			    ("UART  does not support interrupt-driven API\n");
 		} else {
 			printk("Error setting UART callback: %d\n", ret);
 		}
@@ -187,9 +165,19 @@ void SerialMidiInit(void (*note_on_handler_ptr)(uint8_t note, uint8_t velocity),
 	uart_irq_rx_enable(midi);
 }
 
-/* 
+
+
+/*
  * All functions related to sending MIDI messages to the serial USART
  */
+
+/* Channel mode messages */
+/* ___ _                       _   __  __         _
+  / __| |_  __ _ _ _  _ _  ___| | |  \/  |___  __| |___
+ | (__| ' \/ _` | ' \| ' \/ -_) | | |\/| / _ \/ _` / -_)
+  \___|_||_\__,_|_||_|_||_\___|_| |_|  |_\___/\__,_\___|
+ */
+
 void midi1_serial_note_on(struct midi1_serial_inst *inst, uint8_t channel, uint8_t key, uint8_t velocity)
 {
 	 if ((C_NOTE_ON | channel) != inst->running_status_tx) {
@@ -231,14 +219,39 @@ void SerialMidiNoteOFF(uint8_t channel, uint8_t key, uint8_t velocity)
 	uart_poll_out(midi, velocity);
 }
 
+/*
+ * Even though we keep running status on TX we retransmit every 16'th
+ * time to make sure the receiver is in sync even when some messages
+ * are lost. MIDI recommendations are also if no message was sent in the last
+ * 300ms to also include the status byte.
+ * Running status is most important for smooth control changes.
+ * TODO: implement this check also for the other functions.
+ */
+void midi1_serial_control_change(struct midi1_serial_inst *inst,
+				 uint8_t channel,
+				 uint8_t controller,
+				 uint8_t val)
+{
+
+	if (inst->running_status_tx_count >= 16) {
+		inst->running_status_tx_count = 0;
+		uart_poll_out(midi, C_CONTROL_CHANGE | channel);
+		inst->running_status_tx = C_CONTROL_CHANGE | channel;
+	}
+	/* If we don't have running status send out the status byte. */
+	else if ((C_CONTROL_CHANGE | channel) != inst->running_status_tx) {
+		uart_poll_out(midi, C_CONTROL_CHANGE | channel);
+		inst->running_status_tx = C_CONTROL_CHANGE | channel;
+		inst->running_status_tx_count = 0;
+	}
+	/* We always send out controller and value */
+	uart_poll_out(inst->uart, controller);
+	uart_poll_out(inst->uart, val);
+	inst->running_status_tx_count++;
+}
+
 void SerialMidiControlChange(uint8_t channel, uint8_t controller, uint8_t val)
 {
-	/* 
-	 * Even though we keep running status on TX we retransmit every 16'th time 
-	 * to make sure the receiver is in sync even when some messages are lost. 
-	 * MIDI recommendations are also if no message was sent in the last 300ms 
-	 * to also include the status byte. 
-	 */
 	if (global_running_status_tx_count >= 16) {
 		global_running_status_tx_count = 0;
 		uart_poll_out(midi, C_CONTROL_CHANGE | channel);
@@ -256,6 +269,17 @@ void SerialMidiControlChange(uint8_t channel, uint8_t controller, uint8_t val)
 	global_running_status_tx_count++;
 }
 
+void midi1_serial_channelaftertouch(struct midi1_serial_inst *inst,
+				 uint8_t channel,
+				 uint8_t val)
+{
+	if ((C_CHANNEL_AFTERTOUCH | channel) != inst->running_status_tx) {
+		uart_poll_out(midi, C_CHANNEL_AFTERTOUCH | channel);
+		inst->running_status_tx = C_CHANNEL_AFTERTOUCH | channel;
+	}
+	uart_poll_out(inst->uart, val);
+}
+
 void SerialMidiChannelAfterTouch(uint8_t channel, uint8_t val)
 {
 	if ((C_CHANNEL_AFTERTOUCH | channel) != global_running_status_tx) {
@@ -265,10 +289,20 @@ void SerialMidiChannelAfterTouch(uint8_t channel, uint8_t val)
 	uart_poll_out(midi, val);
 }
 
-/**
- * Modulation Wheel both LSB and MSB
- * range: 0 --> 16383
- */
+void midi1_serial_modwheel(struct midi1_serial_inst *inst,
+			uint8_t channel,
+			uint16_t val)
+{
+	midi1_serial_control_change(inst,
+				    channel,
+				    CTL_MSB_MODWHEEL,
+				    ~(CHANNEL_VOICE_MASK) & (val >> 7));
+	midi1_serial_control_change(inst,
+				    channel,
+				    CTL_LSB_MODWHEEL,
+				    ~(CHANNEL_VOICE_MASK) & val);
+}
+
 void SerialMidiModWheel(uint8_t channel, uint16_t val)
 {
 	SerialMidiControlChange(channel, CTL_MSB_MODWHEEL,
@@ -277,11 +311,22 @@ void SerialMidiModWheel(uint8_t channel, uint16_t val)
 				~(CHANNEL_VOICE_MASK) & val);
 }
 
-/**
- * PitchWheel is always with 14 bit value.
- *       LOW   MIDDLE   HIGH
- * range: 0 --> 8192  --> 16383
- */
+void midi1_serial_pitchwheel(struct midi1_serial_inst *inst,
+			     uint8_t channel,
+			     uint16_t val)
+{
+	if (inst->running_status_tx != (C_PITCH_WHEEL | channel)) {
+		uart_poll_out(inst->uart, C_PITCH_WHEEL | channel);
+		inst->running_status_tx = C_PITCH_WHEEL | channel;
+	}
+	/* Value is 14 bits so need to shift 7 */
+	uart_poll_out(inst->uart,
+		      val & ~(CHANNEL_VOICE_MASK));	   /* LSB */
+	uart_poll_out(inst->uart,
+		      (val >> 7) & ~(CHANNEL_VOICE_MASK)); /* MSB */
+	
+}
+
 void SerialMidiPitchWheel(uint8_t channel, uint16_t val)
 {
 	if (global_running_status_tx != (C_PITCH_WHEEL | channel)) {
@@ -293,9 +338,25 @@ void SerialMidiPitchWheel(uint8_t channel, uint16_t val)
 	uart_poll_out(midi, (val >> 7) & ~(CHANNEL_VOICE_MASK));	// MSB
 }
 
+/* System Common messages */
+/*___         _                ___
+ / __|_  _ __| |_ ___ _ __    / __|___ _ __  _ __  ___ _ _
+ \__ \ || (_-<  _/ -_) '  \  | (__/ _ \ '  \| '  \/ _ \ ' \
+ |___/\_, /__/\__\___|_|_|_|  \___\___/_|_|_|_|_|_\___/_||_|
+ */
+void midi1_serial_timingclock(struct midi1_serial_inst *inst)
+{
+	uart_poll_out(inst->uart, RT_TIMING_CLOCK);
+}
+
 void SerialMidiTimingClock(void)
 {
 	uart_poll_out(midi, RT_TIMING_CLOCK);
+}
+
+void midi1_serial_start(struct midi1_serial_inst *inst)
+{
+	uart_poll_out(inst->uart, RT_START);
 }
 
 void SerialMidiStart(void)
@@ -303,9 +364,19 @@ void SerialMidiStart(void)
 	uart_poll_out(midi, RT_START);
 }
 
+void midi1_serial_continue(struct midi1_serial_inst *inst)
+{
+	uart_poll_out(inst->uart, RT_CONTINUE);
+}
+
 void SerialMidiContinue(void)
 {
 	uart_poll_out(midi, RT_CONTINUE);
+}
+
+void midi1_serial_stop(struct midi1_serial_inst *inst)
+{
+	uart_poll_out(inst->uart, RT_STOP);
 }
 
 void SerialMidiStop(void)
@@ -313,9 +384,19 @@ void SerialMidiStop(void)
 	uart_poll_out(midi, RT_STOP);
 }
 
+void midi1_serial_active_sensing(struct midi1_serial_inst *inst)
+{
+	uart_poll_out(inst->uart, RT_ACTIVE_SENSING);
+}
+
 void SerialMidiActive_Sensing(void)
 {
 	uart_poll_out(midi, RT_ACTIVE_SENSING);
+}
+
+void midi1_serial_reset(struct midi1_serial_inst *inst)
+{
+	uart_poll_out(inst->uart, RT_RESET);
 }
 
 void SerialMidiReset(void)
@@ -323,9 +404,37 @@ void SerialMidiReset(void)
 	uart_poll_out(midi, RT_RESET);
 }
 
-/* 
+
+/*
  * MIDI Receive parser implementation - Interrupt Service Routine
- * we use a Message Queue FIFO buffer to store the incoming MIDI messages 
+ * we use a Message Queue FIFO buffer to store the incoming MIDI messages
+ * TODO: user_data needs to be cast to 'struct midi1_serial_inst *inst'
+ */
+void midi1_serial_isr_callback(const struct device *dev, void *user_data)
+{
+	uint8_t c;
+	
+	if (!uart_irq_update(midi)) {
+		return;
+	}
+	
+	if (!uart_irq_rx_ready(midi)) {
+		return;
+	}
+	
+	/* read until FIFO empty */
+	while (uart_fifo_read(midi, &c, 1) == 1) {
+		if (k_msgq_put(&midi_msgq, &c, K_NO_WAIT) != 0) {
+			/* Message queue is full, handle overflow if necessary */
+		}
+	}
+}
+
+
+/*
+ * MIDI Receive parser implementation - Interrupt Service Routine
+ * we use a Message Queue FIFO buffer to store the incoming MIDI messages
+ * TODO: _OLD_ implementation did not use user_data
  */
 void serial_isr_callback(const struct device *dev, void *user_data)
 {
@@ -348,7 +457,7 @@ void serial_isr_callback(const struct device *dev, void *user_data)
 }
 
 /* 
- * Improved version using the message queue 
+ * Improved parser version using the message queue
  */
 int midi_msgq_get(uint8_t *data)
 {
@@ -356,8 +465,8 @@ int midi_msgq_get(uint8_t *data)
 }
 
 /* 
- * We parse one byte at a time for the MIDI parsing. Then callback functions are called
- * for each complete message 
+ * We parse one byte at a time for the MIDI parsing. Then callback functions
+ * are called for each complete MIDI message
  */
 void SerialMidiReceiveParser(void)
 {
