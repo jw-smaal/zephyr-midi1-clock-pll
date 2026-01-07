@@ -49,24 +49,31 @@ static uint8_t global_midi_c3;
  * We'll cover the multi port MIDI stuff later. for now just one MIDI port is 
  * supported per board.   Also this is a UART device so make sure the UART
  * is enabled in the device prj.conf
+ * TODO: _OLD_ version in the new version the caller needs to do this and
+ * TODO: pass it as an argument
  */
 #define UART_DEVICE_NODE DT_ALIAS(midi)
 static const struct device *const midi = DEVICE_DT_GET(UART_DEVICE_NODE);
 
 /*-----------------------------------------------------------------------*/
-/* Global Function pointers for the delegate/callbacks */
+/* TODO: _OLD_ Global Function pointers for the delegate/callbacks */
 void (*midi_note_on_delegate)(uint8_t note, uint8_t velocity);
 void (*midi_note_off_delegate)(uint8_t note, uint8_t velocity);
 void (*midi_control_change_delegate)(uint8_t controller, uint8_t value);
 void (*realtime_handler_delegate)(uint8_t msg);
 void (*midi_pitchwheel_delegate)(uint8_t lsb, uint8_t msb);
 
+/* Private/hidden Prototype's for the ISR callback */
+static void midi1_serial_isr_callback(const struct device *dev, void *user_data);
+static void serial_isr_callback(const struct device *dev, void *user_data);
+
+
 /**
  * Inits the serial USART with MIDI clock speed and 
  * registers delegates for the callbacks.
- * TODO: work in progress
+ * TODO: _NEW_ work in progress
  */
-int midi_serial_init(struct midi1_serial_inst *inst,
+int midi1_serial_init(struct midi1_serial_inst *inst,
 		     const struct device *uart_dev,
 		     void(*note_on)(uint8_t, uint8_t),
 		     void(*note_off)(uint8_t, uint8_t),
@@ -100,7 +107,7 @@ int midi_serial_init(struct midi1_serial_inst *inst,
 	}
 	int ret =
 	    uart_irq_callback_user_data_set(inst->uart,
-					    serial_isr_callback,
+					    midi1_serial_isr_callback,
 					    inst);
 	if (ret < 0) {
 		if (ret == -ENOTSUP) {
@@ -405,38 +412,43 @@ void SerialMidiReset(void)
 }
 
 
-/*
- * MIDI Receive parser implementation - Interrupt Service Routine
- * we use a Message Queue FIFO buffer to store the incoming MIDI messages
- * TODO: user_data needs to be cast to 'struct midi1_serial_inst *inst'
+/**
+ * @brief MIDI Receive parser implementation - Interrupt Service Routine
+ *
+ * @param device device pointer
+ * @param user_data user data (in our case the instance struct)
+ * @note we use a Message Queue FIFO buffer to store the incoming MIDI messages
+ * @note TODO: _NEW_ implementation needs testing
  */
-void midi1_serial_isr_callback(const struct device *dev, void *user_data)
+static void midi1_serial_isr_callback(const struct device *dev, void *user_data)
 {
 	uint8_t c;
+	/* Need to cast the user data to our instance struct */
+	struct midi1_serial_inst *inst = (struct midi1_serial_inst *)user_data;
 	
-	if (!uart_irq_update(midi)) {
+	
+	if (!uart_irq_update(inst->uart)) {
 		return;
 	}
 	
-	if (!uart_irq_rx_ready(midi)) {
+	if (!uart_irq_rx_ready(inst->uart)) {
 		return;
 	}
 	
 	/* read until FIFO empty */
-	while (uart_fifo_read(midi, &c, 1) == 1) {
-		if (k_msgq_put(&midi_msgq, &c, K_NO_WAIT) != 0) {
-			/* Message queue is full, handle overflow if necessary */
+	while (uart_fifo_read(inst->uart, &c, 1) == 1) {
+		if (k_msgq_put(&inst->msgq, &c, K_NO_WAIT) != 0) {
+			/* Message queue is full, TODO: maybe handle overflow */
 		}
 	}
 }
-
 
 /*
  * MIDI Receive parser implementation - Interrupt Service Routine
  * we use a Message Queue FIFO buffer to store the incoming MIDI messages
  * TODO: _OLD_ implementation did not use user_data
  */
-void serial_isr_callback(const struct device *dev, void *user_data)
+static void serial_isr_callback(const struct device *dev, void *user_data)
 {
 	uint8_t c;
 
@@ -456,17 +468,198 @@ void serial_isr_callback(const struct device *dev, void *user_data)
 	}
 }
 
-/* 
- * Improved parser version using the message queue
+#if 0
+/* TODO: DEAD CODE there was no need to hide access to the msgq */
+/**
+ * @brief get a message from the msgq filled by the ISR
+ * @param *inst instance struct
+ * @param *data pointer to buffer
+ * @note TODO: _NEW_ version needs testing
  */
-int midi_msgq_get(uint8_t *data)
+static int midi1_serial_msgq_get(struct midi1_serial_inst *inst, uint8_t *data)
+{
+	return k_msgq_get(&inst->msgq, data, K_FOREVER);
+}
+
+
+/*
+ * parser is using the message queue (not used)
+ * TODO: _OLD_ need to be replaced this version is using the global msgq
+ */
+static int midi_msgq_get(uint8_t *data)
 {
 	return k_msgq_get(&midi_msgq, data, K_FOREVER);
 }
+#endif
 
-/* 
+/**
+ * @brief Parse one byte at a time for the MIDI parsing.
+ *
+ * @note Then callback functions are called for each complete MIDI message.
+ *
+ * @note This function is really long as the MIDI parsing is done
+ * @note byte per byte and it took several tests to get the parsing
+ * @note done right.  I tried to create a statemachine earlier but
+ * @note failed so I have sticked to this proven implementation.
+ *
+ * TODO: _NEW_ version.
+ */
+void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
+{
+	uint8_t c;
+	
+	/*
+	 * Read only _one_ byte from the circular FIFO input buffer
+	 * This buffer is filled by the ISR routine on receipt of
+	 * data on the port.
+	 */
+	if (k_msgq_get(&inst->msgq, &c, K_FOREVER) != 0) {
+		return;
+	} else {
+		/* Valid message received */
+		printk("%2X ", c);
+	}
+	
+	/*
+	 * Future implementation option
+	 * To allow software MIDI THRU (kind of with some processing delay)
+	 * simply write what is received to the output.
+	 * uart_poll_out(midi, c);
+	 */
+	
+	/* Check if bit7 = 1 */
+	if (c & CHANNEL_VOICE_MASK) {
+		/* if (! (c & SYSTEM_REALTIME_MASK)) */
+		/* is it a real-time message?  0xF8 up to 0xFF */
+		if (c >= 0xF8) {
+			inst->realtime(c);
+			return;
+		} else {
+			inst->running_status_rx = c;
+			inst->third_byte_flag = 0;
+			/* Is this a tune request */
+			if (c == SYSTEM_TUNE_REQUEST) {
+				inst->midi_c2 = c;	/*  Store in FIFO. */
+				/* TODO: Process something. */
+				return;
+			}
+			/*
+			 * Do nothing
+			 * Ignore for now
+			 */
+			return;
+		}
+	} else {		/* Bit 7 == 0   (data) */
+		if (inst->third_byte_flag == 1) {
+			inst->third_byte_flag = 0;
+			inst->midi_c3 = c;
+			
+			/*
+			 * TODO: We don't care about the input channel (OMNI) for now.
+			 * so what we are doing here is to set the lower 4 bits to 0.
+			 */
+			inst->running_status_rx &= 0xF0;
+			if (inst->running_status_rx == C_NOTE_ON) {
+				if (inst->midi_c3 == 0) {
+					/*
+					 * A lot of MIDI implementation use velocity zero "note on"
+					 * as a "note-off".  Other do use a note off and the note off velocity
+					 * actually can be used to alter the sound of the note off.
+					 */
+					inst->note_off(inst->midi_c2,
+						       inst->midi_c3);
+					return;
+				} else {
+					inst->note_on(inst->midi_c2,
+						      inst->midi_c3);
+					return;
+				}
+				return;
+			} else if (inst->running_status_rx == C_NOTE_OFF) {
+				inst->note_off(inst->midi_c2,
+					       inst->midi_c3);
+				return;
+			} else if (inst->running_status_rx == C_PITCH_WHEEL) {
+				inst->pitchwheel(inst->midi_c2,
+						 inst->midi_c3);
+				return;
+			} else if (inst->running_status_rx == C_PROGRAM_CHANGE) {
+				/* TODO:  implement call callback! */
+				return;
+			} else if (inst->running_status_rx ==
+				   C_POLYPHONIC_AFTERTOUCH) {
+				/* TODO:  implement call callback! */
+				return;
+			} else if (inst->running_status_rx ==
+				   C_CHANNEL_AFTERTOUCH) {
+				/* TODO:  implement call callback! */
+				return;
+			} else if (inst->running_status_rx == C_CONTROL_CHANGE) {
+				inst->control_change(inst->midi_c2,
+						     inst->midi_c3);
+				/* TODO:  implement call callback! */
+				return;
+			} else {
+				/* Ignore */
+				return;
+			}
+		} else {
+			if (inst->running_status_rx == 0) {
+				/* Ignore data Byte if running status is  0 */
+				return;
+			} else {
+				if (inst->running_status_rx < 0xC0) {	/* All 2 byte commands */
+					inst->third_byte_flag = 1;
+					inst->midi_c2 = c;
+					/* At this stage we have only 1 byte out of 2. */
+					return;
+				} else if (inst->running_status_rx < 0xE0) {	/* All 1 byte commands */
+					inst->midi_c2 = c;
+					/* TODO: !! Process callback/delegate for two bytes command. */
+					return;
+				} else if (inst->running_status_rx < 0xF0) {
+					inst->third_byte_flag = 1;
+					inst->midi_c2 = c;
+				}
+				/* !! */
+				else if (inst->running_status_rx >= 0xF0) {
+					if (inst->running_status_rx == 0xF2) {
+						inst->running_status_rx = 0;
+						inst->third_byte_flag = 1;
+						inst->midi_c2 = c;
+						return;
+					} else if (inst->running_status_rx >=
+						   0xF0) {
+						if (inst->running_status_rx ==
+						    0xF3
+						    || inst->running_status_rx
+						    == 0xF3) {
+							inst->running_status_rx
+							= 0;
+							inst->midi_c2 = c;
+							/*  TODO: !! Process callback for two bytes command. */
+							return;
+						} else {
+							/* Ignore status */
+							inst->running_status_rx
+							= 0;
+							return;
+						}
+					}
+				}
+			}
+		}		/*  global_3rd_byte_flag */
+	}			/* end of data bit 7 == 0 */
+	
+}				/* End of SerialMidiReceiveParser */
+
+
+
+
+/*
  * We parse one byte at a time for the MIDI parsing. Then callback functions
  * are called for each complete MIDI message
+ * TODO: _OLD_ version not instance aware.
  */
 void SerialMidiReceiveParser(void)
 {

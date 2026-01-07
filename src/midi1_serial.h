@@ -73,7 +73,7 @@ struct midi1_serial_inst {
  * @param *pitchwheel callback delegate function for a pitchwheel rx event
  * @return err success 0 failure -1
  */
-int midi_serial_init(struct midi1_serial_inst *inst,
+int midi1_serial_init(struct midi1_serial_inst *inst,
 		     const struct device *uart_dev,
 		     void(*note_on)(uint8_t, uint8_t),
 		     void(*note_off)(uint8_t, uint8_t),
@@ -96,8 +96,9 @@ void SerialMidiInit(void (*note_on_handler_ptr)(uint8_t note, uint8_t velocity),
  * @note no delay is required between calls.
  * @note This process then calls the delegate functions / callbacks like
  * void (*note_on)(uint8_t, unit8_t)
- * TODO: this is the _OLD_ implementation not using the instance 
+ *
  */
+void midi1_serial_receiveparser(struct midi1_serial_inst *inst);
 void SerialMidiReceiveParser(void);
 
 
@@ -240,8 +241,6 @@ void SerialMidiActive_Sensing(void);
 void midi1_serial_reset(struct midi1_serial_inst *inst);
 void SerialMidiReset(void);
 
-/* Prototype for the ISR callback */
-void serial_isr_callback(const struct device *dev, void *user_data);
 
 #endif				/* MIDI1_SERIAL_H */
 /* EOF */
