@@ -4,19 +4,22 @@
  *
  * @note 
  * MIDI USART implementation that also implements
- * MIDI "running status".  Not many example implementations 
- * do this but it's a very useful method to limit messages on 
- * serial UART MIDI channels that are only 31250 Baud and reduce
- * playing latency. It's essential when working with real gear. 
+ * MIDI "running status".
+ *
+ * Not many MIDI MCU example implementations (that i have seen) do this.
+ * It's a very useful method to limit messages on
+ * serial UART MIDI channels that are only 31250 Baud. It reduces
+ * playing latency. It's essential when working with real gear.
  * 
- *  The MIDI USART implementation for the Zephyr RTOS
+ *  The MIDI USART implementation is for the Zephyr RTOS
  *  and uses the ring buffer and UART driver.
  * 
  *  TODO:  - Change the parser to accept a MIDI channel number or OMNI mode.
  *  TODO:  - Use the return values from uart_send( and return them.
  *  TODO:  - Extend callback functions to be channel aware (right now they are
  *  TODO:  - OMNI ALL --> i.e. all channels).
- * - Error handling for the parser right now it's ignored.
+ *  TODO:  - Error handling for the parser right now it's ignored.
+ *  TODO:  - e.g. we could add DBG logging for this.
  *
  * Created in 2014 ported to Zephyr RTOS in 2024. 
  * @author Jan-Willem Smaal <usenet@gispen.org> 
@@ -53,6 +56,7 @@ static uint8_t global_midi_c3;
  * TODO: pass it as an argument
  */
 #define UART_DEVICE_NODE DT_ALIAS(midi)
+
 static const struct device *const midi = DEVICE_DT_GET(UART_DEVICE_NODE);
 
 /*-----------------------------------------------------------------------*/
@@ -63,16 +67,16 @@ void (*midi_control_change_delegate)(uint8_t controller, uint8_t value);
 void (*realtime_handler_delegate)(uint8_t msg);
 void (*midi_pitchwheel_delegate)(uint8_t lsb, uint8_t msb);
 
-/* Private/hidden Prototype's for the ISR callback */
+/* Private/hidden Prototype's for the ISR callback asssigned during init */
 static void midi1_serial_isr_callback(const struct device *dev, void *user_data);
 static void serial_isr_callback(const struct device *dev, void *user_data);
-
 
 /**
  * Inits the serial USART with MIDI clock speed and 
  * registers delegates for the callbacks.
  * TODO: _NEW_ work in progress
  */
+/*
 int midi1_serial_init(struct midi1_serial_inst *inst,
 		     const struct device *uart_dev,
 		     void(*note_on)(uint8_t, uint8_t),
@@ -80,8 +84,10 @@ int midi1_serial_init(struct midi1_serial_inst *inst,
 		     void(*control_change)(uint8_t, uint8_t),
 		     void(*realtime)(uint8_t),
 		     void(*pitchwheel)(uint8_t, uint8_t))
+*/
+int midi1_serial_init(struct midi1_serial_inst *inst)
 {
-	inst->uart = uart_dev;
+
 
 	inst->running_status_rx = 0;
 	inst->third_byte_flag = 0;
@@ -91,15 +97,25 @@ int midi1_serial_init(struct midi1_serial_inst *inst,
 	inst->running_status_tx = 0;
 	inst->running_status_tx_count = 0;
 
+	
+#if 0
 	/* Assign delegate's */
+	/* TODO: no longer relevant is part of inst */
+	inst->uart = uart_dev;
 	inst->note_on = note_on;
 	inst->note_off = note_off;
 	inst->control_change = control_change;
 	inst->realtime = realtime;
 	inst->pitchwheel = pitchwheel;
+#endif
 
-	/* Assign a MSQ to this instance */ 
+	/* Assign a MSQ to this instance */
+	/*
+	 * TODO: is not going to work... we need to dynamically init the
+	 * TODO: MSGQ ?
+	 */
 	k_msgq_init(&inst->msgq, inst->msgq_buffer, MSG_SIZE, MSGQ_SIZE);
+	
 
 	if (!device_is_ready(inst->uart)) {
 		printk("UART device not found!");
@@ -123,6 +139,7 @@ int midi1_serial_init(struct midi1_serial_inst *inst,
 	}
 
 	uart_irq_rx_enable(inst->uart);
+	printk("midi1_serial_init() done");
 	return 0;
 }
 
@@ -170,6 +187,7 @@ void SerialMidiInit(void (*note_on_handler_ptr)(uint8_t note, uint8_t velocity),
 		return;
 	}
 	uart_irq_rx_enable(midi);
+	printk("SerialMidiInit() done");
 }
 
 
@@ -412,6 +430,13 @@ void SerialMidiReset(void)
 }
 
 
+/*__  __ ___ ___ ___   ___      _         ___
+ |  \/  |_ _|   \_ _| | _ )_  _| |_ ___  | _ \__ _ _ _ ___ ___ _ _
+ | |\/| || || |) | |  | _ \ || |  _/ -_) |  _/ _` | '_(_-</ -_) '_|
+ |_|  |_|___|___/___| |___/\_, |\__\___| |_| \__,_|_| /__/\___|_|
+ |__/
+ */
+
 /**
  * @brief MIDI Receive parser implementation - Interrupt Service Routine
  *
@@ -502,7 +527,8 @@ static int midi_msgq_get(uint8_t *data)
  * @note done right.  I tried to create a statemachine earlier but
  * @note failed so I have sticked to this proven implementation.
  *
- * TODO: _NEW_ version.
+ * TODO: _NEW_ version
+ * TODO: implement callbacks that include the MIDI channel as well!
  */
 void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 {

@@ -1,10 +1,11 @@
 /**
  * @brief MIDI 1.0 into Universal MIDI Packet over USB by J-W Smaal
- * using a sensor value's to send MIDI1.0 encapsulated into UMP
- * over USB. Doing various things such as measure MIDI clock.
+ * to send MIDI1.0 encapsulated into UMP over USB. Doing various things
+ * such as measure MIDI clock.
  * generate a stable MIDI clock send some control changes etc...
  *
  * @author Jan-Willem Smaal <usenet@gispen.org>
+ * @date 20260107
  *
  * ---
  * Adapted Original: Sample application for USB MIDI 2.0 device class
@@ -17,13 +18,10 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/input/input.h>
 #include <zephyr/kernel.h>
-
-/* ------------------------------------------------ */
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/display.h>
 #include <zephyr/display/cfb.h>
 #include <zephyr/sys/printk.h>
-/* ------------------------------------------------ */
 
 /*
  * This is part of the MIDI2 library prj.conf
@@ -36,49 +34,31 @@
 #include <ump_stream_responder.h>
 
 /*
- * Functions for MIDI1 encapulation into UMP
+ * Collection of various functions for MIDI1
  * by Jan-Willem Smaal <usenet@gispen.org>
  */
 #include "midi1.h"
-
-/*
- * MIDI1.0 serial 5 port DIN port support
- */
 #include "midi1_serial.h"
-
-/*
- * Functions for the MIDI software based clock timer.
- */
-//#include "midi1_clock_timer.h"
-
-/*
- * Functions for the MIDI PIT0_CHANNEL0 hardware based clock timer.
- */
 #include "midi1_clock_counter.h"
-
-/*
- * Adjustable MIDI clock we feed it with the PLL adjustments.
- * TODO: external measurements show this clock is too slow...
- * TODO: maybe due to the adjustable scheduled work timer
- */
-//#include "midi1_clock_adj.h"
-
-/*
- * Functions for measuring incoming MIDI clock signals
- */
-//#include "midi1_clock_measure.h"
+/* #include "midi1_clock_adj.h" */
+/* #include "midi1_clock_measure.h" */
 #include "midi1_clock_measure_counter.h"
-
-/*
- * A Phase Locked Loop for MIDI.
- */
-//#include "midi1_clock_pll.h"
 #include "midi1_clock_pll_ticks.h"
-
 
 /* ------------------------------------------------------------------------- */
 
-/* Provide the received 24pqn MIDI clock on a pin */
+/*
+ * Required device tree entries
+ * - 'rx_midi_clk'
+ * - 'freq_out'
+ * - 'usb_midi'
+ * - 'midi' == UART
+ * - 'pit0_channel0'
+ * - 'pit0_channel1'
+ */
+
+
+/* For debugging provide the received 24pqn MIDI clock on a pin */
 #define RX_MIDI_CLOCK_ON_PIN 1
 #if RX_MIDI_CLOCK_ON_PIN
 #define RX_MIDI_CLK DT_NODELABEL(rx_midi_clk)
@@ -103,8 +83,8 @@ static const struct device *const midi = DEVICE_DT_GET(USB_MIDI_DT_NODE);
 static struct gpio_dt_spec led0 = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
 static struct gpio_dt_spec led2 = GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios);
 
-//LOG_MODULE_REGISTER(sample_usb_midi, LOG_LEVEL_INF);
-
+/* Not using the loggin subsystem as it's taking too much space */
+/* LOG_MODULE_REGISTER(sample_usb_midi, LOG_LEVEL_INF);  */
 
 
 /* ----------------------- handlers callbacks  ----------------------------- */
@@ -220,42 +200,40 @@ void realtime_handler(uint8_t msg) {
 /*
  * Init all the USB MIDI stuff in main.
  */
-int main_midi_init()
+int main_midi1_init(struct midi1_serial_inst *inst)
 {
 	struct usbd_context *sample_usbd;
-
+	
 	if (led0.port && led2.port) {
 		if (gpio_pin_configure_dt(&led0, GPIO_OUTPUT)) {
-			//LOG_ERR("Unable to setup LED0, not using it");
+				//LOG_ERR("Unable to setup LED0, not using it");
 			memset(&led0, 0, sizeof(led0));
 		}
 		if (gpio_pin_configure_dt(&led2, GPIO_OUTPUT)) {
-			//LOG_ERR("Unable to setup LED2, not using it");
+				//LOG_ERR("Unable to setup LED2, not using it");
 			memset(&led2, 0, sizeof(led2));
 		}
 	}
 #if RX_MIDI_CLOCK_ON_PIN
 	main_rx_midi_clk_gpio_init();
 #endif
-
+	
 	if (!device_is_ready(midi)) {
-		//LOG_ERR("MIDI device not ready");
+			//LOG_ERR("MIDI device not ready");
 		return -1;
 	}
-	//usbd_midi_set_ops(midi, &ump_ops);
-	// For timing tests
 	usbd_midi_set_ops(midi, &ump_ops);
 	sample_usbd = sample_usbd_init_device(NULL);
 	if (sample_usbd == NULL) {
-		//LOG_ERR("Failed to initialize USB device");
+			//LOG_ERR("Failed to initialize USB device");
 		return -1;
 	}
 	if (usbd_enable(sample_usbd)) {
-		//LOG_ERR("Failed to enable device support");
+			//LOG_ERR("Failed to enable device support");
 		return -1;
 	}
-	//LOG_INF("USB device support enabled");
-
+		//LOG_INF("USB device support enabled");
+	
 	/* Init the clock measurement system */
 	midi1_clock_cntr_init(midi);
 	midi1_clock_meas_cntr_init();
@@ -263,19 +241,10 @@ int main_midi_init()
 	/* We init the PLL with something and adjust from there */
 	midi1_pll_ticks_init(12000, midi1_clock_meas_cntr_clock_freq());
 	
-	/* defined in midi1_serial.h */
-	/* Initialize the MIDI parser with the callbacks */
-	SerialMidiInit(&note_on_handler,
-		       &note_off_handler,
-		       &control_change_handler,
-		       &realtime_handler,
-		       &midi_pitchwheel_handler);
-	//LOG_INF("MIDI1.0 serial initialized");
-	
 	/*
 	 * Send example MIDI messages to test the DIN5 MIDI1.0
 	 */
-#define TEST_MIDI_OUTPUT 0
+#define TEST_MIDI_OUTPUT 1
 #if TEST_MIDI_OUTPUT
 	for (int j =0 ; j < 16; j++ ) {
 		for (int i = 0; i < 16; i++) {
@@ -295,7 +264,6 @@ int main_midi_init()
 }
 
 
-
 /* Get the display device (DTS node must be named sh1106) */
 const struct device *display = DEVICE_DT_GET(DT_NODELABEL(sh1106));
 /* in the root of the device tree we need to point it to the sh1106 */ 
@@ -304,8 +272,6 @@ const struct device *cfb = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 int main_display_init(void)
 {
 	//LOG_INF("SH1106 display init \n");
-	
-
 	if (!device_is_ready(display)) {
 		printk("Display not ready\n");
 		return -1;
@@ -338,7 +304,6 @@ int main_display_init(void)
 	cfb_print(cfb, "            ", 0, 48);
 
 	/* Push framebuffer to display */
-	//cfb_invert_area(cfb, 0, 0, 128, 64);
 	cfb_framebuffer_invert(cfb); 
 	cfb_framebuffer_finalize(cfb);
 	
@@ -352,14 +317,30 @@ int main_display_init(void)
 
 
 /* ---------------------------- THREADS ------------------------------------ */
+/* g_inst_uart3 is global because we need the reference in multiple threads */
+#define MIDI1_UART3 DT_ALIAS(midi)
+static struct midi1_serial_inst g_inst_uart3 = {
+	.uart 		= DEVICE_DT_GET(MIDI1_UART3),
+	.note_on 	= &note_on_handler,
+	.note_off 	= &note_off_handler,
+	.control_change = &control_change_handler,
+	.realtime	= &realtime_handler,
+	.pitchwheel	= &midi_pitchwheel_handler,
+};
 
 /*
- * MIDI1.0 5PIN DIN serial receive parser thread. 
+ * MIDI1.0 5PIN DIN serial receive parser thread.
+ * uses g_inst_uart3 global
  */
 void midi1_serial_receive_thread(void) {
+
+	/* Initialize the MIDI1 parser with the callbacks */
+	midi1_serial_init(&g_inst_uart3);
+	
 	while (1) {
-		/* This one is blocking now */
-		SerialMidiReceiveParser();
+		/* This one is blocking */
+		midi1_serial_receiveparser(&g_inst_uart3);
+		/* SerialMidiReceiveParser(); */
 	}
 }
 K_THREAD_DEFINE(midi1_serial_receive_tid, 512,
@@ -373,7 +354,6 @@ K_THREAD_DEFINE(midi1_serial_receive_tid, 512,
 void display_update_bpm_line(uint16_t sbpm, uint16_t sbpm2) {
 	
 	cfb_print(cfb, sbpm_to_str(sbpm), 0, 16);
-	//cfb_invert_area(cfb, 0, 16, 128, 64);
 	cfb_print(cfb, sbpm_to_str(sbpm2), 0, 32);
 	cfb_framebuffer_finalize(cfb);
 	return;
@@ -460,9 +440,10 @@ K_THREAD_DEFINE(led_display_tid, 512,
  */
 int main(void)
 {
+
 	/* Init the USB MIDI and the rest of the MIDI processes */
-	if (main_midi_init()) {
-		printk("Failed to main_midi_init()\n");
+	if (main_midi1_init(&g_inst_uart3)) {
+		printk("Failed to main_midi1_init()\n");
 		return -1;
 	}
 
@@ -484,10 +465,12 @@ int main(void)
 	 * to settle
 	 */
 	main_display_init();
-	// FIXME: for some reason returns failure.
-	//if(main_display_init()) {
-	//	printk("Failed to main_display_init()\n");
-	//}
+	/*  FIXME: for some reason returns failure.
+	if(main_display_init()) {
+	 	printk("Failed to main_display_init()\n");
+	}
+	*/
+	
 	while (1) {
 		/*  measure incoming interval. */
 		printk("interval measured as: %u us\n",

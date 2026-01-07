@@ -28,7 +28,13 @@
 #define MSGQ_SIZE 128
 #define MSG_SIZE sizeof(uint8_t)
 
-/* TODO: Rebuilding this code to a instance based version */
+/*-----------------------------------------------------------------------*/
+
+/**
+ * @brief a pointer to this struct must be passed as the first
+ * @brief argument to all functions
+ * @note
+ */
 struct midi1_serial_inst {
 	const struct device *uart;
 	
@@ -56,8 +62,6 @@ struct midi1_serial_inst {
 
 
 /*-----------------------------------------------------------------------*/
-/*  Function prototypes */
-
 
 /**
  * @brief inits the MIDI serial subsystem for the inst instance
@@ -73,6 +77,8 @@ struct midi1_serial_inst {
  * @param *pitchwheel callback delegate function for a pitchwheel rx event
  * @return err success 0 failure -1
  */
+int midi1_serial_init(struct midi1_serial_inst *inst);
+/*
 int midi1_serial_init(struct midi1_serial_inst *inst,
 		     const struct device *uart_dev,
 		     void(*note_on)(uint8_t, uint8_t),
@@ -80,7 +86,7 @@ int midi1_serial_init(struct midi1_serial_inst *inst,
 		     void(*control_change)(uint8_t, uint8_t),
 		     void(*realtime)(uint8_t),
 		     void(*pitchwheel)(uint8_t, uint8_t));
-
+*/ 
 void SerialMidiInit(void (*note_on_handler_ptr)(uint8_t note, uint8_t velocity),
 		    void(*note_off_handler_ptr)(uint8_t note, uint8_t velocity),
 		    void(*control_change_handler_ptr)(uint8_t controller,
