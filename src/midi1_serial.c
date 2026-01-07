@@ -35,42 +35,12 @@
 #include "midi1.h"
 #include "midi1_serial.h"
 
-/* 
- * Make sure there is a  "midi" in the device tree overlay. 
- * We'll cover the multi port MIDI stuff later. for now just one MIDI port is 
- * supported per board.   Also this is a UART device so make sure the UART
- * is enabled in the device prj.conf
- * TODO: _OLD_ version in the new version the caller needs to do this and
- * TODO: pass it as an argument
- */
-//#define UART_DEVICE_NODE DT_ALIAS(midi)
-//static const struct device *const midi = DEVICE_DT_GET(UART_DEVICE_NODE);
-
-/*-----------------------------------------------------------------------*/
-/* TODO: _OLD_ Global Function pointers for the delegate/callbacks */
-void (*midi_note_on_delegate)(uint8_t note, uint8_t velocity);
-void (*midi_note_off_delegate)(uint8_t note, uint8_t velocity);
-void (*midi_control_change_delegate)(uint8_t controller, uint8_t value);
-void (*realtime_handler_delegate)(uint8_t msg);
-void (*midi_pitchwheel_delegate)(uint8_t lsb, uint8_t msb);
-
 /* Private/hidden Prototype's for the ISR callback asssigned during init */
 static void midi1_serial_isr_callback(const struct device *dev, void *user_data);
 
 /**
- * Inits the serial USART with MIDI clock speed and 
- * registers delegates for the callbacks.
- * TODO: _NEW_ work in progress
+ * Inits the serial USART with MIDI clock speed and
  */
-/*
-int midi1_serial_init(struct midi1_serial_inst *inst,
-		     const struct device *uart_dev,
-		     void(*note_on)(uint8_t, uint8_t),
-		     void(*note_off)(uint8_t, uint8_t),
-		     void(*control_change)(uint8_t, uint8_t),
-		     void(*realtime)(uint8_t),
-		     void(*pitchwheel)(uint8_t, uint8_t))
-*/
 int midi1_serial_init(struct midi1_serial_inst *inst)
 {
 	inst->running_status_rx = 0;
@@ -80,27 +50,17 @@ int midi1_serial_init(struct midi1_serial_inst *inst)
 
 	inst->running_status_tx = 0;
 	inst->running_status_tx_count = 0;
-
 	
-#if 0
-	/* Assign delegate's */
-	/* TODO: no longer relevant is part of inst */
-	inst->uart = uart_dev;
-	inst->note_on = note_on;
-	inst->note_off = note_off;
-	inst->control_change = control_change;
-	inst->realtime = realtime;
-	inst->pitchwheel = pitchwheel;
-#endif
+	/* If a null pointer is given reassign to the NO OP function */
+	if (!inst->note_on)        inst->note_on = midi1_noop_note_on;
+	if (!inst->note_off)       inst->note_off = midi1_noop_note_off;
+	if (!inst->control_change) inst->control_change = midi1_noop_control_change;
+	if (!inst->realtime)       inst->realtime = midi1_noop_realtime;
+	if (!inst->pitchwheel)     inst->pitchwheel = midi1_noop_pitchwheel;
 
 	/* Assign a MSQ to this instance */
-	/*
-	 * TODO: is not going to work... we need to dynamically init the
-	 * TODO: MSGQ ?
-	 */
 	k_msgq_init(&inst->msgq, inst->msgq_buffer, MSG_SIZE, MSGQ_SIZE);
 	
-
 	if (!device_is_ready(inst->uart)) {
 		printk("UART device not found!");
 		return -1;

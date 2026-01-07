@@ -30,9 +30,25 @@
 
 /*-----------------------------------------------------------------------*/
 
+/*
+ * Empty NO OP (noop) callbacks assigned if the user leaves the callbacks
+ * empty.
+ */
+static inline void midi1_noop_note_on(uint8_t note, uint8_t velocity) {}
+static inline void midi1_noop_note_off(uint8_t note, uint8_t velocity) {}
+static inline void midi1_noop_control_change(uint8_t controller, uint8_t value) {}
+static inline void midi1_noop_realtime(uint8_t msg) {}
+static inline void midi1_noop_pitchwheel(uint8_t lsb, uint8_t msb) {}
+
 /**
  * @brief a pointer to this struct must be passed as the first
  * @brief argument to all functions
+ * @param *note_on pointer to the callback function for a NOTE ON rx event
+ * @param *note_off callback delegate function for a NOTE OFF rx event
+ * @param *note_on  callback delegate function for a NOTE ON rx event
+ * @param *control_change  callback function for a Control Change rx event
+ * @param *realtime  callback delegate function for a system realtime rx event
+ * @param *pitchwheel callback delegate function for a pitchwheel rx event
  */
 struct midi1_serial_inst {
 	const struct device *uart;
@@ -65,19 +81,9 @@ struct midi1_serial_inst {
 /**
  * @brief inits the MIDI serial subsystem for the inst instance
  *
- * @note also assigns delegates for callbacks.
- *
  * @param *inst pointer to a midi1_serial_inst struct
- * @param *note_on pointer to the callback function for a NOTE ON rx event
- * @param *note_off callback delegate function for a NOTE OFF rx event
- * @param *note_on  callback delegate function for a NOTE ON rx event
- * @param *control_change  callback function for a Control Change rx event
- * @param *realtime  callback delegate function for a system realtime rx event
- * @param *pitchwheel callback delegate function for a pitchwheel rx event
- * @return err success 0 failure -1
  */
 int midi1_serial_init(struct midi1_serial_inst *inst);
-
 
 /**
  * @brief this needs to be called in a loop to process the received MIDI1
