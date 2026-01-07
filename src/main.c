@@ -112,7 +112,8 @@ UMP_ENDPOINT_DT_SPEC_GET(USB_MIDI_DT_NODE);
 const struct ump_stream_responder_cfg responder_cfg =
 UMP_STREAM_RESPONDER(midi, usbd_midi_send, &ump_ep_dt);
 
-/* TODO: work in progress handler for timing purposes */
+
+/* TODO: handler for timing purposes we'll ignore other stuff for now */
 static void on_ump_packet(const struct device *dev, const struct midi_ump ump)
 {
 	switch (UMP_MT(ump)) {
@@ -139,9 +140,13 @@ static void on_ump_packet(const struct device *dev, const struct midi_ump ump)
 	}
 }
 
+
+/**
+ * @brief Light up the LED (if any) when USB-MIDI2.0 is active towards the PC
+ */
 static void on_device_ready(const struct device *dev, const bool ready)
 {
-	/* Light up the LED (if any) when USB-MIDI2.0 is enabled */
+	
 	if (led0.port) {
 		gpio_pin_set_dt(&led0, ready);
 		k_msleep(100);
@@ -153,7 +158,7 @@ static void on_device_ready(const struct device *dev, const bool ready)
 	}
 }
 
-/* different rx callback for the clock tests */
+/* rx callback struct for the clock tests we use 'on_ump_packet' */
 static const struct usbd_midi_ops ump_ops = {
 	.rx_packet_cb = on_ump_packet,
 	.ready_cb = on_device_ready,
@@ -200,9 +205,22 @@ void realtime_handler(uint8_t msg) {
 /*
  * Init all the USB MIDI stuff in main.
  */
+#define MIDI1_UART3 DT_ALIAS(midi)
+static struct midi1_serial_inst g_inst_uart3 = {
+	.uart 		= DEVICE_DT_GET(MIDI1_UART3),
+	.note_on 	= &note_on_handler,
+	.note_off 	= &note_off_handler,
+	.control_change = &control_change_handler,
+	.realtime	= &realtime_handler,
+	.pitchwheel	= &midi_pitchwheel_handler,
+};
+
 int main_midi1_init(struct midi1_serial_inst *inst)
 {
 	struct usbd_context *sample_usbd;
+	
+	/* Needs to be called to ensure a proper state of the parser */
+	midi1_serial_init(&g_inst_uart3);
 	
 	if (led0.port && led2.port) {
 		if (gpio_pin_configure_dt(&led0, GPIO_OUTPUT)) {
@@ -219,20 +237,20 @@ int main_midi1_init(struct midi1_serial_inst *inst)
 #endif
 	
 	if (!device_is_ready(midi)) {
-			//LOG_ERR("MIDI device not ready");
+		//LOG_ERR("MIDI device not ready");
 		return -1;
 	}
 	usbd_midi_set_ops(midi, &ump_ops);
 	sample_usbd = sample_usbd_init_device(NULL);
 	if (sample_usbd == NULL) {
-			//LOG_ERR("Failed to initialize USB device");
+		//LOG_ERR("Failed to initialize USB device");
 		return -1;
 	}
 	if (usbd_enable(sample_usbd)) {
-			//LOG_ERR("Failed to enable device support");
+		//LOG_ERR("Failed to enable device support");
 		return -1;
 	}
-		//LOG_INF("USB device support enabled");
+	//LOG_INF("USB device support enabled");
 	
 	/* Init the clock measurement system */
 	midi1_clock_cntr_init(midi);
@@ -243,18 +261,20 @@ int main_midi1_init(struct midi1_serial_inst *inst)
 	
 	/*
 	 * Send example MIDI messages to test the DIN5 MIDI1.0
+	 * TODO: this is not working (yet).
 	 */
 #define TEST_MIDI_OUTPUT 1
 #if TEST_MIDI_OUTPUT
-	for (int j =0 ; j < 16; j++ ) {
-		for (int i = 0; i < 16; i++) {
-			printk("MIDI1.0 serial NoteON\n");
-			SerialMidiNoteON(j,60,i);
+	for (int j =15 ; j < 16; j++ ) {
+		for (int i = 0; i < 128; i++) {
+			/* Don't use printk it will go out the MIDI port ! */
+			midi1_serial_note_on(inst, j, i, i);
 			k_msleep(100);
 		}
-		for (int i = 0; i < 16; i++) {
-			printk("MIDI1.0 serial NoteON (velocity=0)\n");
-			SerialMidiNoteON(j,60,0);
+		for (int i = 0; i < 128; i++) {
+			/* printk("MIDI1.0 serial NoteOFF (velocity=0)\n"); */
+			/* Don't use printk it will go out the MIDI port ! */
+			midi1_serial_note_off(inst, j, i, i);
 			k_msleep(100);
 		}
 		k_msleep(2000);
@@ -318,15 +338,7 @@ int main_display_init(void)
 
 /* ---------------------------- THREADS ------------------------------------ */
 /* g_inst_uart3 is global because we need the reference in multiple threads */
-#define MIDI1_UART3 DT_ALIAS(midi)
-static struct midi1_serial_inst g_inst_uart3 = {
-	.uart 		= DEVICE_DT_GET(MIDI1_UART3),
-	.note_on 	= &note_on_handler,
-	.note_off 	= &note_off_handler,
-	.control_change = &control_change_handler,
-	.realtime	= &realtime_handler,
-	.pitchwheel	= &midi_pitchwheel_handler,
-};
+
 
 /*
  * MIDI1.0 5PIN DIN serial receive parser thread.
@@ -335,12 +347,14 @@ static struct midi1_serial_inst g_inst_uart3 = {
 void midi1_serial_receive_thread(void) {
 
 	/* Initialize the MIDI1 parser with the callbacks */
-	midi1_serial_init(&g_inst_uart3);
+	/* Moved this to main as we need to also send stuff */
+	/* midi1_serial_init(&g_inst_uart3); */
 	
+	/* Let's wait a little untill things are settled */
+	k_msleep(100);
 	while (1) {
 		/* This one is blocking */
 		midi1_serial_receiveparser(&g_inst_uart3);
-		/* SerialMidiReceiveParser(); */
 	}
 }
 K_THREAD_DEFINE(midi1_serial_receive_tid, 512,
@@ -440,7 +454,6 @@ K_THREAD_DEFINE(led_display_tid, 512,
  */
 int main(void)
 {
-
 	/* Init the USB MIDI and the rest of the MIDI processes */
 	if (main_midi1_init(&g_inst_uart3)) {
 		printk("Failed to main_midi1_init()\n");

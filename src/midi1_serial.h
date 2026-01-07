@@ -78,21 +78,6 @@ struct midi1_serial_inst {
  * @return err success 0 failure -1
  */
 int midi1_serial_init(struct midi1_serial_inst *inst);
-/*
-int midi1_serial_init(struct midi1_serial_inst *inst,
-		     const struct device *uart_dev,
-		     void(*note_on)(uint8_t, uint8_t),
-		     void(*note_off)(uint8_t, uint8_t),
-		     void(*control_change)(uint8_t, uint8_t),
-		     void(*realtime)(uint8_t),
-		     void(*pitchwheel)(uint8_t, uint8_t));
-*/ 
-void SerialMidiInit(void (*note_on_handler_ptr)(uint8_t note, uint8_t velocity),
-		    void(*note_off_handler_ptr)(uint8_t note, uint8_t velocity),
-		    void(*control_change_handler_ptr)(uint8_t controller,
-						      uint8_t value),
-		    void(*realtime_handler_ptr)(uint8_t msg),
-		    void(*midi_pitchwheel_ptr)(uint8_t lsb, uint8_t msb));
 
 
 /**
@@ -105,7 +90,7 @@ void SerialMidiInit(void (*note_on_handler_ptr)(uint8_t note, uint8_t velocity),
  *
  */
 void midi1_serial_receiveparser(struct midi1_serial_inst *inst);
-void SerialMidiReceiveParser(void);
+//void SerialMidiReceiveParser(void);
 
 
 /* Channel mode messages */
@@ -126,7 +111,7 @@ void midi1_serial_note_on(struct midi1_serial_inst *inst,
 			  uint8_t channel,
 			  uint8_t key,
 			  uint8_t velocity);
-void SerialMidiNoteON(uint8_t channel, uint8_t key, uint8_t velocity);
+//void SerialMidiNoteON(uint8_t channel, uint8_t key, uint8_t velocity);
 
 /**
  * @brief send a NOTE OFF tx event via the instance inst
@@ -139,7 +124,7 @@ void midi1_serial_note_off(struct midi1_serial_inst *inst,
 			   uint8_t channel,
 			   uint8_t key,
 			   uint8_t velocity);
-void SerialMidiNoteOFF(uint8_t channel, uint8_t key, uint8_t velocity);
+//void SerialMidiNoteOFF(uint8_t channel, uint8_t key, uint8_t velocity);
 
 /**
  * @brief send a Control Change tx event via the instance inst
@@ -152,7 +137,6 @@ void midi1_serial_control_change(struct midi1_serial_inst *inst,
 				 uint8_t channel,
 				 uint8_t controller,
 				 uint8_t val);
-void SerialMidiControlChange(uint8_t channel, uint8_t controller, uint8_t val);
 
 /**
  * @brief send a Channel aftertouch tx event via the instance inst
@@ -163,7 +147,6 @@ void SerialMidiControlChange(uint8_t channel, uint8_t controller, uint8_t val);
 void midi1_serial_channelaftertouch(struct midi1_serial_inst *inst,
 				    uint8_t channel,
 				    uint8_t val);
-void SerialMidiChannelAfterTouch(uint8_t channel, uint8_t val);
 
 /**
  * @brief send a ModWheel (MSB and LSB) via the instance inst
@@ -177,7 +160,6 @@ void SerialMidiChannelAfterTouch(uint8_t channel, uint8_t val);
 void midi1_serial_modwheel(struct midi1_serial_inst *inst,
 			   uint8_t channel,
 			   uint16_t val);
-void SerialMidiModWheel(uint8_t channel, uint16_t val);
 
 /**
  * @brief send a Pitchwheel change (MSB and LSB) via the instance inst
@@ -190,7 +172,9 @@ void SerialMidiModWheel(uint8_t channel, uint16_t val);
  * @param channel MIDI channel 0 == CH1 (Macro's exist for this e.g. CH16)
  * @param value MIDI value
  */
-void SerialMidiPitchWheel(uint8_t channel, uint16_t val);
+void midi1_serial_pitchwheel(struct midi1_serial_inst *inst,
+			     uint8_t channel,
+			     uint16_t val);
 
 /* System Common messages */
 /*___         _                ___
@@ -205,7 +189,6 @@ void SerialMidiPitchWheel(uint8_t channel, uint16_t val);
  * @param *inst pointer to a midi1_serial_inst struct
  */
 void midi1_serial_timingclock(struct midi1_serial_inst *inst);
-void SerialMidiTimingClock(void);
 
 /**
  * @brief send MIDI1 start
@@ -213,7 +196,6 @@ void SerialMidiTimingClock(void);
  * @param *inst pointer to a midi1_serial_inst struct
  */
 void midi1_serial_start(struct midi1_serial_inst *inst);
-void SerialMidiStart(void);
 
 /**
  * @brief send MIDI1 continue
@@ -221,7 +203,6 @@ void SerialMidiStart(void);
  * @param *inst pointer to a midi1_serial_inst struct
  */
 void midi1_serial_continue(struct midi1_serial_inst *inst);
-void SerialMidiContinue(void);
 
 /**
  * @brief send MIDI1 stop
@@ -229,7 +210,6 @@ void SerialMidiContinue(void);
  * @param *inst pointer to a midi1_serial_inst struct
  */
 void midi1_serial_stop(struct midi1_serial_inst *inst);
-void SerialMidiStop(void);
 
 /**
  * @brief send MIDI1 active sense
@@ -237,7 +217,6 @@ void SerialMidiStop(void);
  * @param *inst pointer to a midi1_serial_inst struct
  */
 void midi1_serial_active_sensing(struct midi1_serial_inst *inst);
-void SerialMidiActive_Sensing(void);
 
 /**
  * @brief send MIDI1 RESET
@@ -245,8 +224,6 @@ void SerialMidiActive_Sensing(void);
  * @param *inst pointer to a midi1_serial_inst struct
  */
 void midi1_serial_reset(struct midi1_serial_inst *inst);
-void SerialMidiReset(void);
-
 
 #endif				/* MIDI1_SERIAL_H */
 /* EOF */
