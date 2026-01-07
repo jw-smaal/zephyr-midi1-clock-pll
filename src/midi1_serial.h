@@ -24,7 +24,7 @@
 /* MIDI1.0 definitions by Jan-Willem Smaal */
 #include "midi1.h"
 
-#define MIDI1_SERIAL_DEBUG 1
+#define MIDI1_SERIAL_DEBUG 0
 #define MSGQ_SIZE 128
 #define MSG_SIZE sizeof(uint8_t)
 
@@ -33,7 +33,6 @@
 /**
  * @brief a pointer to this struct must be passed as the first
  * @brief argument to all functions
- * @note
  */
 struct midi1_serial_inst {
 	const struct device *uart;

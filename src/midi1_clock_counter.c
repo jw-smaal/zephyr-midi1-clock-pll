@@ -34,8 +34,11 @@
 #include "midi1.h"
 #include "midi1_clock_counter.h"
 
+
+/* TODO: put this in a struct */
 static atomic_t g_midi1_running_cntr = ATOMIC_INIT(0);
 static uint16_t g_sbpm = 0;
+/* This is a USB-MIDI device handle */
 static const struct device *g_midi1_dev;
 const struct device *g_counter_dev;
 

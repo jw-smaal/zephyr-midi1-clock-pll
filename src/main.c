@@ -83,9 +83,6 @@ static const struct device *const midi = DEVICE_DT_GET(USB_MIDI_DT_NODE);
 static struct gpio_dt_spec led0 = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
 static struct gpio_dt_spec led2 = GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios);
 
-/* Not using the loggin subsystem as it's taking too much space */
-/* LOG_MODULE_REGISTER(sample_usb_midi, LOG_LEVEL_INF);  */
-
 
 /* ----------------------- handlers callbacks  ----------------------------- */
 static void key_press(struct input_event *evt, void *user_data)
@@ -333,12 +330,8 @@ int main_display_init(void)
 }
 
 
-
-
-
 /* ---------------------------- THREADS ------------------------------------ */
 /* g_inst_uart3 is global because we need the reference in multiple threads */
-
 
 /*
  * MIDI1.0 5PIN DIN serial receive parser thread.

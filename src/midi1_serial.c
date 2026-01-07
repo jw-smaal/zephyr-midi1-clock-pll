@@ -35,9 +35,6 @@
 #include "midi1.h"
 #include "midi1_serial.h"
 
-/* Filled by the ISR routine */
-K_MSGQ_DEFINE(midi_msgq, MSG_SIZE, MSGQ_SIZE, 4);
-
 /* 
  * Make sure there is a  "midi" in the device tree overlay. 
  * We'll cover the multi port MIDI stuff later. for now just one MIDI port is 
@@ -46,9 +43,8 @@ K_MSGQ_DEFINE(midi_msgq, MSG_SIZE, MSGQ_SIZE, 4);
  * TODO: _OLD_ version in the new version the caller needs to do this and
  * TODO: pass it as an argument
  */
-#define UART_DEVICE_NODE DT_ALIAS(midi)
-
-static const struct device *const midi = DEVICE_DT_GET(UART_DEVICE_NODE);
+//#define UART_DEVICE_NODE DT_ALIAS(midi)
+//static const struct device *const midi = DEVICE_DT_GET(UART_DEVICE_NODE);
 
 /*-----------------------------------------------------------------------*/
 /* TODO: _OLD_ Global Function pointers for the delegate/callbacks */
@@ -154,7 +150,7 @@ void midi1_serial_note_on(struct midi1_serial_inst *inst, uint8_t channel, uint8
 
 void midi1_serial_note_off(struct midi1_serial_inst *inst, uint8_t channel, uint8_t key, uint8_t velocity)
 {
-	if ((C_NOTE_ON | channel) != inst->running_status_tx) {
+	if ((C_NOTE_OFF | channel) != inst->running_status_tx) {
 		uart_poll_out(inst->uart, C_NOTE_OFF | channel);
 		inst->running_status_tx = C_NOTE_OFF | channel;
 	}
@@ -178,12 +174,12 @@ void midi1_serial_control_change(struct midi1_serial_inst *inst,
 
 	if (inst->running_status_tx_count >= 16) {
 		inst->running_status_tx_count = 0;
-		uart_poll_out(midi, C_CONTROL_CHANGE | channel);
+		uart_poll_out(inst->uart, C_CONTROL_CHANGE | channel);
 		inst->running_status_tx = C_CONTROL_CHANGE | channel;
 	}
 	/* If we don't have running status send out the status byte. */
 	else if ((C_CONTROL_CHANGE | channel) != inst->running_status_tx) {
-		uart_poll_out(midi, C_CONTROL_CHANGE | channel);
+		uart_poll_out(inst->uart, C_CONTROL_CHANGE | channel);
 		inst->running_status_tx = C_CONTROL_CHANGE | channel;
 		inst->running_status_tx_count = 0;
 	}
@@ -198,7 +194,7 @@ void midi1_serial_channelaftertouch(struct midi1_serial_inst *inst,
 				 uint8_t val)
 {
 	if ((C_CHANNEL_AFTERTOUCH | channel) != inst->running_status_tx) {
-		uart_poll_out(midi, C_CHANNEL_AFTERTOUCH | channel);
+		uart_poll_out(inst->uart, C_CHANNEL_AFTERTOUCH | channel);
 		inst->running_status_tx = C_CHANNEL_AFTERTOUCH | channel;
 	}
 	uart_poll_out(inst->uart, val);
