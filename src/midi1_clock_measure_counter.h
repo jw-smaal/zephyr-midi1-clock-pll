@@ -15,7 +15,7 @@
  *
  * @author Jan-Willem Smaal <usenet@gispen.org>
  * @date 20251230
- * @license SPDX-License-Identifier: Apache-2.0
+ * license SPDX-License-Identifier: Apache-2.0
  */
 #ifndef MIDI1_CLOCK_MEAS_CNTR_H
 #define MIDI1_CLOCK_MEAS_CNTR_H

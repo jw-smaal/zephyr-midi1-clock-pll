@@ -11,7 +11,7 @@
  * Adapted Original: Sample application for USB MIDI 2.0 device class
  * @author Copyright (c) 2024 Titouan Christophe
  *
- * @license SPDX-License-Identifier: Apache-2.0
+ * license SPDX-License-Identifier: Apache-2.0
  */
 #include <stdio.h>
 #include <zephyr/device.h>

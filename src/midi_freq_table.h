@@ -5,7 +5,7 @@
  * used by "note.h  / note.c" for the noteToFreq() function 
  *
  * @author Jan-Willem Smaal <usenet@gispen.org>
- * @license SPDX-License-Identifier: Apache-2.0
+ * license SPDX-License-Identifier: Apache-2.0
  */
 #ifndef MIDI_FREQ_TABLE_H
 #define MIDI_FREQ_TABLE_H

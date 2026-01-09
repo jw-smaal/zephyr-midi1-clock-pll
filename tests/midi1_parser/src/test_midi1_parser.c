@@ -213,7 +213,81 @@ ZTEST(midi1_parser, test_running_status_modwheel_sweep)
     }
 }
 
+ZTEST(midi1_parser, test_brutal_interleave_realtime_and_sysex)
+{
+    struct midi1_serial_inst inst;
+    midi_test_inst_init(&inst);
+
+    /* We will track the last CC and last note */
+    g_last_ctrl = 0;
+    g_last_val  = 0;
+    g_last_note = 0;
+    g_last_vel  = 0;
+    g_last_rt   = 0;
+
+    /* Brutal mixed stream:
+     *
+     * 1. CC1 = 0 (sets running status)
+     * 2. CC1 = 1 (running status)
+     * 3. Realtime F8
+     * 4. CC1 = 2 (running status)
+     * 5. SysEx start F0
+     * 6. SysEx data bytes
+     * 7. Realtime inside SysEx (legal)
+     * 8. More SysEx data
+     * 9. SysEx end F7
+     * 10. CC1 = 3 (running status should resume)
+     * 11. NOTE ON burst to verify parser recovery
+     */
+
+    uint8_t seq[] = {
+        /* CC1 = 0 */
+        0xB0, 1, 0,
+
+        /* CC1 = 1 (running status) */
+        1, 1,
+
+        /* Realtime interleave */
+        0xF8,
+
+        /* CC1 = 2 (running status) */
+        1, 2,
+
+        /* SysEx start */
+        0xF0,
+        0x7D, 0x10, 0x20,  /* manufacturer + payload */
+
+        /* Realtime inside SysEx */
+        0xFA,
+
+        /* More SysEx data */
+        0x33, 0x44,
+
+        /* SysEx end */
+        0xF7,
+
+	/* Running status does NOT resume — must send new status byte */
+	0xB0, 1, 3, 
+
+        /* NOTE ON burst to test recovery */
+        0x90, 60, 100,
+        62, 110,  /* running status NOTE ON */
+    };
+
+    feed_and_parse(&inst, seq, sizeof(seq));
+
+    /* Validate last CC */
+    zassert_equal(g_last_ctrl, 1, "Expected controller 1");
+    zassert_equal(g_last_val, 3, "Expected CC value 3 after SysEx");
+
+    /* Validate realtime inside SysEx */
+    zassert_equal(g_last_rt, 0xFA, "Expected realtime FA inside SysEx");
+
+    /* Validate NOTE ON recovery */
+    zassert_equal(g_last_note, 62, "Expected last note 62");
+    zassert_equal(g_last_vel, 110, "Expected last velocity 110");
+}
+
 /* Test suite entry point */
 ZTEST_SUITE(midi1_parser, NULL, NULL, NULL, NULL, NULL);
-
 

@@ -11,7 +11,7 @@
  *
  * @author Jan-Willem Smaal <usenet@gispen.org> 
  * @date 20251231
- * @license SPDX-License-Identifier: Apache-2.0
+ * license SPDX-License-Identifier: Apache-2.0
  */
 
 #include <zephyr/kernel.h>

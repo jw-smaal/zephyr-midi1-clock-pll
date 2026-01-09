@@ -3,7 +3,7 @@
  * @brief Simple integer PLL for MIDI clock synchronization (24 PPQN).
  * @author Jan-Willem Smaal
  * @date 20251229
- * @license SPDX-License-Identifier: Apache-2.0
+ * license SPDX-License-Identifier: Apache-2.0
  */
 #ifndef MIDI1_CLOCK_PLL_TICKS_H
 #define MIDI1_CLOCK_PLL_TICKS_H

@@ -10,7 +10,7 @@
  * it's rock solid for internal MIDI clock generated code.
  *
  * @date 20251214
- * @license SPDX-License-Identifier: Apache-2.0
+ * license SPDX-License-Identifier: Apache-2.0
  */
 #include <zephyr/audio/midi.h>
 

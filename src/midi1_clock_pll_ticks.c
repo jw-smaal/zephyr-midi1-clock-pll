@@ -3,7 +3,7 @@
  * @brief Simple integer PLL for MIDI clock synchronization (24 PPQN).
  * @author Jan-Willem Smaal <usenet@gispen.org>
  * @date 20251229
- * @license SPDX-License-Identifier: Apache-2.0
+ * license SPDX-License-Identifier: Apache-2.0
  */
 #include <stdint.h>
 /* For printk only */

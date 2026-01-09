@@ -7,7 +7,7 @@
  * @author Jan-Willem Smaal <usenet@gispen.org>
  * updated 20241224
  * @date 20252810  -> for Zephyr use with USB.
- * @license SPDX-License-Identifier: Apache-2.0
+ * license SPDX-License-Identifier: Apache-2.0
  */
 #ifndef MIDI1_H
 #define MIDI1_H

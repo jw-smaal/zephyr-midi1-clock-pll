@@ -8,12 +8,15 @@
  * Adjusted in 2025 to work with UMP.  Changed to to support
  * multiple instances in 2026.
  *
- * @author Jan-Willem Smaal <usenet@gispen.org> 
- * @updated 20241224
- * @updated 20250103
- * @updated 20260107
+ * This version supports 'running_status' and is tested with
+ * real MIDI instruments.
  *
- * @license SPDX-License-Identifier: Apache-2.0
+ * @author Jan-Willem Smaal <usenet@gispen.org> 
+ * updated 20241224
+ * updated 20250103
+ * updated 20260107
+ *
+ * license SPDX-License-Identifier: Apache-2.0
  */
 #ifndef MIDI1_SERIAL_H
 #define MIDI1_SERIAL_H
@@ -129,7 +132,6 @@ void midi1_serial_note_off(struct midi1_serial_inst *inst,
 			   uint8_t channel,
 			   uint8_t key,
 			   uint8_t velocity);
-//void SerialMidiNoteOFF(uint8_t channel, uint8_t key, uint8_t velocity);
 
 /**
  * @brief send a Control Change tx event via the instance inst

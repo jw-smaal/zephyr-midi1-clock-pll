@@ -4,7 +4,7 @@
 #
 # @author Jan-Willem Smaal <usenet@gispen.rog
 # @date 20260102
-# @license SPDX-License-Identifier: Apache-2.0
+# license SPDX-License-Identifier: Apache-2.0
 """
 Generate a C array of precomputed frequencies for MIDI notes 0..127 (C-1 .. G9).
 Usage:

@@ -23,9 +23,9 @@
  *
  * Created in 2014 ported to Zephyr RTOS in 2024. 
  * @author Jan-Willem Smaal <usenet@gispen.org> 
- * @updated 20241224
- * @updated 20260103
- * @license SPDX-License-Identifier: Apache-2.0
+ * updated 20241224
+ * updated 20260103
+ * SPDX-License-Identifier: Apache-2.0
  */
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
@@ -265,7 +265,6 @@ static void midi1_serial_isr_callback(const struct device *dev, void *user_data)
 	}
 }
 
-
 /**
  * @brief Parse one byte at a time for the MIDI parsing.
  *
@@ -274,7 +273,7 @@ static void midi1_serial_isr_callback(const struct device *dev, void *user_data)
  * @note This function is really long as the MIDI parsing is done
  * @note byte per byte and it took several tests to get the parsing
  * @note done right.  I tried to create a statemachine earlier but
- * @note failed so I have sticked to this proven implementation.
+ * @note failed so I have sticked to my proven implementation.
  *
  * TODO: _NEW_ version
  * TODO: implement callbacks that include the MIDI channel as well!
@@ -423,9 +422,8 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 					}
 				}
 			}
-		}		/*  global_3rd_byte_flag */
-	}			/* end of data bit 7 == 0 */
-	
-}				/* End of SerialMidiReceiveParser */
+		} /*  global_3rd_byte_flag */
+	} /* end of data bit 7 == 0 */
+} /* End of SerialMidiReceiveParser */
 
 /* EOF */
