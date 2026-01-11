@@ -18,7 +18,6 @@
 
 /* ------------------------------------------------------------------ */
 /* Internal state */
-
 static const struct device *g_counter_dev_ch1 = NULL;
 
 static uint32_t g_last_ts_ticks = 0;
@@ -26,6 +25,7 @@ static uint32_t g_scaled_bpm = 0;
 static uint32_t g_last_interval_ticks = 0;
 static bool g_valid = false;
 static uint32_t g_clock_freq = 0;
+static bool g_count_up = false;
 
 /* Timestamp exposed to PLL */
 static uint32_t g_last_tick_timestamp_ticks = 0;
@@ -74,6 +74,7 @@ void midi1_clock_meas_cntr_init(void)
 	g_last_interval_ticks = 0;
 	g_valid = false;
 	g_clock_freq = 0;
+	g_count_up = false;
 	
 	/* g_counter_dev_ch1 = DEVICE_DT_GET(DT_NODELABEL(COUNTER_DEVICE_CH1)); */
 	g_counter_dev_ch1 = DEVICE_DT_GET(DT_ALIAS(COUNTER_DEVICE_CH1));
@@ -87,6 +88,8 @@ void midi1_clock_meas_cntr_init(void)
 		printk("Clock measurement counter unable to read frequency\n");
 		return;
 	}
+	/* PIT0 counts down, ctimer0 counts up and cannot be changed */
+	g_count_up = counter_is_counting_up(g_counter_dev_ch1);
 	
 	/* Do this once and then let it run free .. */
 	const struct counter_top_cfg top_cfg = {
@@ -111,6 +114,7 @@ void midi1_clock_meas_cntr_init(void)
 void midi1_clock_meas_cntr_pulse(void)
 {
 	uint32_t now_ticks = midi1_clock_meas_now_ticks();
+	uint32_t interval_ticks = 0;
 	
 	/* Expose timestamp to PLL or other users */
 	g_last_tick_timestamp_ticks = now_ticks;
@@ -121,11 +125,20 @@ void midi1_clock_meas_cntr_pulse(void)
 		return;
 	}
 	
-	/*
-	 * For a down-counter,
-	 * elapsed = previous - current (unsigned wrap-safe)
-	 */
-	uint32_t interval_ticks = g_last_ts_ticks - now_ticks;
+	/* interval_ticks = g_last_ts_ticks - now_ticks; */
+	if (g_count_up) {
+		/*
+		 * For a up-counter,
+		 * elapsed = current - previous  (unsigned wrap-safe)
+		 */
+		interval_ticks = now_ticks - g_last_ts_ticks;
+	} else {
+		/*
+		 * For a down-counter,
+		 * elapsed = previous - current (unsigned wrap-safe)
+		 */
+		interval_ticks = g_last_ts_ticks - now_ticks;
+	}
 	g_last_ts_ticks = now_ticks;
 	
 	/* Reject zero or obviously bogus intervals to avoid BPM math crashes */
@@ -154,11 +167,12 @@ void midi1_clock_meas_cntr_pulse(void)
 	}
 	
 	/* old code */
-#if 0
+	/*
 	uint32_t sbpm = MIDI1_SCALED_BPM_NUMERATOR / interval_us;
 	g_scaled_bpm = sbpm;
 	g_valid = true;
-#endif
+         */
+
 }
 
 

@@ -46,12 +46,16 @@
 };
 */
 
-/* Let's make sure both are enabled */
+/* Let's make sure both are enabled and act in the same way as the pit0 */
 &ctimer0 {
 	status = "okay";
+	/* Divide 96 MHz by 4 → 24 MHz timer */
+	prescale = <3>;
 };
 &ctimer1 {
 	status = "okay";
+	/* Divide 96 MHz by 4 → 24 MHz timer */
+	prescale = <3>;
 };
 
 /*****************************************************************************/

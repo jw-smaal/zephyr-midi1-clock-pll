@@ -41,6 +41,7 @@ static uint16_t g_sbpm = 0;
 /* This is a USB-MIDI device handle */
 static const struct device *g_midi1_dev;
 const struct device *g_counter_dev;
+static bool g_midi1_clk_count_up_clk = false;
 
 
 
@@ -99,11 +100,14 @@ void midi1_clock_cntr_init(const struct device *midi1_dev_arg)
 		printk("Counter device not ready\n");
 		return;
 	}
+	/* PIT0 counts down, ctimer0 counts up and cannot be changed */
+	g_midi1_clk_count_up_clk = counter_is_counting_up(g_counter_dev);
+	
+	
 	g_midi1_dev = midi1_dev_arg;
 #if MIDI_CLOCK_ON_PIN
 	midi1_debug_gpio_init();
-#endif 
-
+#endif
 	return;
 }
 
@@ -119,7 +123,7 @@ void midi1_clock_cntr_ticks_start(uint32_t ticks)
 	}
 	atomic_set(&g_midi1_running_cntr, 1);
 #if MIDI_CLOCK_ON_PIN
-	//printk("Ticks requested: %u\n", ticks);
+	printk("Ticks requested: %u\n", ticks);
 #endif
 	struct counter_top_cfg top_cfg = {
 		.callback = midi1_cntr_handler,
