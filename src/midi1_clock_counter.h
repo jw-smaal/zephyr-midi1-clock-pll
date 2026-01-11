@@ -15,7 +15,8 @@
 #include <stddef.h>		/* NULL */
 
 #ifndef COUNTER_DEVICE
-#define COUNTER_DEVICE pit0_channel0
+/* #define COUNTER_DEVICE pit0_channel0 */
+#define COUNTER_DEVICE counterch0
 #endif
 
 /**

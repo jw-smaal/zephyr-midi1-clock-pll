@@ -75,7 +75,9 @@ void midi1_clock_meas_cntr_init(void)
 	g_valid = false;
 	g_clock_freq = 0;
 	
-	g_counter_dev_ch1 = DEVICE_DT_GET(DT_NODELABEL(COUNTER_DEVICE_CH1));
+	/* g_counter_dev_ch1 = DEVICE_DT_GET(DT_NODELABEL(COUNTER_DEVICE_CH1)); */
+	g_counter_dev_ch1 = DEVICE_DT_GET(DT_ALIAS(COUNTER_DEVICE_CH1));
+	
 	if (!device_is_ready(g_counter_dev_ch1)) {
 		printk("Clock measurement counter device not ready\n");
 		return;

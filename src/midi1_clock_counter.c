@@ -92,7 +92,9 @@ uint32_t midi1_clock_cntr_cpu_frequency(void)
 void midi1_clock_cntr_init(const struct device *midi1_dev_arg)
 {
 	atomic_set(&g_midi1_running_cntr, 0);
-	g_counter_dev = DEVICE_DT_GET(DT_NODELABEL(COUNTER_DEVICE));
+	/* g_counter_dev = DEVICE_DT_GET(DT_NODELABEL(COUNTER_DEVICE)); */
+	g_counter_dev = DEVICE_DT_GET(DT_ALIAS(COUNTER_DEVICE));
+	
 	if (!device_is_ready(g_counter_dev)) {
 		printk("Counter device not ready\n");
 		return;

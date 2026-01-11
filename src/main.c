@@ -282,7 +282,8 @@ int main_midi1_init(struct midi1_serial_inst *inst)
 
 
 /* Get the display device (DTS node must be named sh1106) */
-const struct device *display = DEVICE_DT_GET(DT_NODELABEL(sh1106));
+/* const struct device *display = DEVICE_DT_GET(DT_NODELABEL(sh1106)); */ 
+const struct device *display = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 /* in the root of the device tree we need to point it to the sh1106 */ 
 const struct device *cfb = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 

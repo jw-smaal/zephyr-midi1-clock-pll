@@ -1,4 +1,14 @@
-
+/**
+ * @file frdm_k64f.overlay
+ * @brief overlay for this board from 2024
+ * @note
+ *
+ * Using the MCXA156 the mikroBUS socket is used for lpuart1.
+ *
+ * @author Jan-Willem Smaal <usenet@gispen.org>
+ * @date 20260102
+ * SPDX-License-Identifier: Apache-2.0
+ */
 &gpio3 {
 	status ="okay"; 
 };
@@ -29,12 +39,20 @@
 };
 
 /* We are using the periodic interrupt timer  (PIT) so switch it on */
-/* DOES NOT EXIST on this board
+/* DOES NOT EXIST on this board */
+/*
 &pit0 {
 	status = "okay";
 };
 */
 
+/* Let's make sure both are enabled */
+&ctimer0 {
+	status = "okay";
+};
+&ctimer1 {
+	status = "okay";
+};
 
 /*****************************************************************************/
 
@@ -73,8 +91,11 @@
 	};
 	aliases {
 		midi = &lpuart1;
+		counterch0 = &ctimer0;
+		counterch1 = &ctimer1;
 	};
 	
+	/* The Display */
 	mipi_dbi_sdd1331_mikrobus {
 		status = "okay";
 		compatible = "zephyr,mipi-dbi-spi";
@@ -83,11 +104,13 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		/* mikroBUS GPIOs */
-		dc-gpios = <&gpio3 19 GPIO_ACTIVE_HIGH>;   /* mikroBUS INT (pin 8) */
-		reset-gpios = <&gpio3 29 GPIO_ACTIVE_LOW>;   /* mikroBUS RST (pin 6) */
+		/* mikroBUS GPIOs used for SPI */
+		/* mikroBUS INT (pin 8) */
+		dc-gpios = <&gpio3 19 GPIO_ACTIVE_HIGH>;
+		/* mikroBUS RST (pin 6) */
+		reset-gpios = <&gpio3 29 GPIO_ACTIVE_LOW>;
 
-
+		/* Display selected via mikroBUS default CS  */
 		sdd1331_mikrobus: sd1331@0 {
 			status = "okay";
 			compatible = "solomon,ssd1331";
@@ -96,24 +119,30 @@
 			width = <96>;
 			height = <64>;
 			mipi-mode = "MIPI_DBI_MODE_SPI_4WIRE";
-
-			display-offset = <0>;          /* Default: 0 (no vertical shift) */
-			start-line = <0>;              /* Default: 0 (start at first RAM line) */
-			multiplex-ratio = <63>;        /* Default: height - 1 → 64 - 1 = 63 */
-
-			phase-length = <0x31>;         /* Default: Phase1=1, Phase2=3 → 0x31 */
-			oscillator-freq = <0xF0>;      /* Default: highest internal oscillator */
-
-			precharge-time-a = <0x64>;     /* Default: 100 clocks */
-			precharge-time-b = <0x78>;     /* Default: 120 clocks */
-			precharge-time-c = <0x64>;     /* Default: 100 clocks */
-
-			precharge-voltage = <0x3A>;    /* Default: 0x3A (recommended) */
-			vcomh-voltage = <0x3E>;        /* Default: 0x3E (recommended) */
-
-			current-att = <0x0F>;          /* Default: max master current */
-
-			remap-value = <0x72>;          /* Default: RGB565, normal scan, COM split */
+			/* Default: 0 (no vertical shift) */
+			display-offset = <0>;
+			/* Default: 0 (start at first RAM line) */
+			start-line = <0>;
+			/* Default: height - 1 → 64 - 1 = 63 */
+			multiplex-ratio = <63>;
+			/* Default: Phase1=1, Phase2=3 → 0x31 */
+			phase-length = <0x31>;
+			/* Default: highest internal oscillator */
+			oscillator-freq = <0xF0>;
+			/* Default: 100 clocks */
+			precharge-time-a = <0x64>;
+			/* Default: 120 clocks */
+			precharge-time-b = <0x78>;
+			 /* Default: 100 clocks */
+			precharge-time-c = <0x64>;
+			/* Default: 0x3A (recommended) */
+			precharge-voltage = <0x3A>;
+			/* Default: 0x3E (recommended) */
+			vcomh-voltage = <0x3E>;
+			/* Default: max master current */
+			current-att = <0x0F>;
+			 /* Default: RGB565, normal scan, COM split */
+			remap-value = <0x72>;
 		};
 	};
 };

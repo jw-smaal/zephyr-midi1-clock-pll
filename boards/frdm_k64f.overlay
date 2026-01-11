@@ -9,7 +9,7 @@
  *
  * @author Jan-Willem Smaal <usenet@gispen.org>
  * @date 20260102
- * @license SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 /*
@@ -79,5 +79,7 @@
     aliases {
         i2c0 = &i2c0;
         midi = &uart3;
+	counterch0 = &pit0_channel0;
+	counterch1 = &pit0_channel1;
     };
 };

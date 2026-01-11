@@ -34,7 +34,7 @@
  *
  */
 #ifndef COUNTER_DEVICE_CH1
-#define COUNTER_DEVICE_CH1 pit0_channel1
+#define COUNTER_DEVICE_CH1 counterch1
 #endif
 
 /**
