@@ -44,14 +44,15 @@
  * Empty NO OP (noop) callbacks assigned if the user leaves the callbacks
  * empty.
  */
-static inline void midi1_noop_note_on(uint8_t note, uint8_t velocity) {}
-static inline void midi1_noop_note_off(uint8_t note, uint8_t velocity) {}
-static inline void midi1_noop_control_change(uint8_t controller, uint8_t value) {}
+static inline void midi1_noop_note_on(uint8_t channel, uint8_t note, uint8_t velocity) {}
+static inline void midi1_noop_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {}
+static inline void midi1_noop_control_change(uint8_t channel, uint8_t controller, uint8_t value) {}
+
+static inline void midi1_noop_pitchwheel(uint8_t channel, uint8_t lsb, uint8_t msb) {}
+static inline void midi1_noop_program_change(uint8_t channel, uint8_t number) {}
+static inline void midi1_noop_channel_aftertouch(uint8_t channel, uint8_t pressure) {}
+static inline void midi1_noop_poly_aftertouch(uint8_t channel, uint8_t note, uint8_t pressure) {}
 static inline void midi1_noop_realtime(uint8_t msg) {}
-static inline void midi1_noop_pitchwheel(uint8_t lsb, uint8_t msb) {}
-static inline void midi1_noop_program_change(uint8_t number) {}
-static inline void midi1_noop_channel_aftertouch(uint8_t pressure) {}
-static inline void midi1_noop_poly_aftertouch(uint8_t note, uint8_t pressure) {}
 
 
 /**
@@ -82,14 +83,16 @@ struct midi1_serial_inst {
 	uint8_t msgq_buffer[MSGQ_SIZE];
 	
 	/* Callback delegates */
-	void (*note_on)(uint8_t note, uint8_t velocity);
-	void (*note_off)(uint8_t note, uint8_t velocity);
-	void (*control_change)(uint8_t controller, uint8_t value);
+	void (*note_on)(uint8_t channel, uint8_t note, uint8_t velocity);
+	void (*note_off)(uint8_t channel, uint8_t note, uint8_t velocity);
+	void (*control_change)(uint8_t channel, uint8_t controller, uint8_t value);
+
+	void (*pitchwheel)(uint8_t channel, uint8_t lsb, uint8_t msb);
+	void (*program_change)(uint8_t channel, uint8_t number);
+	void (*channel_aftertouch)(uint8_t channel, uint8_t pressure);
+	void (*poly_aftertouch)(uint8_t channel, uint8_t note, uint8_t pressure);
+	/* Callback for the realtime messages (clock, stop etc..) */
 	void (*realtime)(uint8_t msg);
-	void (*pitchwheel)(uint8_t lsb, uint8_t msb);
-	void (*program_change)(uint8_t number);
-	void (*channel_aftertouch)(uint8_t pressure);
-	void (*poly_aftertouch)(uint8_t note, uint8_t pressure);
 };
 
 

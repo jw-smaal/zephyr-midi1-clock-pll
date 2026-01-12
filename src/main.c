@@ -169,27 +169,36 @@ static const struct usbd_midi_ops ump_ops = {
  * Do not block in these function as they are called from the MIDI
  * parser this one is blocked untill the delegate is finished.
  */
-void note_on_handler(uint8_t note, uint8_t velocity) {
+void note_on_handler(uint8_t channel,
+		     uint8_t note,
+		     uint8_t velocity) {
 	printk("Note  on: %03d %03d\n", note, velocity);
 }
 
-void note_off_handler(uint8_t note, uint8_t velocity) {
+void note_off_handler(uint8_t channel,
+		      uint8_t note,
+		      uint8_t velocity) {
 	printk("Note off: %03d %03d\n", note, velocity);
 }
 
-void midi_pitchwheel_handler(uint8_t lsb, uint8_t msb) {
+void midi_pitchwheel_handler(uint8_t channel,
+			     uint8_t lsb,
+			     uint8_t msb) {
 	/* 14 bit value for the pitch wheel  */
 	int16_t pwheel = (int16_t)((msb << 7) | lsb) - PITCHWHEEL_CENTER ;
-	
 	/* print on the serial out */
 	printk("Pitchwheel: %d\n", pwheel);
 }
 
-void control_change_handler_model(uint8_t controller, uint8_t value) {
+void control_change_handler_model(uint8_t channel,
+				  uint8_t controller,
+				  uint8_t value) {
 	printk("CC: %d %d\n", controller, value);
 }
 
-void control_change_handler(uint8_t controller, uint8_t value) {
+void control_change_handler(uint8_t channel,
+			    uint8_t controller,
+			    uint8_t value) {
 	printk("CC: %d %d\n", controller, value);
 }
 

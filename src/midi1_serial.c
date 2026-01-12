@@ -13,11 +13,13 @@
  * 
  *  The MIDI USART implementation is for the Zephyr RTOS
  *  and uses the ring buffer and UART driver.
- * 
- *  TODO:  - Change the parser to accept a MIDI channel number or OMNI mode.
+ *
  *  TODO:  - Use the return values from uart_send( and return them.
+ *
  *  TODO:  - Extend callback functions to be channel aware (right now they are
  *  TODO:  - OMNI ALL --> i.e. all channels).
+ *  TODO:  - should be easy to add as we already have running_status.
+ *
  *  TODO:  - Error handling for the parser right now it's ignored.
  *  TODO:  - e.g. we could add DBG logging for this.
  *
@@ -323,7 +325,13 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 	/* Check if bit7 = 1 */
 	if (c & CHANNEL_VOICE_MASK) {
 		/* if (! (c & SYSTEM_REALTIME_MASK)) */
-		/* is it a real-time message?  0xF8 up to 0xFF */
+		/*
+		 * is it a real-time message?  0xF8 up to 0xFF
+		 * decided not to create seperate callbacks for
+		 * realtime messages.  This callback should check
+		 * the 'enum midi_real_time' values and then
+		 * decide if e.g. a clock is received or a RT_STOP etc..
+		 */
 		if (c >= 0xF8) {
 			inst->realtime(c);
 			return;
@@ -348,13 +356,13 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 			inst->midi_c3 = c;
 			
 			/*
-			 * TODO: We don't care about the input channel (OMNI)
-			 * TODO: for now.
-			 * so what we are doing here is to set the lower 4 bits
-			 * to 0.
+			 * TODO: work in progress add the 'chan' to the
+			 * TODO: callbacks
 			 */
-			inst->running_status_rx &= 0xF0;
-			if (inst->running_status_rx == C_NOTE_ON) {
+			uint8_t common = inst->running_status_rx & SYSTEM_COMMON_MASK;
+			uint8_t chan = inst->running_status_rx & ~(SYSTEM_COMMON_MASK);
+			
+			if (common == C_NOTE_ON) {
 				if (inst->midi_c3 == 0) {
 					/*
 					 * Some MIDI implementations use
@@ -364,40 +372,50 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 					 * actually can be used to alter the
 					 * timbre of the note off.
 					 */
-					inst->note_off(inst->midi_c2,
+					inst->note_off(chan,
+						       inst->midi_c2,
 						       inst->midi_c3);
 					return;
 				} else {
-					inst->note_on(inst->midi_c2,
+					inst->note_on(chan,
+						      inst->midi_c2,
 						      inst->midi_c3);
 					return;
 				}
 				return;
-			} else if (inst->running_status_rx == C_NOTE_OFF) {
-				inst->note_off(inst->midi_c2,
+			} else if (common == C_NOTE_OFF) {
+				inst->note_off(chan,
+					       inst->midi_c2,
 					       inst->midi_c3);
 				return;
-			} else if (inst->running_status_rx == C_PITCH_WHEEL) {
-				inst->pitchwheel(inst->midi_c2,
+			} else if (common == C_PITCH_WHEEL) {
+				inst->pitchwheel(chan,
+						 inst->midi_c2,
 						 inst->midi_c3);
 				return;
-			} else if (inst->running_status_rx == C_PROGRAM_CHANGE) {
-				/* TODO:  implement call callback! */
+			} else if (common == C_PROGRAM_CHANGE) {
+				/* TODO: Test ! */
+				inst->program_change(chan,
+						     inst->midi_c2);
 				return;
-			} else if (inst->running_status_rx ==
-				   C_POLYPHONIC_AFTERTOUCH) {
-				/* TODO:  implement call callback! */
+			} else if (common == C_POLYPHONIC_AFTERTOUCH) {
+				/* TODO:  Test ! */
+				inst->poly_aftertouch(chan,
+						      inst->midi_c2,
+						      inst->midi_c3);
 				return;
-			} else if (inst->running_status_rx ==
-				   C_CHANNEL_AFTERTOUCH) {
-				/* TODO:  implement call callback! */
+			} else if (common == C_CHANNEL_AFTERTOUCH) {
+				/* TODO:  Test ! */
+				inst->channel_aftertouch(chan,
+							 inst->midi_c2);
 				return;
-			} else if (inst->running_status_rx == C_CONTROL_CHANGE) {
-				inst->control_change(inst->midi_c2,
+			} else if (common == C_CONTROL_CHANGE) {
+				inst->control_change(chan,
+						     inst->midi_c2,
 						     inst->midi_c3);
 				return;
 			} else {
-				/* Ignore */
+				/* Ignore unknown */
 				return;
 			}
 		} else {
@@ -405,14 +423,19 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 				/* Ignore data Byte if running status is  0 */
 				return;
 			} else {
-				if (inst->running_status_rx < 0xC0) {	/* All 2 byte commands */
+				/* All 2 byte commands */
+				if (inst->running_status_rx < 0xC0) {
 					inst->third_byte_flag = 1;
 					inst->midi_c2 = c;
 					/* At this stage we have only 1 byte out of 2. */
 					return;
-				} else if (inst->running_status_rx < 0xE0) {	/* All 1 byte commands */
+				} else if (inst->running_status_rx < 0xE0) {
+					/* All 1 byte commands */
 					inst->midi_c2 = c;
-					/* TODO: !! Process callback/delegate for two bytes command. */
+					/*
+					 * TODO: !! Process callback/delegate
+					 * for two bytes command.
+					 */
 					return;
 				} else if (inst->running_status_rx < 0xF0) {
 					inst->third_byte_flag = 1;
