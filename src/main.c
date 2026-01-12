@@ -201,6 +201,8 @@ void realtime_handler(uint8_t msg) {
 /* ------------------------- INIT functions -------------------------------- */
 /*
  * Init all the USB MIDI stuff in main.
+ * functions pointers that are null are given a NOOP function pointer during
+ * midi1_serial_init.
  */
 #define MIDI1_UART3 DT_ALIAS(midi)
 static struct midi1_serial_inst g_inst_uart3 = {

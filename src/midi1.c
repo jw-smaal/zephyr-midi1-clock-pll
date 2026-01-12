@@ -12,6 +12,7 @@
 
 /**
  * -- == Channel messages == --
+ * no need to check range of the parameters as we mask them with 'MIDI_DATA'
  */
 struct midi_ump midi1_note_on(uint8_t channel, uint8_t key, uint8_t velocity)
 {
@@ -49,7 +50,8 @@ struct midi_ump midi1_channelaftertouch(uint8_t channel, uint8_t val)
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
 				       UMP_MIDI_CHAN_AFTERTOUCH,
 				       channel & 0x0F,
-				       val & MIDI_DATA, 0);
+				       val & MIDI_DATA,
+				       0);
 }
 
 /*
@@ -88,6 +90,7 @@ struct midi_ump midi1_modwheellsb(uint8_t channel, uint8_t val)
  * 14 bit value 16384 = max, 8192 == dead centre. 0 is minimal. 
  * The MIDI2.0 spec says the P1 should be LSB and P2 should be MSB.
  * when encapsulating MIDI1.0 into a UMP.
+ * no need to check the 'val' as we mask it. 
  */
 struct midi_ump midi1_pitchwheel(uint8_t channel, uint16_t val)
 {

@@ -52,11 +52,30 @@ int midi1_serial_init(struct midi1_serial_inst *inst)
 	inst->running_status_tx_count = 0;
 	
 	/* If a null pointer is given reassign to the NO OP function */
-	if (!inst->note_on)        inst->note_on = midi1_noop_note_on;
-	if (!inst->note_off)       inst->note_off = midi1_noop_note_off;
-	if (!inst->control_change) inst->control_change = midi1_noop_control_change;
-	if (!inst->realtime)       inst->realtime = midi1_noop_realtime;
-	if (!inst->pitchwheel)     inst->pitchwheel = midi1_noop_pitchwheel;
+	if (!inst->note_on) {
+		inst->note_on = midi1_noop_note_on;
+	}
+	if (!inst->note_off) {
+		inst->note_off = midi1_noop_note_off;
+	}
+	if (!inst->control_change) {
+		inst->control_change = midi1_noop_control_change;
+	}
+	if (!inst->realtime) {
+		inst->realtime = midi1_noop_realtime;
+	}
+	if (!inst->pitchwheel) {
+		inst->pitchwheel = midi1_noop_pitchwheel;
+	}
+	if (!inst->program_change) {
+		inst->program_change = midi1_noop_program_change;
+	}
+	if (!inst->channel_aftertouch) {
+		inst->channel_aftertouch = midi1_noop_channel_aftertouch;
+	}
+	if (!inst->poly_aftertouch) {
+		inst->poly_aftertouch = midi1_noop_poly_aftertouch;
+	}
 
 	/* Assign a MSQ to this instance */
 	k_msgq_init(&inst->msgq, inst->msgq_buffer, MSG_SIZE, MSGQ_SIZE);
@@ -329,16 +348,21 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 			inst->midi_c3 = c;
 			
 			/*
-			 * TODO: We don't care about the input channel (OMNI) for now.
-			 * so what we are doing here is to set the lower 4 bits to 0.
+			 * TODO: We don't care about the input channel (OMNI)
+			 * TODO: for now.
+			 * so what we are doing here is to set the lower 4 bits
+			 * to 0.
 			 */
 			inst->running_status_rx &= 0xF0;
 			if (inst->running_status_rx == C_NOTE_ON) {
 				if (inst->midi_c3 == 0) {
 					/*
-					 * A lot of MIDI implementation use velocity zero "note on"
-					 * as a "note-off".  Other do use a note off and the note off velocity
-					 * actually can be used to alter the sound of the note off.
+					 * Some MIDI implementations use
+					 * velocity zero "note on"
+					 * as a "note-off".  Other do use a
+					 * note off and the note off velocity
+					 * actually can be used to alter the
+					 * timbre of the note off.
 					 */
 					inst->note_off(inst->midi_c2,
 						       inst->midi_c3);
@@ -371,7 +395,6 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 			} else if (inst->running_status_rx == C_CONTROL_CHANGE) {
 				inst->control_change(inst->midi_c2,
 						     inst->midi_c3);
-				/* TODO:  implement call callback! */
 				return;
 			} else {
 				/* Ignore */

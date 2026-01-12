@@ -28,6 +28,13 @@
 #include "midi1.h"
 
 #define MIDI1_SERIAL_DEBUG 0
+
+/*
+ * This 'MSQ_SIZE' constant is something you will want to tune.
+ * It's not good in Music to have deep buffers due to delay buildup (latency)
+ * It's ok e.g. to drop some control changes on a mod wheel sweep.
+ * Make this is as low as possible
+ */
 #define MSGQ_SIZE 128
 #define MSG_SIZE sizeof(uint8_t)
 
@@ -42,6 +49,10 @@ static inline void midi1_noop_note_off(uint8_t note, uint8_t velocity) {}
 static inline void midi1_noop_control_change(uint8_t controller, uint8_t value) {}
 static inline void midi1_noop_realtime(uint8_t msg) {}
 static inline void midi1_noop_pitchwheel(uint8_t lsb, uint8_t msb) {}
+static inline void midi1_noop_program_change(uint8_t number) {}
+static inline void midi1_noop_channel_aftertouch(uint8_t pressure) {}
+static inline void midi1_noop_poly_aftertouch(uint8_t note, uint8_t pressure) {}
+
 
 /**
  * @brief a pointer to this struct must be passed as the first
@@ -76,6 +87,9 @@ struct midi1_serial_inst {
 	void (*control_change)(uint8_t controller, uint8_t value);
 	void (*realtime)(uint8_t msg);
 	void (*pitchwheel)(uint8_t lsb, uint8_t msb);
+	void (*program_change)(uint8_t number);
+	void (*channel_aftertouch)(uint8_t pressure);
+	void (*poly_aftertouch)(uint8_t note, uint8_t pressure);
 };
 
 
@@ -98,7 +112,6 @@ int midi1_serial_init(struct midi1_serial_inst *inst);
  *
  */
 void midi1_serial_receiveparser(struct midi1_serial_inst *inst);
-//void SerialMidiReceiveParser(void);
 
 
 /* Channel mode messages */
@@ -119,7 +132,6 @@ void midi1_serial_note_on(struct midi1_serial_inst *inst,
 			  uint8_t channel,
 			  uint8_t key,
 			  uint8_t velocity);
-//void SerialMidiNoteON(uint8_t channel, uint8_t key, uint8_t velocity);
 
 /**
  * @brief send a NOTE OFF tx event via the instance inst

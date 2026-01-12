@@ -2,6 +2,10 @@
  * @file midi1.h
  * @brief MIDI1 helpers
  *
+ * @note Functions to create UMP packets and do calculations
+ * on MIDI timings.   Also convert to frequency and from frequency
+ * to note.
+ *
  * Created in 2014 for ATMEL AVR MCU's ported
  * to Zephyr RTOS in 2024 mainly for ARM based MCU's. 
  * @author Jan-Willem Smaal <usenet@gispen.org>
@@ -137,48 +141,124 @@ enum midi_control_change {
 };
 
 /* System Real Time commands */
-#define RT_TIMING_CLOCK         0xF8
-#define RT_START                0xFA
-#define RT_CONTINUE             0xFB
-#define RT_STOP                 0xFC
-#define RT_ACTIVE_SENSING       0xFE
-#define RT_RESET                0xFF
-
+enum midi_real_time {
+	RT_TIMING_CLOCK       = 0xF8,
+	RT_START              = 0xFA,
+	RT_CONTINUE           = 0xFB,
+	RT_STOP               = 0xFC,
+	RT_ACTIVE_SENSING     = 0xFE,
+	RT_RESET              = 0xFF
+};
+ 
 /*
  * TODO: Maybe change this later to be an extra argument to the
  * TODO: functions.  For now assume UMP channel group = 0.
  */
 #define UMP_CHANNEL_GROUP 0
 
-/*
- * Global variables
- * TODO: these only make sense when using USART/UART maybe need
- * TODO: implement when creating a UMP bridge. 
- */
-/* static uint8_t global_running_status_tx;
- * static uint8_t global_running_status_rx;
- */
 
 /**
  * -- == Channel messages == --
  */
+/**
+ * @brief create a MIDI1.0 UMP message for a NOTE_ON
+ * @param channel MIDI channel 1 = 0 you may also use 'CH1', 'CH16' etc..
+ * @param key MIDI key
+ * @param velocity NOTE ON velocity
+ * @return midi_ump universal MIDI1.0 packet
+ */
 struct midi_ump midi1_note_on(uint8_t channel, uint8_t key, uint8_t velocity);
+
+/**
+ * @brief create a MIDI1.0 UMP message for a NOTE_OFF
+ * @param channel MIDI channel 1 = 0 you may also use 'CH1', 'CH16' etc..
+ * @param key MIDI key
+ * @param velocity NOTE OFF velocity
+ * @return midi_ump universal MIDI1.0 packet
+ */
 struct midi_ump midi1_note_off(uint8_t channel, uint8_t key, uint8_t velocity);
+
+/**
+ * @brief create a MIDI1.0 UMP message for a CONTROL CHANGE
+ * @param channel MIDI channel 1 = 0 you may also use 'CH1', 'CH16' etc..
+ * @param controller MIDI controller number
+ * @param val controller value
+ * @return midi_ump universal MIDI1.0 packet
+ */
 struct midi_ump midi1_controlchange(uint8_t channel,
 				    uint8_t controller, uint8_t val);
+
+/**
+ * @brief create a MIDI1.0 UMP message for a PITCH WHEEL
+ * @param channel MIDI channel 1 = 0 you may also use 'CH1', 'CH16' etc..
+ * @param val controller value as a 14 bit value.
+ * @return midi_ump universal MIDI1.0 packet
+ */
 struct midi_ump midi1_pitchwheel(uint8_t channel, uint16_t val);
+
+/**
+ * @brief create a MIDI1.0 UMP message for a MODULATION WHEEL
+ * @param channel MIDI channel 1 = 0 you may also use 'CH1', 'CH16' etc..
+ * @param val controller value as a 14 bit value.
+ * @return midi_ump universal MIDI1.0 packet
+ */
 struct midi_ump midi1_modwheel(uint8_t channel, uint8_t val);
+
+/**
+ * @brief create a MIDI1.0 UMP message for a POLYPHONIC AFTERTOUCH
+ * @param channel MIDI channel 1 = 0 you may also use 'CH1', 'CH16' etc..
+ * @param key MIDI key
+ * @param val controller value as a 7 bit value.
+ * @return midi_ump universal MIDI1.0 packet
+ */
 struct midi_ump midi1_polyaftertouch(uint8_t channel, uint8_t key, uint8_t val);
+
+/**
+ * @brief create a MIDI1.0 UMP message for a CHANNEL AFTERTOUCH
+ * @param channel MIDI channel 1 = 0 you may also use 'CH1', 'CH16' etc..
+ * @param val controller value as a 7 bit value.
+ * @return midi_ump universal MIDI1.0 packet
+ */
 struct midi_ump midi1_channelaftertouch(uint8_t channel, uint8_t val);
 
 /**
  * -- == System realtime messages == --
  */
+
+/**
+ * @brief create MIDI timing clock Universal MIDI packet (UMP)
+ * @return midi_ump universal MIDI1.0 packet
+ */
 struct midi_ump midi1_timing_clock(void);
+
+/**
+ * @brief create MIDI realtime START Universal MIDI packet (UMP)
+ * @return midi_ump universal MIDI1.0 packet
+ */
 struct midi_ump midi1_start(void);
+
+/**
+ * @brief create MIDI realtime CONTINUE Universal MIDI packet (UMP)
+ * @return midi_ump universal MIDI1.0 packet
+ */
 struct midi_ump midi1_continue(void);
+
+/**
+ * @brief create MIDI realtime STOP Universal MIDI packet (UMP)
+ * @return midi_ump universal MIDI1.0 packet
+ */
 struct midi_ump midi1_stop(void);
+
+/**
+ * @brief create MIDI realtime ACTIVE SENSING Universal MIDI packet (UMP)
+ * @return midi_ump universal MIDI1.0 packet
+ */
 struct midi_ump midi1_active_sensing(void);
+
+/**
+ * @brief create MIDI realtime RESET Universal MIDI packet (UMP)
+ * @return midi_ump universal MIDI1.0 packet
+ */
 struct midi_ump midi1_reset(void);
 
 

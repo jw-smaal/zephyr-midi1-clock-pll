@@ -165,14 +165,6 @@ void midi1_clock_meas_cntr_pulse(void)
 		g_scaled_bpm = MIDI1_SCALED_BPM_NUMERATOR / interval_us;
 		g_valid = true;
 	}
-	
-	/* old code */
-	/*
-	uint32_t sbpm = MIDI1_SCALED_BPM_NUMERATOR / interval_us;
-	g_scaled_bpm = sbpm;
-	g_valid = true;
-         */
-
 }
 
 
