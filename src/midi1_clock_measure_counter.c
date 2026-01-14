@@ -30,6 +30,9 @@ static bool g_count_up = false;
 /* Timestamp exposed to PLL */
 static uint32_t g_last_tick_timestamp_ticks = 0;
 
+/* Moving average */
+static struct midi1_blockavg midi1_blockavg = { 0 };
+
 /* ------------------------------------------------------------------ */
 /*
  * Numerator:
@@ -75,6 +78,9 @@ void midi1_clock_meas_cntr_init(void)
 	g_valid = false;
 	g_clock_freq = 0;
 	g_count_up = false;
+	
+	/* Init a instance of a block average */
+	midi1_blockavg_init(&midi1_blockavg);
 	
 	/* g_counter_dev_ch1 = DEVICE_DT_GET(DT_NODELABEL(COUNTER_DEVICE_CH1)); */
 	g_counter_dev_ch1 = DEVICE_DT_GET(DT_ALIAS(COUNTER_DEVICE_CH1));
@@ -157,10 +163,10 @@ void midi1_clock_meas_cntr_pulse(void)
 	 * Let average the BPM over 24 clock's 0xF8 received otherwise
 	 * it goes all over the place
 	 */
-	midi1_blockavg_add(interval_ticks);
+	midi1_blockavg_add(&midi1_blockavg, interval_ticks);
 	
-	if (midi1_blockavg_count() == MIDI1_BLOCKAVG_SIZE) {
-		uint32_t avg_ticks = midi1_blockavg_average();
+	if (midi1_blockavg_count(&midi1_blockavg) == MIDI1_BLOCKAVG_SIZE) {
+		uint32_t avg_ticks = midi1_blockavg_average(&midi1_blockavg);
 		uint32_t interval_us = counter_ticks_to_us(g_counter_dev_ch1, avg_ticks);
 		g_scaled_bpm = MIDI1_SCALED_BPM_NUMERATOR / interval_us;
 		g_valid = true;

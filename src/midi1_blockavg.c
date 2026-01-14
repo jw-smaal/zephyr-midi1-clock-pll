@@ -10,54 +10,48 @@
 #include <stdint.h>
 #include "midi1_blockavg.h"
 
-/* Measurement buffer */
-static uint32_t buf[MIDI1_BLOCKAVG_SIZE];
-static uint32_t sum = 0;
-static uint32_t index = 0;
-static uint32_t count = 0;
-
-void midi1_blockavg_init(void)
+void midi1_blockavg_init(struct midi1_blockavg *blkavg)
 {
 	/* Make sure the memory is empty when starting */
 	for (uint32_t i = 0; i < MIDI1_BLOCKAVG_SIZE; i++) {
-		buf[i] = 0;
+		blkavg->buf[i] = 0;
 	}
-	sum = 0;
-	index = 0;
-	count = 0;
+	blkavg->sum = 0;
+	blkavg->index = 0;
+	blkavg->count = 0;
 }
 
-void midi1_blockavg_add(uint32_t sample)
+void midi1_blockavg_add(struct midi1_blockavg *blkavg, uint32_t sample)
 {
-	if (count < MIDI1_BLOCKAVG_SIZE) {
+	if (blkavg->count < MIDI1_BLOCKAVG_SIZE) {
 		/* Still filling the buffer */
-		buf[count] = sample;
-		sum += sample;
-		count++;
+		blkavg->buf[blkavg->count] = sample;
+		blkavg->sum += sample;
+		blkavg->count++;
 	} else {
 		/* Buffer full: overwrite oldest */
-		sum -= buf[index];
-		buf[index] = sample;
-		sum += sample;
+		blkavg->sum -= blkavg->buf[blkavg->index];
+		blkavg->buf[blkavg->index] = sample;
+		blkavg->sum += sample;
 
-		index++;
-		if (index >= MIDI1_BLOCKAVG_SIZE) {
-			index = 0;
+		blkavg->index++;
+		if (blkavg->index >= MIDI1_BLOCKAVG_SIZE) {
+			blkavg->index = 0;
 		}
 	}
 }
 
-uint32_t midi1_blockavg_average(void)
+uint32_t midi1_blockavg_average(struct midi1_blockavg *blkavg)
 {
-	if (count == 0) {
+	if (blkavg->count == 0) {
 		return 0;
 	}
-	return sum / count;
+	return blkavg->sum / blkavg->count;
 }
 
-uint32_t midi1_blockavg_count(void)
+uint32_t midi1_blockavg_count(struct midi1_blockavg *blkavg)
 {
-	return count;
+	return blkavg->count;
 }
 
 /* EOF */
