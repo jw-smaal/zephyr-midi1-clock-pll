@@ -107,31 +107,37 @@ uint8_t freqToMidiNote(float freq)
  */
 uint8_t freqToMidiNote(float freq)
 {
-	int min = 0;		/* Lower bound of search range (C-1) */
-	int max = 127;		/* Upper bound of search range (G9) */
-
-	/* Binary search loop: narrow down until min and max converge */
-	while (min < max) {
-		int mid = (min + max) / 2;	/* Midpoint index */
-
-		/* Compare input frequency against the midpoint note frequency */
-		if (freq >= midi_freq_table[mid]) {
-			/* If freq is higher or equal, search the upper half */
+	int min = 0;
+	int max = 127;
+	
+	while (min <= max) {
+		int mid = (min + max) / 2;
+		
+		if (freq > midi_freq_table[mid]) {
 			min = mid + 1;
-		} else {
-			/* If freq is lower, search the lower half */
+		}
+		else if (freq < midi_freq_table[mid]) {
 			max = mid - 1;
 		}
+		else {
+			/* exact match */
+			return mid;
+		}
 	}
-
-	/* Clamp result to valid MIDI note range */
-	if (min < 0)
+	
+	/*  min is now the first note with freq_table[min] > freq */
+	if (min == 0) {
 		return 0;
-	if (min > 127)
+	}
+	if (min > 127) {
 		return 127;
-
-	/* Return the closest MIDI note index */
-	return (uint8_t) min;
+	}
+	
+	/* pick closest of min and min-1 */
+	float low  = midi_freq_table[min - 1];
+	float high = midi_freq_table[min];
+	
+	return (freq - low < high - freq) ? (min - 1) : min;
 }
 
 /* EOF */

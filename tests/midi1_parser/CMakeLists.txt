@@ -11,5 +11,6 @@ target_include_directories(app PRIVATE
 # Add your parser source files
 target_sources(app PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src/midi1_serial.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/note.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/test_midi1_parser.c
 )
