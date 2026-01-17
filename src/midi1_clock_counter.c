@@ -123,7 +123,7 @@ void midi1_clock_cntr_ticks_start(uint32_t ticks)
 	}
 	atomic_set(&g_midi1_running_cntr, 1);
 #if MIDI_CLOCK_ON_PIN
-	printk("Ticks requested: %u\n", ticks);
+	//printk("Ticks requested: %u\n", ticks);
 #endif
 	struct counter_top_cfg top_cfg = {
 		.callback = midi1_cntr_handler,

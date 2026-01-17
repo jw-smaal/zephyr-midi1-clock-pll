@@ -386,7 +386,7 @@ void display_update_bpm_line(uint16_t sbpm, uint16_t sbpm2) {
 void led_display_thread(void)
 {
 	if (!device_is_ready(led2.port)) {
-		printk("LED device not ready\n");
+		//printk("LED device not ready\n");
 		return;
 	}
 
@@ -491,26 +491,27 @@ int main(void)
 	
 	while (1) {
 		/*  measure incoming interval. */
-		printk("interval measured as: %u us\n",
-		       midi1_clock_meas_cntr_interval_us());
-		printk("interval measured as: %u ticks\n",
-		       midi1_clock_meas_cntr_interval_ticks());
+		//printk("interval measured as: %u us\n",
+		//       midi1_clock_meas_cntr_interval_us());
+		//printk("interval measured as: %u ticks\n",
+		//       midi1_clock_meas_cntr_interval_ticks());
 		
 		uint16_t raw_cntr_sbpm = midi1_clock_meas_cntr_get_sbpm();
-		printk("main cntr BPM (raw): %s\n", sbpm_to_str(raw_cntr_sbpm));
+		//printk("main cntr BPM (raw): %s\n", sbpm_to_str(raw_cntr_sbpm));
 		
 		/* Get pll ticks */
 		uint32_t pll_ticks = midi1_pll_ticks_get_interval_ticks();
-		printk("main: PLL ticks     : %d\n", pll_ticks);
+		//printk("main: PLL ticks     : %d\n", pll_ticks);
 		
 		/* Half a minute of correct phase */
 		for (int i = 0; i < 3; i++) {
 			
-			printk("main: -- in PHASE -- \n");
+			//printk("main: -- in PHASE -- \n");
 			/* Start the clock with the correct ticks */
 			uint32_t pll_ticks = midi1_pll_ticks_get_interval_ticks();
 			midi1_clock_cntr_ticks_start(pll_ticks);
 			k_msleep(10000);
+			midi1_serial_start(&g_inst_uart3);
 		}
 #if 0
 		/* shifting phase */
@@ -522,6 +523,7 @@ int main(void)
 			k_msleep(5000);
 		}
 #endif
+		midi1_serial_stop(&g_inst_uart3);
 	}
  
 
