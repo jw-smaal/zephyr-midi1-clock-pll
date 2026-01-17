@@ -64,8 +64,9 @@ static void midi1_debug_gpio_init(void)
 #endif 
 
 /* 
- * This is the ISR/callback TODO: check if usbd_midi_send is non-blocking 
- */ 
+ * This is the ISR/callback TODO: check if usbd_midi_send is non-blocking
+ * TODO: add uart send as well
+ */
 static void midi1_cntr_handler(const struct device *dev, void *midi1_dev_arg)
 {
 #if MIDI_CLOCK_ON_PIN
@@ -90,8 +91,7 @@ uint32_t midi1_clock_cntr_cpu_frequency(void)
  * Initialize MIDI clock subsystem with the MIDI device handle. Call
  * once at startup before starting the clock.
  */
-void midi1_clock_cntr_init(const struct device *midi1_dev_arg)
-{
+void midi1_clock_cntr_init(const struct device *midi1_dev_arg){
 	atomic_set(&g_midi1_running_cntr, 0);
 	/* g_counter_dev = DEVICE_DT_GET(DT_NODELABEL(COUNTER_DEVICE)); */
 	g_counter_dev = DEVICE_DT_GET(DT_ALIAS(COUNTER_DEVICE));

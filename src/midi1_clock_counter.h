@@ -25,8 +25,7 @@
  * @note Call once at startup before starting the clock.
  * @param midi1_dev MIDI device pointer
  */
-void midi1_clock_cntr_init(const struct device *midi1_dev);
-
+void midi1_clock_cntr_init(const struct device *midi1_devm);
 /**
  * @brief getter for the internal counter frequency in MHZ
  *

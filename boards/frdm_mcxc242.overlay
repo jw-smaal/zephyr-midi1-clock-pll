@@ -27,6 +27,32 @@
 	current-speed = <31250>;
 };
 
+
+&pinctrl {
+    pinmux_lpuart0: pinmux_lpuart0 {
+        group0 {
+            /* Strongest drive + fast edges */
+            drive-strength = "high";   
+            slew-rate = "fast";
+        };
+    };
+    pinmux_lpuart1: pinmux_lpuart1 {
+        group0 {
+            /* Strongest drive + fast edges */
+            drive-strength = "high";   
+            slew-rate = "fast";
+        };
+    };
+};
+
+
+/* This one is on the MIKRObus and is not shared with the MCU_LINK. */
+&lpuart1 {
+	status = "okay";
+	/* Set it to the MIDI baud rate */
+	current-speed = <31250>;
+};
+
 /* We are using the periodic interrupt timer  (PIT) so switch it on */
 &pit0 {
 	status = "okay";
