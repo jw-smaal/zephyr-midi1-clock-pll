@@ -35,8 +35,8 @@
 #include "midi1_serial.h"
 
 /*
- * Empty NO OP (noop) callbacks assigned if the user leaves the callbacks
- * empty.
+ * Empty NO OP (noop) callbacks assigned if the caller leaves the callbacks
+ * empty.  Gives the caller flexibillity in what to respond to.
  */
 static inline void midi1_noop_note_on(uint8_t channel, uint8_t note, uint8_t velocity) {}
 static inline void midi1_noop_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {}
@@ -310,7 +310,7 @@ void midi1_serial_reset(struct midi1_serial_inst *inst)
 }
 
 
-/* System exclusive messages*/
+/* System exclusive messages */
 /*___         _               ___        _         _
  / __|_  _ __| |_ ___ _ __   | __|_ ____| |_  _ __(_)_ _____
  \__ \ || (_-<  _/ -_) '  \  | _|\ \ / _| | || (_-< \ V / -_)
@@ -388,7 +388,7 @@ static void midi1_serial_isr_callback(const struct device *dev, void *user_data)
  * Then callback functions are called for each complete MIDI message.
  *
  * This function is long as the MIDI1.0 spec suggest how to implement the
- * parsing is quite lenghty.  MIDI1.0 specification has this statemachine
+ * parsing is also quite lenghty.  MIDI1.0 specification has this statemachine
  * listed on page A-3.
  */
 void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
