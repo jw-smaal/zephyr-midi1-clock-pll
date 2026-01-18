@@ -1,3 +1,11 @@
+/**
+ * @file test_midi1_parser.c
+ * @brief MIDI1.0 parsing tests
+ *
+ * @author Jan-Willem Smaal
+ * @date 20260118
+ * license SPDX-License-Identifier: Apache-2.0
+ */
 #include <zephyr/ztest.h>
 #include <zephyr/kernel.h>
 #include <stdint.h>
@@ -15,6 +23,10 @@ static uint8_t g_last_rt;
 static uint8_t g_pw_lsb;
 static uint8_t g_pw_msb;
 static uint8_t g_channel;
+
+/* For the sysex test */
+static uint8_t g_sysex_buf[200];
+static int g_sysex_len;
 
 /* Test callbacks */
 static void test_note_on_cb(uint8_t channel, uint8_t note, uint8_t velocity)
@@ -51,6 +63,23 @@ static void test_rt_cb(uint8_t msg)
 	g_last_rt = msg;
 }
 
+static void test_sysex_start_cb(void)
+{
+	printf("test_sysex_start_cb()\n");
+	g_sysex_len = 0;
+}
+
+static void test_sysex_data_cb(uint8_t data)
+{
+	printf(" %x ", data);
+	g_sysex_buf[g_sysex_len++] = data;
+}
+
+static void test_sysex_stop_cb(void)
+{
+	printf("\n test_sysex_stop_cb()\n");
+}
+
 /* Helper: init a fresh instance with callbacks and msgq */
 static void midi_test_inst_init(struct midi1_serial_inst *inst)
 {
@@ -61,7 +90,10 @@ static void midi_test_inst_init(struct midi1_serial_inst *inst)
 	inst->control_change = test_cc_cb;
 	inst->realtime = test_rt_cb;
 	inst->pitchwheel = test_pw_cb;
-
+	inst->sysex_start = test_sysex_start_cb;
+	inst->sysex_data = test_sysex_data_cb;
+	inst->sysex_stop = test_sysex_stop_cb;
+	
 	k_msgq_init(&inst->msgq, inst->msgq_buffer, MSG_SIZE, MSGQ_SIZE);
 
 	midi1_serial_init(inst);
@@ -70,6 +102,7 @@ static void midi_test_inst_init(struct midi1_serial_inst *inst)
 	g_last_ctrl = g_last_val = 0;
 	g_last_rt = 0;
 	g_pw_lsb = g_pw_msb = 0;
+	
 }
 
 /* Helper: feed bytes into msgq and run parser */
@@ -338,6 +371,58 @@ ZTEST(midi1_parser, test_brutal_interleave_realtime_and_sysex)
 	zassert_equal(g_last_note, 62, "Expected last note 62");
 	zassert_equal(g_last_vel, 110, "Expected last velocity 110");
 }
+
+ZTEST(midi1_parser, test_sysex_missing_f7)
+{
+	struct midi1_serial_inst inst;
+	midi_test_inst_init(&inst);
+
+	g_last_note = 0;
+	g_last_vel = 0;
+
+	uint8_t seq[] = {
+	0xF0, 0x7D, 0x55, 0x66,   /* SysEx start + data */
+	0x90, 60, 100,            /* NOTE ON should implicitly terminate SysEx */
+	62, 110,                  /* running status NOTE ON */
+	};
+
+	feed_and_parse(&inst, seq, sizeof(seq));
+
+	zassert_equal(g_last_note, 62, "Expected last note 62");
+	zassert_equal(g_last_vel, 110, "Expected last velocity 110");
+}
+
+ZTEST(midi1_parser, test_sysex_0_to_127)
+{
+	struct midi1_serial_inst inst;
+	midi_test_inst_init(&inst);
+	
+	/* Build SysEx message: F0, 0..127, F7 */
+	uint8_t seq[130];
+	int idx = 0;
+	
+	seq[idx++] = 0xF0;   /* SysEx start */
+	
+	for (int i = 0; i < 128; i++) {
+		seq[idx++] = i;
+	}
+	
+	seq[idx++] = 0xF7;   /* SysEx end */
+	
+	/* Feed into parser */
+	feed_and_parse(&inst, seq, idx);
+	
+	/* Validate length */
+	zassert_equal(g_sysex_len, 128,
+		      "Expected 128 SysEx data bytes, got %d", g_sysex_len);
+	
+	/* Validate content */
+	for (int i = 0; i < 128; i++) {
+		zassert_equal(g_sysex_buf[i], i,
+			      "SysEx byte mismatch at index %d", i);
+	}
+}
+
 
 /* Test suite entry point */
 ZTEST_SUITE(midi1_parser, NULL, NULL, NULL, NULL, NULL);

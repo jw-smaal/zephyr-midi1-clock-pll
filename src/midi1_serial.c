@@ -14,11 +14,8 @@
  *  The MIDI USART implementation is for the Zephyr RTOS
  *  and uses the ring buffer and UART driver.
  *
- *  TODO:  - Use the return values from uart_send( and return them.
- *
- *  TODO:  - Extend callback functions to be channel aware (right now they are
- *  TODO:  - OMNI ALL --> i.e. all channels).
- *  TODO:  - should be easy to add as we already have running_status.
+ *  TODO:  - Use the return values from uart_send and return them to the
+ *  TODO:    to the caller
  *
  *  TODO:  - Error handling for the parser right now it's ignored.
  *  TODO:  - e.g. we could add DBG logging for this.
@@ -37,7 +34,29 @@
 #include "midi1.h"
 #include "midi1_serial.h"
 
-/* Private/hidden Prototype's for the ISR callback asssigned during init */
+/*
+ * Empty NO OP (noop) callbacks assigned if the user leaves the callbacks
+ * empty.
+ */
+static inline void midi1_noop_note_on(uint8_t channel, uint8_t note, uint8_t velocity) {}
+static inline void midi1_noop_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {}
+static inline void midi1_noop_control_change(uint8_t channel, uint8_t controller, uint8_t value) {}
+
+static inline void midi1_noop_pitchwheel(uint8_t channel, uint8_t lsb, uint8_t msb) {}
+static inline void midi1_noop_program_change(uint8_t channel, uint8_t number) {}
+static inline void midi1_noop_channel_aftertouch(uint8_t channel, uint8_t pressure) {}
+static inline void midi1_noop_poly_aftertouch(uint8_t channel, uint8_t note, uint8_t pressure) {}
+
+/* System common */
+static inline void midi1_noop_realtime(uint8_t msg) {}
+
+/* SysEx */
+static inline void midi1_noop_sysex_start(void) {}
+static inline void midi1_noop_sysex_data(uint8_t data) {}
+static inline void midi1_noop_sysex_stop(void) {}
+
+
+/* The ISR callback asssigned during init */
 static void midi1_serial_isr_callback(const struct device *dev, void *user_data);
 
 /**
@@ -52,6 +71,7 @@ int midi1_serial_init(struct midi1_serial_inst *inst)
 
 	inst->running_status_tx = 0;
 	inst->running_status_tx_count = 0;
+	inst->in_sysex = false;
 	
 	/* If a null pointer is given reassign to the NO OP function */
 	if (!inst->note_on) {
@@ -77,6 +97,15 @@ int midi1_serial_init(struct midi1_serial_inst *inst)
 	}
 	if (!inst->poly_aftertouch) {
 		inst->poly_aftertouch = midi1_noop_poly_aftertouch;
+	}
+	if (!inst->sysex_start) {
+		inst->sysex_start = midi1_noop_sysex_start;
+	}
+	if (!inst->sysex_data) {
+		inst->sysex_data = midi1_noop_sysex_data;
+	}
+	if (!inst->sysex_stop) {
+		inst->sysex_stop = midi1_noop_sysex_stop;
 	}
 
 	/* Assign a MSQ to this instance */
@@ -121,19 +150,35 @@ int midi1_serial_init(struct midi1_serial_inst *inst)
 
 void midi1_serial_note_on(struct midi1_serial_inst *inst, uint8_t channel, uint8_t key, uint8_t velocity)
 {
-	 if ((C_NOTE_ON | channel) != inst->running_status_tx) {
-                uart_poll_out(inst->uart, C_NOTE_ON | channel);
-                inst->running_status_tx = C_NOTE_ON | channel;
-        }
+	/* If we have sent 16 times without a status byte; send a status byte */
+	if (inst->running_status_tx_count >= 16) {
+		inst->running_status_tx_count = 0;
+		uart_poll_out(inst->uart, C_NOTE_ON | channel);
+		inst->running_status_tx = C_NOTE_ON | channel;
+	}
+	/* If we don't have running status send out the status byte. */
+	else if ((C_NOTE_ON | channel) != inst->running_status_tx) {
+		uart_poll_out(inst->uart, C_NOTE_ON | channel);
+		inst->running_status_tx = C_NOTE_ON | channel;
+		inst->running_status_tx_count = 0;
+	}
 	uart_poll_out(inst->uart, key);
         uart_poll_out(inst->uart, velocity);
 }
 
 void midi1_serial_note_off(struct midi1_serial_inst *inst, uint8_t channel, uint8_t key, uint8_t velocity)
 {
-	if ((C_NOTE_OFF | channel) != inst->running_status_tx) {
+	/* If we have sent 16 times without a status byte; send a status byte */
+	if (inst->running_status_tx_count >= 16) {
+		inst->running_status_tx_count = 0;
 		uart_poll_out(inst->uart, C_NOTE_OFF | channel);
 		inst->running_status_tx = C_NOTE_OFF | channel;
+	}
+	/* If we don't have running status send out the status byte. */
+	else if ((C_NOTE_OFF | channel) != inst->running_status_tx) {
+		uart_poll_out(inst->uart, C_NOTE_OFF | channel);
+		inst->running_status_tx = C_NOTE_OFF | channel;
+		inst->running_status_tx_count = 0;
 	}
 	uart_poll_out(inst->uart, key);
 	uart_poll_out(inst->uart, velocity);
@@ -152,7 +197,7 @@ void midi1_serial_control_change(struct midi1_serial_inst *inst,
 				 uint8_t controller,
 				 uint8_t val)
 {
-
+	/* If we have sent 16 times without a status byte; send a status byte */
 	if (inst->running_status_tx_count >= 16) {
 		inst->running_status_tx_count = 0;
 		uart_poll_out(inst->uart, C_CONTROL_CHANGE | channel);
@@ -174,9 +219,17 @@ void midi1_serial_channelaftertouch(struct midi1_serial_inst *inst,
 				 uint8_t channel,
 				 uint8_t val)
 {
-	if ((C_CHANNEL_AFTERTOUCH | channel) != inst->running_status_tx) {
+	/* If we have sent 16 times without a status byte; send a status byte */
+	if (inst->running_status_tx_count >= 16) {
+		inst->running_status_tx_count = 0;
 		uart_poll_out(inst->uart, C_CHANNEL_AFTERTOUCH | channel);
 		inst->running_status_tx = C_CHANNEL_AFTERTOUCH | channel;
+	}
+	/* If we don't have running status send out the status byte. */
+	else if ((C_CHANNEL_AFTERTOUCH | channel) != inst->running_status_tx) {
+		uart_poll_out(inst->uart, C_CHANNEL_AFTERTOUCH | channel);
+		inst->running_status_tx = C_CHANNEL_AFTERTOUCH | channel;
+		inst->running_status_tx_count = 0;
 	}
 	uart_poll_out(inst->uart, val);
 }
@@ -199,9 +252,17 @@ void midi1_serial_pitchwheel(struct midi1_serial_inst *inst,
 			     uint8_t channel,
 			     uint16_t val)
 {
-	if (inst->running_status_tx != (C_PITCH_WHEEL | channel)) {
+	/* If we have sent 16 times without a status byte; send a status byte */
+	if (inst->running_status_tx_count >= 16) {
+		inst->running_status_tx_count = 0;
 		uart_poll_out(inst->uart, C_PITCH_WHEEL | channel);
 		inst->running_status_tx = C_PITCH_WHEEL | channel;
+	}
+	/* If we don't have running status send out the status byte. */
+	else if ((C_PITCH_WHEEL | channel) != inst->running_status_tx) {
+		uart_poll_out(inst->uart, C_PITCH_WHEEL | channel);
+		inst->running_status_tx = C_PITCH_WHEEL | channel;
+		inst->running_status_tx_count = 0;
 	}
 	/* Value is 14 bits so need to shift 7 */
 	uart_poll_out(inst->uart,
@@ -289,15 +350,11 @@ static void midi1_serial_isr_callback(const struct device *dev, void *user_data)
 /**
  * @brief Parse one byte at a time for the MIDI parsing.
  *
- * @note Then callback functions are called for each complete MIDI message.
+ * Then callback functions are called for each complete MIDI message.
  *
- * @note This function is really long as the MIDI parsing is done
- * @note byte per byte and it took several tests to get the parsing
- * @note done right.  I tried to create a statemachine earlier but
- * @note failed so I have sticked to my proven implementation.
- *
- * TODO: _NEW_ version
- * TODO: implement callbacks that include the MIDI channel as well!
+ * This function is long as the MIDI1.0 spec suggest how to implement the
+ * parsing is quite lenghty.  MIDI1.0 specification has this statemachine
+ * listed on page A-3.
  */
 void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 {
@@ -312,19 +369,20 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 		return;
 	} else {
 		/* Valid message received ! */
+#if MIDI1_SERIAL_DEBUG
 		printk("%2X ", c);
+#endif
 	}
 	
 	/*
 	 * Future implementation option
-	 * To allow software MIDI THRU (kind of with some processing delay)
+	 * To allow software MIDI THRU ("kind of" with some processing delay)
 	 * simply write what is received to the output.
 	 * uart_poll_out(midi, c);
 	 */
 	
 	/* Check if bit7 = 1 */
 	if (c & CHANNEL_VOICE_MASK) {
-		/* if (! (c & SYSTEM_REALTIME_MASK)) */
 		/*
 		 * is it a real-time message?  0xF8 up to 0xFF
 		 * decided not to create seperate callbacks for
@@ -332,10 +390,15 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 		 * the 'enum midi_real_time' values and then
 		 * decide if e.g. a clock is received or a RT_STOP etc..
 		 */
-		if (c >= 0xF8) {
+		if (c >= SYSTEM_REALTIME_MASK) {
 			inst->realtime(c);
 			return;
 		} else {
+			/* When a new status byte arrives inside Sysex
+			 * reset the flag. (i.e. sysex start received
+			 * but no stop).
+			 */
+			inst->in_sysex = false;
 			inst->running_status_rx = c;
 			inst->third_byte_flag = 0;
 			/* Is this a tune request */
@@ -343,22 +406,38 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 				inst->midi_c2 = c;	/*  Store in FIFO. */
 				/* TODO: Process something. */
 				return;
+			} else if(c == SYSTEM_EXCLUSIVE_START) {
+				/*
+				 * TODO: set internal state so we interpret the
+				 * remaining databytes as sysex and not channel
+				 * common/voice data.
+				 */
+				inst->in_sysex = true;
+				inst->sysex_start();
+				return;
+			} else if(c == SYSTEM_EXCLUSIVE_END) {
+				/*
+				 * TODO: set internal state so we stop
+				 * processing sysex data bytes.
+				 */
+				inst->in_sysex = false;
+				inst->sysex_stop();
+				return;
 			}
 			/*
-			 * Do nothing
-			 * Ignore for now
+			 * Do nothing for any other bytes above 0xF8
 			 */
 			return;
 		}
 	} else {		/* Bit 7 == 0   (data) */
+		if (inst->in_sysex) {
+			inst->sysex_data(c);
+			/* Stop processing the rest when in SysEx */
+			return;
+		}
 		if (inst->third_byte_flag == 1) {
 			inst->third_byte_flag = 0;
 			inst->midi_c3 = c;
-			
-			/*
-			 * TODO: work in progress add the 'chan' to the
-			 * TODO: callbacks
-			 */
 			uint8_t common = inst->running_status_rx & SYSTEM_COMMON_MASK;
 			uint8_t chan = inst->running_status_rx & ~(SYSTEM_COMMON_MASK);
 			
@@ -367,10 +446,12 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 					/*
 					 * Some MIDI implementations use
 					 * velocity zero "note on"
-					 * as a "note-off".  Other do use a
+					 * as a "note-off". To take advantage
+					 * of 'running status'.  Other do use a
 					 * note off and the note off velocity
 					 * actually can be used to alter the
 					 * timbre of the note off.
+					 * MIDI1.0 spec page A2.
 					 */
 					inst->note_off(chan,
 						       inst->midi_c2,
@@ -394,18 +475,15 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 						 inst->midi_c3);
 				return;
 			} else if (common == C_PROGRAM_CHANGE) {
-				/* TODO: Test ! */
 				inst->program_change(chan,
 						     inst->midi_c2);
 				return;
 			} else if (common == C_POLYPHONIC_AFTERTOUCH) {
-				/* TODO:  Test ! */
 				inst->poly_aftertouch(chan,
 						      inst->midi_c2,
 						      inst->midi_c3);
 				return;
 			} else if (common == C_CHANNEL_AFTERTOUCH) {
-				/* TODO:  Test ! */
 				inst->channel_aftertouch(chan,
 							 inst->midi_c2);
 				return;
@@ -440,9 +518,7 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 				} else if (inst->running_status_rx < 0xF0) {
 					inst->third_byte_flag = 1;
 					inst->midi_c2 = c;
-				}
-				/* !! */
-				else if (inst->running_status_rx >= 0xF0) {
+				} else if (inst->running_status_rx >= 0xF0) {
 					if (inst->running_status_rx == 0xF2) {
 						inst->running_status_rx = 0;
 						inst->third_byte_flag = 1;
@@ -466,10 +542,10 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 							return;
 						}
 					}
-				}
-			}
-		} /*  global_3rd_byte_flag */
+				} /* end of inst->running_status_rx >= 0xF0 */
+			} /* end of all 2 byte commands */
+		} /* end of  global_3rd_byte_flag */
 	} /* end of data bit 7 == 0 */
-} /* End of SerialMidiReceiveParser */
+} /* end of midi1_serial_receiveparser */
 
 /* EOF */

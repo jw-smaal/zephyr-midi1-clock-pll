@@ -30,7 +30,7 @@ static bool g_count_up = false;
 /* Timestamp exposed to PLL */
 static uint32_t g_last_tick_timestamp_ticks = 0;
 
-/* Moving average */
+/* Moving average instance */
 static struct midi1_blockavg midi1_blockavg = { 0 };
 
 /* ------------------------------------------------------------------ */

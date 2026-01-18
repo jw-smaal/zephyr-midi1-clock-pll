@@ -21,13 +21,13 @@
 #ifndef MIDI1_SERIAL_H
 #define MIDI1_SERIAL_H
 /*-----------------------------------------------------------------------*/
-#include <string.h>		/* Check if really needed ? */
+#include <string.h>
 #include <stdint.h>
 
 /* MIDI1.0 definitions by Jan-Willem Smaal */
 #include "midi1.h"
 
-#define MIDI1_SERIAL_DEBUG 0
+#define MIDI1_SERIAL_DEBUG 1
 
 /*
  * This 'MSQ_SIZE' constant is something you will want to tune.
@@ -40,30 +40,23 @@
 
 /*-----------------------------------------------------------------------*/
 
-/*
- * Empty NO OP (noop) callbacks assigned if the user leaves the callbacks
- * empty.
- */
-static inline void midi1_noop_note_on(uint8_t channel, uint8_t note, uint8_t velocity) {}
-static inline void midi1_noop_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {}
-static inline void midi1_noop_control_change(uint8_t channel, uint8_t controller, uint8_t value) {}
-
-static inline void midi1_noop_pitchwheel(uint8_t channel, uint8_t lsb, uint8_t msb) {}
-static inline void midi1_noop_program_change(uint8_t channel, uint8_t number) {}
-static inline void midi1_noop_channel_aftertouch(uint8_t channel, uint8_t pressure) {}
-static inline void midi1_noop_poly_aftertouch(uint8_t channel, uint8_t note, uint8_t pressure) {}
-static inline void midi1_noop_realtime(uint8_t msg) {}
-
 
 /**
  * @brief a pointer to this struct must be passed as the first
  * @brief argument to all functions
- * @param *note_on pointer to the callback function for a NOTE ON rx event
- * @param *note_off callback delegate function for a NOTE OFF rx event
- * @param *note_on  callback delegate function for a NOTE ON rx event
- * @param *control_change  callback function for a Control Change rx event
- * @param *realtime  callback delegate function for a system realtime rx event
- * @param *pitchwheel callback delegate function for a pitchwheel rx event
+ * @param *note_on pointer to the for a NOTE ON rx event
+ * @param *note_off callback for a NOTE OFF rx event
+ * @param *note_on  callback for a NOTE ON rx event
+ * @param *control_change  callback for a Control Change rx event
+ * @param *realtime  callback for a system realtime rx event
+ * @param *pitchwheel callback for a pitchwheel rx event
+ * @param *program_change callback for a program change rx event
+ * @param *channel_aftertouch callback for a channel aftertouch rx event
+ * @param *poly_aftertouch callback for a poly aftertouch rx event
+ * @param *realtime callback for all types of realtime messages
+ * @param *sysex_start callback for start of System Exclusive
+ * @param *sysex_data callback for chunks of System Exclusive data
+ * @param *sysex_stop callback for start of System Exclusive
  */
 struct midi1_serial_inst {
 	const struct device *uart;
@@ -82,7 +75,9 @@ struct midi1_serial_inst {
 	struct k_msgq msgq;
 	uint8_t msgq_buffer[MSGQ_SIZE];
 	
-	/* Callback delegates */
+	/*
+	 * Callback delegates
+	 */
 	void (*note_on)(uint8_t channel, uint8_t note, uint8_t velocity);
 	void (*note_off)(uint8_t channel, uint8_t note, uint8_t velocity);
 	void (*control_change)(uint8_t channel, uint8_t controller, uint8_t value);
@@ -91,8 +86,17 @@ struct midi1_serial_inst {
 	void (*program_change)(uint8_t channel, uint8_t number);
 	void (*channel_aftertouch)(uint8_t channel, uint8_t pressure);
 	void (*poly_aftertouch)(uint8_t channel, uint8_t note, uint8_t pressure);
+	
 	/* Callback for the realtime messages (clock, stop etc..) */
 	void (*realtime)(uint8_t msg);
+	
+	/* Set when processing sysex data */
+	bool in_sysex;
+	
+	/* Sysex data is delivered in chunks (can be a huge amount of data) */
+	void (*sysex_start)(void);
+	void (*sysex_data)(uint8_t data);
+	void (*sysex_stop)(void);
 };
 
 

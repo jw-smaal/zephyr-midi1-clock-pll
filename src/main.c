@@ -171,19 +171,22 @@ static const struct usbd_midi_ops ump_ops = {
  */
 void note_on_handler(uint8_t channel,
 		     uint8_t note,
-		     uint8_t velocity) {
+		     uint8_t velocity)
+{
 	printk("Note  on: %03d %03d\n", note, velocity);
 }
 
 void note_off_handler(uint8_t channel,
 		      uint8_t note,
-		      uint8_t velocity) {
+		      uint8_t velocity)
+{
 	printk("Note off: %03d %03d\n", note, velocity);
 }
 
-void midi_pitchwheel_handler(uint8_t channel,
+void pitchwheel_handler(uint8_t channel,
 			     uint8_t lsb,
-			     uint8_t msb) {
+			     uint8_t msb)
+{
 	/* 14 bit value for the pitch wheel  */
 	int16_t pwheel = (int16_t)((msb << 7) | lsb) - PITCHWHEEL_CENTER ;
 	/* print on the serial out */
@@ -192,18 +195,37 @@ void midi_pitchwheel_handler(uint8_t channel,
 
 void control_change_handler_model(uint8_t channel,
 				  uint8_t controller,
-				  uint8_t value) {
+				  uint8_t value)
+{
 	printk("CC: %d %d\n", controller, value);
 }
 
 void control_change_handler(uint8_t channel,
 			    uint8_t controller,
-			    uint8_t value) {
+			    uint8_t value)
+{
 	printk("CC: %d %d\n", controller, value);
 }
 
-void realtime_handler(uint8_t msg) {
+void realtime_handler(uint8_t msg)
+{
 	printk("Realtime: %d\n", msg);
+}
+
+
+void sysex_start_handler(void)
+{
+	printk("sysex_start_handler()\n");
+}
+
+void sysex_data_handler(uint8_t data)
+{
+	printk("%x ", data);
+}
+
+void sysex_stop_handler(void)
+{
+	printk("\nsysex_stop_handler()\n");
 }
 
 
@@ -220,7 +242,11 @@ static struct midi1_serial_inst g_inst_uart3 = {
 	.note_off 	= &note_off_handler,
 	.control_change = &control_change_handler,
 	.realtime	= &realtime_handler,
-	.pitchwheel	= &midi_pitchwheel_handler,
+	.pitchwheel	= &pitchwheel_handler,
+	.sysex_start 	= &sysex_start_handler,
+	.sysex_data	= &sysex_data_handler,
+	.sysex_stop     = &sysex_stop_handler,
+	
 };
 
 int main_midi1_init(struct midi1_serial_inst *inst)

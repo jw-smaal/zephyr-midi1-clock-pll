@@ -20,7 +20,6 @@ static int32_t midi1_filtered_error = 0;
 static uint32_t midi1_clock_freq = 0;
 
 
-/* TODO: must return PIT ticks, not microseconds */
 
 /* TODO: implement!!!  it's ignoring sbpm now! */
 void midi1_pll_ticks_init(uint16_t sbpm, uint32_t clock_freq)
