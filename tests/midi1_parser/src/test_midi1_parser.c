@@ -1,6 +1,6 @@
 /**
  * @file test_midi1_parser.c
- * @brief MIDI1.0 parsing tests
+ * @brief MIDI1.0 parsing test cases.
  *
  * @author Jan-Willem Smaal
  * @date 20260118
@@ -402,6 +402,7 @@ ZTEST(midi1_parser, test_sysex_0_to_127)
 	int idx = 0;
 	
 	seq[idx++] = 0xF0;   /* SysEx start */
+	seq[idx++] = 0x7D;   /* non commercial use vendor id */
 	
 	for (int i = 0; i < 128; i++) {
 		seq[idx++] = i;
@@ -412,13 +413,18 @@ ZTEST(midi1_parser, test_sysex_0_to_127)
 	/* Feed into parser */
 	feed_and_parse(&inst, seq, idx);
 	
-	/* Validate length */
-	zassert_equal(g_sysex_len, 128,
-		      "Expected 128 SysEx data bytes, got %d", g_sysex_len);
+	/* Validate length it's 129 because of the vendor id ! */
+	zassert_equal(g_sysex_len, 129,
+		      "Expected 129 SysEx data bytes, got %d", g_sysex_len);
 	
 	/* Validate content */
-	for (int i = 0; i < 128; i++) {
-		zassert_equal(g_sysex_buf[i], i,
+	zassert_equal(g_sysex_buf[0], 0x7D, "Expected vendor id 0x7D");
+	for (int i = 1; i < 128; i++) {
+		/*
+		 * So it's i minus one because of the offset for the
+		 * vendor id in the buffer
+		 */
+		zassert_equal(g_sysex_buf[i], i - 1,
 			      "SysEx byte mismatch at index %d", i);
 	}
 }

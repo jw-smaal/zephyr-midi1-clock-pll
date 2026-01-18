@@ -4,18 +4,18 @@
  *
  * @note 
  * MIDI USART implementation that also implements
- * MIDI "running status".
+ * MIDI "running status" on transmit (and receive).
  *
  * Not many MIDI MCU example implementations (that i have seen) do this.
  * It's a very useful method to limit messages on
  * serial UART MIDI channels that are only 31250 Baud. It reduces
  * playing latency. It's essential when working with real gear.
- * 
+ *
+ * The implementation intends to be as complete and close to the MIDI1.0
+ * specifications as possible.
+ *
  *  The MIDI USART implementation is for the Zephyr RTOS
  *  and uses the ring buffer and UART driver.
- *
- *  TODO:  - Use the return values from uart_send and return them to the
- *  TODO:    to the caller
  *
  *  TODO:  - Error handling for the parser right now it's ignored.
  *  TODO:  - e.g. we could add DBG logging for this.
@@ -307,6 +307,41 @@ void midi1_serial_active_sensing(struct midi1_serial_inst *inst)
 void midi1_serial_reset(struct midi1_serial_inst *inst)
 {
 	uart_poll_out(inst->uart, RT_RESET);
+}
+
+
+/* System exclusive messages*/
+/*___         _               ___        _         _
+ / __|_  _ __| |_ ___ _ __   | __|_ ____| |_  _ __(_)_ _____
+ \__ \ || (_-<  _/ -_) '  \  | _|\ \ / _| | || (_-< \ V / -_)
+ |___/\_, /__/\__\___|_|_|_| |___/_\_\__|_|\_,_/__/_|\_/\___|
+ |__/
+ */
+void midi1_sysex_start(struct midi1_serial_inst *inst)
+{
+	uart_poll_out(inst->uart, SYSTEM_EXCLUSIVE_START );
+}
+
+void midi1_sysex_char(struct midi1_serial_inst *inst, uint8_t c)
+{
+	/* Sysex data should be 0 -> 127U so ignore everyhing else */
+	if (! (c & CHANNEL_VOICE_MASK)) {
+		uart_poll_out(inst->uart, c);
+	}
+}
+
+void midi1_sysex_data_bulk(struct midi1_serial_inst *inst,
+			   const uint8_t *data,
+			   uint32_t len)
+{
+	for(uint32_t i = 0; i < len; i++ ) {
+		midi1_sysex_char(inst, data[i]);
+	}
+}
+
+void midi1_sysex_stop(struct midi1_serial_inst *inst)
+{
+	uart_poll_out(inst->uart, SYSTEM_EXCLUSIVE_END );
 }
 
 

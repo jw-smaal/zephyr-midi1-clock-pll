@@ -3,13 +3,19 @@
  * @brief Serial USART implementation of MIDI1.0 for Zephyr 
  *
  * @note 
- * Created in 2014 initially for ATMEL MCU's then ported to 
- * ARM MBED targets, ported to Zephyr RTOS in 2024.
- * Adjusted in 2025 to work with UMP.  Changed to to support
+ * MIDI1.0 implementation created in 2014 initially for ATMEL MCU's then
+ * ported to ARM MBED targets in C++, ported back to C for Zephyr-RTOS in 2024.
+ * Adjusted in 2025 to return UMP's.  Changed to to support
  * multiple instances in 2026.
  *
  * This version supports 'running_status' and is tested with
- * real MIDI instruments.
+ * real MIDI instruments and a number of ZTEST cases.
+ *
+ * TODO: Things it DOES NOT do yet.
+ * TODO:  - Active sensing MIDI1.0 spec page 32
+ * TODO:  - Song position stuff MIDI1.0 spec page 27
+ * TODO:  - Universal System exclusive
+ * TODO:  - Tuning requests 
  *
  * @author Jan-Willem Smaal <usenet@gispen.org> 
  * updated 20241224
@@ -93,7 +99,10 @@ struct midi1_serial_inst {
 	/* Set when processing sysex data */
 	bool in_sysex;
 	
-	/* Sysex data is delivered in chunks (can be a huge amount of data) */
+	/*
+	 * Sysex data be aware this can be a lot of data e.g. sample
+	 * dumps
+	 */
 	void (*sysex_start)(void);
 	void (*sysex_data)(uint8_t data);
 	void (*sysex_stop)(void);
@@ -250,6 +259,61 @@ void midi1_serial_active_sensing(struct midi1_serial_inst *inst);
  * @param *inst pointer to a midi1_serial_inst struct
  */
 void midi1_serial_reset(struct midi1_serial_inst *inst);
+
+
+
+/* System exclusive messages*/
+/*___         _               ___        _         _
+ / __|_  _ __| |_ ___ _ __   | __|_ ____| |_  _ __(_)_ _____
+ \__ \ || (_-<  _/ -_) '  \  | _|\ \ / _| | || (_-< \ V / -_)
+ |___/\_, /__/\__\___|_|_|_| |___/_\_\__|_|\_,_/__/_|\_/\___|
+ |__/
+ */
+
+/**
+ * @brief Begin a System Exclusive (SysEx) transmission.
+ *
+ * Sends the SysEx start byte (0xF0) and prepares the instance
+ * for transmitting SysEx payload bytes.
+ *
+ * @param inst MIDI serial instance.
+ */
+void midi1_sysex_start(struct midi1_serial_inst *inst);
+
+/**
+ * @brief Transmit a single SysEx data byte.
+ *
+ * Only bytes in the range 0–127 are transmitted. Any value with
+ * bit 7 set is ignored, as SysEx payload must contain data bytes only.
+ *
+ * @param inst MIDI serial instance.
+ * @param c    SysEx data byte (0–127).
+ */
+void midi1_sysex_char(struct midi1_serial_inst *inst, uint8_t c);
+
+/**
+ * @brief Transmit a block of SysEx data bytes.
+ *
+ * Iterates through the provided buffer and transmits each byte
+ * using midi1_sysex_char(). Illegal bytes (>= 128) are ignored.
+ *
+ * @param inst MIDI serial instance.
+ * @param data Pointer to SysEx payload buffer.
+ * @param len  Number of bytes in the buffer.
+ */
+void midi1_sysex_data_bulk(struct midi1_serial_inst *inst,
+			   const uint8_t *data,
+			   uint32_t len);
+
+/**
+ * @brief End a System Exclusive (SysEx) transmission.
+ *
+ * Sends the SysEx end byte (0xF7) and finalizes the message.
+ *
+ * @param inst MIDI serial instance.
+ */
+void midi1_sysex_stop(struct midi1_serial_inst *inst);
+
 
 #endif				/* MIDI1_SERIAL_H */
 /* EOF */
