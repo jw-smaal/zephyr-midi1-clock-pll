@@ -46,14 +46,13 @@ static inline void midi1_noop_pitchwheel(uint8_t channel, uint8_t lsb, uint8_t m
 static inline void midi1_noop_program_change(uint8_t channel, uint8_t number) {}
 static inline void midi1_noop_channel_aftertouch(uint8_t channel, uint8_t pressure) {}
 static inline void midi1_noop_poly_aftertouch(uint8_t channel, uint8_t note, uint8_t pressure) {}
-
 /* System common */
 static inline void midi1_noop_realtime(uint8_t msg) {}
-
 /* SysEx */
 static inline void midi1_noop_sysex_start(void) {}
 static inline void midi1_noop_sysex_data(uint8_t data) {}
 static inline void midi1_noop_sysex_stop(void) {}
+
 
 
 /* The ISR callback asssigned during init */
@@ -137,6 +136,88 @@ int midi1_serial_init(struct midi1_serial_inst *inst)
 	return 0;
 }
 
+/**
+ * Inits the serial USART with MIDI clock speed and
+ */
+int midi_serial_init(const struct device *dev)
+{
+	const struct midi1_serial_config *cfg = dev->config;
+	struct midi1_serial_data *data = dev->data;
+	
+	data->running_status_rx = 0;
+	data->third_byte_flag = 0;
+	data->midi_c2 = 0;
+	data->midi_c3 = 0;
+	
+	data->running_status_tx = 0;
+	data->running_status_tx_count = 0;
+	data->in_sysex = false;
+	
+	/* If a null pointer is given reassign to the NO OP function */
+	if (!data->note_on) {
+		data->note_on = midi1_noop_note_on;
+	}
+	if (!data->note_off) {
+		data->note_off = midi1_noop_note_off;
+	}
+	if (!data->control_change) {
+		data->control_change = midi1_noop_control_change;
+	}
+	if (!data->realtime) {
+		data->realtime = midi1_noop_realtime;
+	}
+	if (!data->pitchwheel) {
+		data->pitchwheel = midi1_noop_pitchwheel;
+	}
+	if (!data->program_change) {
+		data->program_change = midi1_noop_program_change;
+	}
+	if (!data->channel_aftertouch) {
+		data->channel_aftertouch = midi1_noop_channel_aftertouch;
+	}
+	if (!data->poly_aftertouch) {
+		data->poly_aftertouch = midi1_noop_poly_aftertouch;
+	}
+	if (!data->sysex_start) {
+		data->sysex_start = midi1_noop_sysex_start;
+	}
+	if (!data->sysex_data) {
+		data->sysex_data = midi1_noop_sysex_data;
+	}
+	if (!data->sysex_stop) {
+		data->sysex_stop = midi1_noop_sysex_stop;
+	}
+	
+	/* Assign a MSQ to this instance */
+	k_msgq_init(&data->msgq, data->msgq_buffer, MSG_SIZE, MSGQ_SIZE);
+	
+	if (!device_is_ready(cfg->uart)) {
+		printk("UART device not found!");
+		return -1;
+	}
+	int ret =
+	uart_irq_callback_user_data_set(cfg->uart,
+					midi1_serial_isr_callback,
+					data);
+	if (ret < 0) {
+		if (ret == -ENOTSUP) {
+			printk
+			("Interrupt-driven UART API support not enabled\n");
+		} else if (ret == -ENOSYS) {
+			printk
+			("UART  does not support interrupt-driven API\n");
+		} else {
+			printk("Error setting UART callback: %d\n", ret);
+		}
+		return ret;
+	}
+	
+	uart_irq_rx_enable(cfg->uart);
+	printk("midi1_serial_init() done");
+	return 0;
+}
+
+
 /*
  * All functions related to sending MIDI messages to the serial USART
  */
@@ -147,7 +228,6 @@ int midi1_serial_init(struct midi1_serial_inst *inst)
  | (__| ' \/ _` | ' \| ' \/ -_) | | |\/| / _ \/ _` / -_)
   \___|_||_\__,_|_||_|_||_\___|_| |_|  |_\___/\__,_\___|
  */
-
 void midi1_serial_note_on(struct midi1_serial_inst *inst, uint8_t channel, uint8_t key, uint8_t velocity)
 {
 	/* If we have sent 16 times without a status byte; send a status byte */
@@ -164,7 +244,35 @@ void midi1_serial_note_on(struct midi1_serial_inst *inst, uint8_t channel, uint8
 	}
 	uart_poll_out(inst->uart, key);
         uart_poll_out(inst->uart, velocity);
+	inst->running_status_tx_count++;
 }
+
+void midi_serial_note_on(const struct device *dev,
+			  uint8_t channel,
+			  uint8_t key,
+			  uint8_t velocity)
+{
+	const struct midi1_serial_config *cfg = dev->config;
+	struct midi1_serial_data *data = dev->data;
+	
+	/* If we have sent 16 times without a status byte; send a status byte */
+	if (data->running_status_tx_count >= 16) {
+		data->running_status_tx_count = 0;
+		uart_poll_out(cfg->uart, C_NOTE_ON | channel);
+		data->running_status_tx = C_NOTE_ON | channel;
+	}
+	/* If we don't have running status send out the status byte. */
+	else if ((C_NOTE_ON | channel) != data->running_status_tx) {
+		uart_poll_out(cfg->uart, C_NOTE_ON | channel);
+		data->running_status_tx = C_NOTE_ON | channel;
+		data->running_status_tx_count = 0;
+	}
+	uart_poll_out(cfg->uart, key);
+	uart_poll_out(cfg->uart, velocity);
+	data->running_status_tx_count++;
+}
+
+
 
 void midi1_serial_note_off(struct midi1_serial_inst *inst, uint8_t channel, uint8_t key, uint8_t velocity)
 {
@@ -182,6 +290,32 @@ void midi1_serial_note_off(struct midi1_serial_inst *inst, uint8_t channel, uint
 	}
 	uart_poll_out(inst->uart, key);
 	uart_poll_out(inst->uart, velocity);
+	inst->running_status_tx_count++;
+}
+
+void midi_serial_note_off(const struct device *dev,
+			  uint8_t channel,
+			  uint8_t key,
+			  uint8_t velocity)
+{
+	const struct midi1_serial_config *cfg = dev->config;
+	struct midi1_serial_data *data = dev->data;
+	
+	/* If we have sent 16 times without a status byte; send a status byte */
+	if (data->running_status_tx_count >= 16) {
+		data->running_status_tx_count = 0;
+		uart_poll_out(cfg->uart, C_NOTE_OFF | channel);
+		data->running_status_tx = C_NOTE_OFF | channel;
+	}
+	/* If we don't have running status send out the status byte. */
+	else if ((C_NOTE_OFF | channel) != data->running_status_tx) {
+		uart_poll_out(cfg->uart, C_NOTE_OFF | channel);
+		data->running_status_tx = C_NOTE_OFF | channel;
+		data->running_status_tx_count = 0;
+	}
+	uart_poll_out(cfg->uart, key);
+	uart_poll_out(cfg->uart, velocity);
+	data->running_status_tx_count++;
 }
 
 /*
@@ -214,6 +348,33 @@ void midi1_serial_control_change(struct midi1_serial_inst *inst,
 	uart_poll_out(inst->uart, val);
 	inst->running_status_tx_count++;
 }
+
+void midi_serial_control_change(const struct device *dev,
+				uint8_t channel,
+				uint8_t controller,
+				uint8_t val)
+{
+	const struct midi1_serial_config *cfg = dev->config;
+	struct midi1_serial_data *data = dev->data;
+	
+	/* If we have sent 16 times without a status byte; send a status byte */
+	if (data->running_status_tx_count >= 16) {
+		data->running_status_tx_count = 0;
+		uart_poll_out(cfg->uart, C_CONTROL_CHANGE | channel);
+		data->running_status_tx = C_CONTROL_CHANGE | channel;
+	}
+	/* If we don't have running status send out the status byte. */
+	else if ((C_CONTROL_CHANGE | channel) != data->running_status_tx) {
+		uart_poll_out(cfg->uart, C_CONTROL_CHANGE | channel);
+		data->running_status_tx = C_CONTROL_CHANGE | channel;
+		data->running_status_tx_count = 0;
+	}
+	/* We always send out controller and value */
+	uart_poll_out(cfg->uart, controller);
+	uart_poll_out(cfg->uart, val);
+	data->running_status_tx_count++;
+}
+
 
 void midi1_serial_channelaftertouch(struct midi1_serial_inst *inst,
 				 uint8_t channel,
@@ -343,6 +504,7 @@ void midi1_sysex_stop(struct midi1_serial_inst *inst)
 {
 	uart_poll_out(inst->uart, SYSTEM_EXCLUSIVE_END );
 }
+
 
 
 /*__  __ ___ ___ ___   ___      _         ___
@@ -582,5 +744,35 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 		} /* end of  global_3rd_byte_flag */
 	} /* end of data bit 7 == 0 */
 } /* end of midi1_serial_receiveparser */
+
+
+/* Zephyr device driver API link to our actual implementation */
+static const struct midi1_serial_api midi1_serial_driver_api = {
+	.note_on = midi_serial_note_on,
+	.note_off = midi_serial_note_off,
+	.control_change = midi_serial_control_change,
+};
+
+/* internal driver state */
+static struct midi1_serial_data midi1_serial_driver_data;
+
+static const struct midi1_serial_config midi1_serial_driver_config =
+{
+	.uart = DEVICE_DT_GET(DT_ALIAS(midi)),
+};
+
+#if 0
+/* Register the device */
+DEVICE_DT_DEFINE(
+		 DT_ALIAS(midi),                 /* node identifier */
+		 midi_serial_init,               /* init function */
+		 NULL,                           /* PM device action */
+		 &midi1_serial_driver_data,      /* runtime data */
+		 &midi1_serial_driver_config,    /* config */
+		 POST_KERNEL,                    /* init level */
+		 CONFIG_KERNEL_INIT_PRIORITY_DEVICE,
+		 &midi1_serial_driver_api        /* API */
+		 );
+#endif
 
 /* EOF */
