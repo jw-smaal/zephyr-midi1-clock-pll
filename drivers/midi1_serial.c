@@ -756,12 +756,13 @@ static const struct midi1_serial_api midi1_serial_driver_api = {
 /* internal driver state */
 static struct midi1_serial_data midi1_serial_driver_data;
 
+#if 0 /* TODO: BROKEN ! */
 static const struct midi1_serial_config midi1_serial_driver_config =
 {
 	.uart = DEVICE_DT_GET(DT_ALIAS(midi)),
 };
 
-#if 0
+
 /* Register the device */
 DEVICE_DT_DEFINE(
 		 DT_ALIAS(midi),                 /* node identifier */

@@ -25,12 +25,12 @@
 #define PITCHWHEEL_CENTER 8192
 
 /* MIDI channel/mode masks */
-#define CHANNEL_VOICE_MASK      0x80	//  Bit 7 == 1
+#define CHANNEL_VOICE_MASK      0x80	/*  Bit 7 == 1 */
 #define CHANNEL_MODE_MASK       0xB0
 #define SYSTEM_EXCLUSIVE_MASK   0xF0
 #define SYSTEM_REALTIME_MASK    0XF8
 #define SYSTEM_COMMON_MASK      0XF0
-#define MIDI_DATA               0x7F	//  Bit 7 == 0
+#define MIDI_DATA               0x7F	/*  Bit 7 == 0 */
 
 /* System messages */
 enum midi_sysex {

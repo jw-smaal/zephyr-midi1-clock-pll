@@ -110,7 +110,6 @@ struct midi1_serial_inst {
 	void (*sysex_stop)(void);
 };
 
-
 struct midi1_serial_config {
 	const struct device *uart;
 };
