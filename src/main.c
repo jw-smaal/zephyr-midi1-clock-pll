@@ -37,8 +37,11 @@
  * Collection of various functions for MIDI1
  * by Jan-Willem Smaal <usenet@gispen.org>
  */
+/* Moved to ../drivers */
 #include "midi1.h"
 #include "midi1_serial.h"
+
+
 #include "midi1_clock_counter.h"
 /* #include "midi1_clock_adj.h" */
 /* #include "midi1_clock_measure.h" */
