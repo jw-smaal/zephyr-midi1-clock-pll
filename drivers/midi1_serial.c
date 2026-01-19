@@ -753,27 +753,22 @@ static const struct midi1_serial_api midi1_serial_driver_api = {
 	.control_change = midi_serial_control_change,
 };
 
-/* internal driver state */
-static struct midi1_serial_data midi1_serial_driver_data;
+#define DT_DRV_COMPAT midi1serial
 
-#if 0 /* TODO: BROKEN ! */
-static const struct midi1_serial_config midi1_serial_driver_config =
-{
-	.uart = DEVICE_DT_GET(DT_ALIAS(midi)),
-};
+#define MIDI1_SERIAL_DEFINE(inst)                                          \
+static struct midi1_serial_data midi1_serial_data_##inst;              	   \
+static const struct midi1_serial_config midi1_serial_config_##inst = {     \
+.uart = DEVICE_DT_GET(DT_INST_PROP(inst, uart)),                           \
+};                                                                         \
+DEVICE_DT_INST_DEFINE(inst,                                                \
+midi_serial_init,                                                         \
+NULL,                                                                      \
+&midi1_serial_data_##inst,                                                 \
+&midi1_serial_config_##inst,                                               \
+POST_KERNEL,                                                               \
+CONFIG_KERNEL_INIT_PRIORITY_DEVICE,                                        \
+&midi1_serial_driver_api);
 
-
-/* Register the device */
-DEVICE_DT_DEFINE(
-		 DT_ALIAS(midi),                 /* node identifier */
-		 midi_serial_init,               /* init function */
-		 NULL,                           /* PM device action */
-		 &midi1_serial_driver_data,      /* runtime data */
-		 &midi1_serial_driver_config,    /* config */
-		 POST_KERNEL,                    /* init level */
-		 CONFIG_KERNEL_INIT_PRIORITY_DEVICE,
-		 &midi1_serial_driver_api        /* API */
-		 );
-#endif
+DT_INST_FOREACH_STATUS_OKAY(MIDI1_SERIAL_DEFINE)
 
 /* EOF */
