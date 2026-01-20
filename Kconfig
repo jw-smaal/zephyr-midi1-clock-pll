@@ -1,19 +1,11 @@
+source "Kconfig.zephyr"
+rsource "drivers/Kconfig"
+
 # Copyright (c) 2024 Titouan Christophe
 # SPDX-License-Identifier: Apache-2.0
 
-# Source common USB sample options used to initialize new experimental USB
-# device stack. The scope of these options is limited to USB samples in project
-# tree, you cannot use them in your own application.
-#source "common/Kconfig.sample_usbd"
-
-source "Kconfig.zephyr"
 # Copyright (c) 2023 Nordic Semiconductor ASA
 # SPDX-License-Identifier: Apache-2.0
-
-# This file contains Kconfig options and defaults for configuring USB devices
-# using the new experimental USB device support. The scope of these options is
-# limited to USB samples in project tree, you cannot use them in your own
-# application.
 
 menu "USB sample options"
 	depends on USB_DEVICE_STACK_NEXT
