@@ -72,5 +72,5 @@ uint32_t midi1_clock_meas_last_interval(void);
 uint32_t midi1_clock_meas_last_timestamp(void);
 
 /*------------------------------------------------------------------- */
-#endif				/* MIDI1_CLOCK_MEASURE_H */
+#endif                          /* MIDI1_CLOCK_MEASURE_H */
 /* EOF */

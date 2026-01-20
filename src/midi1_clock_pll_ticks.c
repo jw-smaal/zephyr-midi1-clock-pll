@@ -19,8 +19,6 @@ static int32_t midi1_internal_interval_ticks;
 static int32_t midi1_filtered_error = 0;
 static uint32_t midi1_clock_freq = 0;
 
-
-
 /* TODO: implement!!!  it's ignoring sbpm now! */
 void midi1_pll_ticks_init(uint16_t sbpm, uint32_t clock_freq)
 {
@@ -82,7 +80,9 @@ uint32_t midi1_pll_ticks_get_interval_us(void)
 	if (midi1_clock_freq == 0) {
 		return 0;
 	}
-	
-	uint64_t us = ((uint64_t)midi1_nominal_interval_ticks * 1000000ULL) / midi1_clock_freq;
+
+	uint64_t us =
+	    ((uint64_t) midi1_nominal_interval_ticks * 1000000ULL) /
+	    midi1_clock_freq;
 	return (uint32_t) us;
 }

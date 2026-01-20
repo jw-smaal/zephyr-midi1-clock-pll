@@ -20,8 +20,7 @@
 #include <stdbool.h>
 
 #include "midi1_clock_adj.h"
-#include "midi1.h"		/* tempo helpers + midi1_timing_clock() */
-
+#include "midi1.h"              /* tempo helpers + midi1_timing_clock() */
 
 /*
  * This is part of the MIDI2 library prj.conf
@@ -42,7 +41,6 @@
 #include <zephyr/drivers/gpio.h>
 #endif
 
-
 /* -------------------------------------------------------------------------- */
 /* Internal state                                                             */
 /* -------------------------------------------------------------------------- */
@@ -59,25 +57,24 @@ static uint16_t g_sbpm = 0;
 /* running flag */
 static atomic_t g_running = ATOMIC_INIT(0);
 
-
 /*
  * MIDI clock measurement on a PIN.
  * I used PTC8 on the FRDM_MCXC242 scope confirms correct implementation.
  */
 #if MIDI_CLOCK_ON_PIN
 #define CLOCK_FREQ_OUT DT_NODELABEL(freq_out)
-static const struct gpio_dt_spec clock_pin = GPIO_DT_SPEC_GET(CLOCK_FREQ_OUT, gpios);
+static const struct gpio_dt_spec clock_pin =
+GPIO_DT_SPEC_GET(CLOCK_FREQ_OUT, gpios);
 
 static void midi1_debug_gpio_init(void)
 {
 	int ret = gpio_pin_configure_dt(&clock_pin, GPIO_OUTPUT_INACTIVE);
-	if (ret < 0){
+	if (ret < 0) {
 		printk("Error configing pin\n");
 		return;
 	}
 }
 #endif
-
 
 /* -------------------------------------------------------------------------- */
 /* MIDI send glue                                                             */
@@ -91,7 +88,6 @@ static void midi1_clock_send_tick(const struct device *dev)
 #endif
 	}
 }
-
 
 /* -------------------------------------------------------------------------- */
 /* Work handler                                                               */
@@ -128,7 +124,7 @@ void midi1_clock_adj_init(const struct device *midi1_dev)
 	g_sbpm = 0;
 #if MIDI_CLOCK_ON_PIN
 	midi1_debug_gpio_init();
-#endif 
+#endif
 	k_work_init_delayable(&g_clk_work, midi1_clk_work_handler);
 }
 
@@ -163,7 +159,7 @@ void midi1_clock_adj_set_interval_us(uint32_t interval_us)
 
 	atomic_set(&g_interval_us, (atomic_val_t) interval_us);
 	g_sbpm = pqn24_to_sbpm(interval_us);
-	
+
 	if (atomic_get(&g_running)) {
 		k_work_reschedule(&g_clk_work, K_USEC(interval_us));
 	}

@@ -41,7 +41,6 @@
 #include "midi1.h"
 #include "midi1_serial.h"
 
-
 #include "midi1_clock_counter.h"
 /* #include "midi1_clock_adj.h" */
 /* #include "midi1_clock_measure.h" */
@@ -60,7 +59,6 @@
  * - 'pit0_channel1'
  */
 
-
 /* For debugging provide the received 24pqn MIDI clock on a pin */
 #define RX_MIDI_CLOCK_ON_PIN 1
 #if RX_MIDI_CLOCK_ON_PIN
@@ -78,14 +76,12 @@ static void main_rx_midi_clk_gpio_init(void)
 }
 #endif
 
-
 #define USB_MIDI_DT_NODE DT_NODELABEL(usb_midi)
 static const struct device *const midi = DEVICE_DT_GET(USB_MIDI_DT_NODE);
 
 /* LED's */
 static struct gpio_dt_spec led0 = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
 static struct gpio_dt_spec led2 = GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios);
-
 
 /* ----------------------- handlers callbacks  ----------------------------- */
 static void key_press(struct input_event *evt, void *user_data)
@@ -100,7 +96,7 @@ static void key_press(struct input_event *evt, void *user_data)
 	uint8_t velocity = 100;
 
 	struct midi_ump ump = UMP_MIDI1_CHANNEL_VOICE(0, command, channel,
-						      note, velocity);
+	                                              note, velocity);
 	usbd_midi_send(midi, ump);
 }
 
@@ -112,7 +108,6 @@ UMP_ENDPOINT_DT_SPEC_GET(USB_MIDI_DT_NODE);
 const struct ump_stream_responder_cfg responder_cfg =
 UMP_STREAM_RESPONDER(midi, usbd_midi_send, &ump_ep_dt);
 
-
 /* TODO: handler for timing purposes we'll ignore other stuff for now */
 static void on_ump_packet(const struct device *dev, const struct midi_ump ump)
 {
@@ -120,7 +115,7 @@ static void on_ump_packet(const struct device *dev, const struct midi_ump ump)
 	case UMP_MT_SYS_RT_COMMON:
 		uint8_t status = UMP_MIDI_STATUS(ump);
 		switch (status) {
-		case RT_TIMING_CLOCK:	/* MIDI Clock */
+		case RT_TIMING_CLOCK:  /* MIDI Clock */
 #if RX_MIDI_CLOCK_ON_PIN
 			/*
 			 * toggle a PIN so we can measure
@@ -140,13 +135,12 @@ static void on_ump_packet(const struct device *dev, const struct midi_ump ump)
 	}
 }
 
-
 /**
  * @brief Light up the LED (if any) when USB-MIDI2.0 is active towards the PC
  */
 static void on_device_ready(const struct device *dev, const bool ready)
 {
-	
+
 	if (led0.port) {
 		gpio_pin_set_dt(&led0, ready);
 		k_msleep(100);
@@ -164,7 +158,6 @@ static const struct usbd_midi_ops ump_ops = {
 	.ready_cb = on_device_ready,
 };
 
-
 /**
  * @brief Callbacks/delegates for 'midi1_serial.c' after parsing MIDI1.0
  *
@@ -172,40 +165,31 @@ static const struct usbd_midi_ops ump_ops = {
  * Do not block in these function as they are called from the MIDI
  * parser this one is blocked untill the delegate is finished.
  */
-void note_on_handler(uint8_t channel,
-		     uint8_t note,
-		     uint8_t velocity)
+void note_on_handler(uint8_t channel, uint8_t note, uint8_t velocity)
 {
 	printk("Note  on: %03d %03d\n", note, velocity);
 }
 
-void note_off_handler(uint8_t channel,
-		      uint8_t note,
-		      uint8_t velocity)
+void note_off_handler(uint8_t channel, uint8_t note, uint8_t velocity)
 {
 	printk("Note off: %03d %03d\n", note, velocity);
 }
 
-void pitchwheel_handler(uint8_t channel,
-			     uint8_t lsb,
-			     uint8_t msb)
+void pitchwheel_handler(uint8_t channel, uint8_t lsb, uint8_t msb)
 {
 	/* 14 bit value for the pitch wheel  */
-	int16_t pwheel = (int16_t)((msb << 7) | lsb) - PITCHWHEEL_CENTER ;
+	int16_t pwheel = (int16_t) ((msb << 7) | lsb) - PITCHWHEEL_CENTER;
 	/* print on the serial out */
 	printk("Pitchwheel: %d\n", pwheel);
 }
 
 void control_change_handler_model(uint8_t channel,
-				  uint8_t controller,
-				  uint8_t value)
+                                  uint8_t controller, uint8_t value)
 {
 	printk("CC: %d %d\n", controller, value);
 }
 
-void control_change_handler(uint8_t channel,
-			    uint8_t controller,
-			    uint8_t value)
+void control_change_handler(uint8_t channel, uint8_t controller, uint8_t value)
 {
 	printk("CC: %d %d\n", controller, value);
 }
@@ -214,7 +198,6 @@ void realtime_handler(uint8_t msg)
 {
 	printk("Realtime: %d\n", msg);
 }
-
 
 void sysex_start_handler(void)
 {
@@ -231,7 +214,6 @@ void sysex_stop_handler(void)
 	printk("\nsysex_stop_handler()\n");
 }
 
-
 /* ------------------------- INIT functions -------------------------------- */
 /*
  * Init all the USB MIDI stuff in main.
@@ -240,39 +222,39 @@ void sysex_stop_handler(void)
  */
 #define MIDI1_UART3 DT_ALIAS(midi)
 static struct midi1_serial_inst g_inst_uart3 = {
-	.uart 		= DEVICE_DT_GET(MIDI1_UART3),
-	.note_on 	= &note_on_handler,
-	.note_off 	= &note_off_handler,
+	.uart = DEVICE_DT_GET(MIDI1_UART3),
+	.note_on = &note_on_handler,
+	.note_off = &note_off_handler,
 	.control_change = &control_change_handler,
-	.realtime	= &realtime_handler,
-	.pitchwheel	= &pitchwheel_handler,
-	.sysex_start 	= &sysex_start_handler,
-	.sysex_data	= &sysex_data_handler,
-	.sysex_stop     = &sysex_stop_handler,
-	
+	.realtime = &realtime_handler,
+	.pitchwheel = &pitchwheel_handler,
+	.sysex_start = &sysex_start_handler,
+	.sysex_data = &sysex_data_handler,
+	.sysex_stop = &sysex_stop_handler,
+
 };
 
 int main_midi1_init(struct midi1_serial_inst *inst)
 {
 	struct usbd_context *sample_usbd;
-	
+
 	/* Needs to be called to ensure a proper state of the parser */
 	midi1_serial_init(&g_inst_uart3);
-	
+
 	if (led0.port && led2.port) {
 		if (gpio_pin_configure_dt(&led0, GPIO_OUTPUT)) {
-				//LOG_ERR("Unable to setup LED0, not using it");
+			//LOG_ERR("Unable to setup LED0, not using it");
 			memset(&led0, 0, sizeof(led0));
 		}
 		if (gpio_pin_configure_dt(&led2, GPIO_OUTPUT)) {
-				//LOG_ERR("Unable to setup LED2, not using it");
+			//LOG_ERR("Unable to setup LED2, not using it");
 			memset(&led2, 0, sizeof(led2));
 		}
 	}
 #if RX_MIDI_CLOCK_ON_PIN
 	main_rx_midi_clk_gpio_init();
 #endif
-	
+
 	if (!device_is_ready(midi)) {
 		//LOG_ERR("MIDI device not ready");
 		return -1;
@@ -288,21 +270,21 @@ int main_midi1_init(struct midi1_serial_inst *inst)
 		return -1;
 	}
 	//LOG_INF("USB device support enabled");
-	
+
 	/* Init the clock measurement system */
 	midi1_clock_cntr_init(midi);
 	midi1_clock_meas_cntr_init();
-	
+
 	/* We init the PLL with something and adjust from there */
 	midi1_pll_ticks_init(12000, midi1_clock_meas_cntr_clock_freq());
-	
+
 	/*
 	 * Send example MIDI messages to test the DIN5 MIDI1.0
 	 * TODO: this is not working (yet).
 	 */
 #define TEST_MIDI_OUTPUT 1
 #if TEST_MIDI_OUTPUT
-	for (int j =15 ; j < 16; j++ ) {
+	for (int j = 15; j < 16; j++) {
 		for (int i = 0; i < 128; i++) {
 			/* Don't use printk it will go out the MIDI port ! */
 			midi1_serial_note_on(inst, j, i, i);
@@ -320,11 +302,10 @@ int main_midi1_init(struct midi1_serial_inst *inst)
 	return 0;
 }
 
-
 /* Get the display device (DTS node must be named sh1106) */
-/* const struct device *display = DEVICE_DT_GET(DT_NODELABEL(sh1106)); */ 
+/* const struct device *display = DEVICE_DT_GET(DT_NODELABEL(sh1106)); */
 const struct device *display = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
-/* in the root of the device tree we need to point it to the sh1106 */ 
+/* in the root of the device tree we need to point it to the sh1106 */
 const struct device *cfb = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 
 int main_display_init(void)
@@ -362,14 +343,13 @@ int main_display_init(void)
 	cfb_print(cfb, "            ", 0, 48);
 
 	/* Push framebuffer to display */
-	cfb_framebuffer_invert(cfb); 
+	cfb_framebuffer_invert(cfb);
 	cfb_framebuffer_finalize(cfb);
-	
+
 	k_msleep(100);
-	
+
 	return 0;
 }
-
 
 /* ---------------------------- THREADS ------------------------------------ */
 /* g_inst_uart3 is global because we need the reference in multiple threads */
@@ -378,12 +358,13 @@ int main_display_init(void)
  * MIDI1.0 5PIN DIN serial receive parser thread.
  * uses g_inst_uart3 global
  */
-void midi1_serial_receive_thread(void) {
+void midi1_serial_receive_thread(void)
+{
 
 	/* Initialize the MIDI1 parser with the callbacks */
 	/* Moved this to main as we need to also send stuff */
 	/* midi1_serial_init(&g_inst_uart3); */
-	
+
 	/* Let's wait a little untill things are settled */
 	k_msleep(100);
 	while (1) {
@@ -391,16 +372,18 @@ void midi1_serial_receive_thread(void) {
 		midi1_serial_receiveparser(&g_inst_uart3);
 	}
 }
+
 K_THREAD_DEFINE(midi1_serial_receive_tid, 512,
-		midi1_serial_receive_thread, NULL, NULL, NULL, 5, 0, 0);
+                midi1_serial_receive_thread, NULL, NULL, NULL, 5, 0, 0);
 
 /**
  * @brief helper function to print the scaled BPM to the display
  * @param sbpm scaled bpm parameter
  * TODO: check return values
  */
-void display_update_bpm_line(uint16_t sbpm, uint16_t sbpm2) {
-	
+void display_update_bpm_line(uint16_t sbpm, uint16_t sbpm2)
+{
+
 	cfb_print(cfb, sbpm_to_str(sbpm), 0, 16);
 	cfb_print(cfb, sbpm_to_str(sbpm2), 0, 32);
 	cfb_framebuffer_finalize(cfb);
@@ -422,7 +405,7 @@ void led_display_thread(void)
 	gpio_pin_configure_dt(&led2, GPIO_OUTPUT_INACTIVE);
 	gpio_pin_toggle_dt(&led2);
 	int spinner = 0;
-	
+
 	while (1) {
 		/* Get current PLL tick interval (1/24 QN) */
 		int32_t tick_us = midi1_clock_meas_cntr_interval_us();
@@ -432,36 +415,37 @@ void led_display_thread(void)
 
 		/* Toggle LED */
 		gpio_pin_toggle_dt(&led2);
-				
+
 		/* if the qn_us makes somewhat sense */
 		if (qn_us < 2500000) {
 			/* Get the BPM measurement (also PLL) */
 			uint16_t cntr_sbpm = midi1_clock_meas_cntr_get_sbpm();
-			uint16_t pll_sbpm = pqn24_to_sbpm(midi1_pll_ticks_get_interval_us());
+			uint16_t pll_sbpm =
+			    pqn24_to_sbpm(midi1_pll_ticks_get_interval_us());
 			/* Show it on the tiny display */
 			display_update_bpm_line(cntr_sbpm, pll_sbpm);
-			
+
 			/* In the sync with the clock rotate the spinner */
-			switch(spinner ) {
-				case 0:
-					cfb_print(cfb, "/", 0, 48);
-					spinner++;
-					break;
-				case 1:
-					cfb_print(cfb, "-", 0, 48);
-					spinner++;
-					break;
-				case 2:
-					cfb_print(cfb, "\\", 0, 48);
-					spinner++;
-					break;
-				case 3:
-					cfb_print(cfb, "|", 0, 48);
-					spinner = 0;
-					break;
-				default:
-					spinner = 0;
-					break;
+			switch (spinner) {
+			case 0:
+				cfb_print(cfb, "/", 0, 48);
+				spinner++;
+				break;
+			case 1:
+				cfb_print(cfb, "-", 0, 48);
+				spinner++;
+				break;
+			case 2:
+				cfb_print(cfb, "\\", 0, 48);
+				spinner++;
+				break;
+			case 3:
+				cfb_print(cfb, "|", 0, 48);
+				spinner = 0;
+				break;
+			default:
+				spinner = 0;
+				break;
 			}
 			cfb_framebuffer_finalize(cfb);
 			/* Sleep for 1/2  quarter note */
@@ -472,15 +456,16 @@ void led_display_thread(void)
 			 * qn_us > 2.5 seconds (1 BPM) just ignore it.
 			 */
 			k_msleep(2000);
-			
+
 			/* printk("led_blink_thread: Large value qn_us: %d\n",
-			    qn_us); */
+			   qn_us); */
 			continue;
 		}
 	}
 }
+
 K_THREAD_DEFINE(led_display_tid, 512,
-		led_display_thread, NULL, NULL, NULL, 5, 0, 0);
+                led_display_thread, NULL, NULL, NULL, 5, 0, 0);
 
 /**
  * Main thread - this may actually terminate normally (code 0) in zephyr.
@@ -502,59 +487,60 @@ int main(void)
 	       sbpm_to_str(midi1_clock_cntr_get_sbpm()));
 	printk("midi1_clock_cntr_cpu_frequency: %u\n",
 	       midi1_clock_cntr_cpu_frequency());
-	
+
 	/* Set the initial clock again because the PLL gets a init of 120 */
 	uint32_t pll_ticks = midi1_pll_ticks_get_interval_ticks();
 	midi1_clock_cntr_ticks_start(pll_ticks);
-	
+
 	/*
 	 * Don't start the display straight after powerup (needs some time
 	 * to settle
 	 */
 	main_display_init();
 	/*  FIXME: for some reason returns failure.
-	if(main_display_init()) {
-	 	printk("Failed to main_display_init()\n");
-	}
-	*/
-	
+	   if(main_display_init()) {
+	   printk("Failed to main_display_init()\n");
+	   }
+	 */
+
 	while (1) {
 		/*  measure incoming interval. */
 		//printk("interval measured as: %u us\n",
 		//       midi1_clock_meas_cntr_interval_us());
 		//printk("interval measured as: %u ticks\n",
 		//       midi1_clock_meas_cntr_interval_ticks());
-		
+
 		uint16_t raw_cntr_sbpm = midi1_clock_meas_cntr_get_sbpm();
 		//printk("main cntr BPM (raw): %s\n", sbpm_to_str(raw_cntr_sbpm));
-		
+
 		/* Get pll ticks */
 		uint32_t pll_ticks = midi1_pll_ticks_get_interval_ticks();
 		//printk("main: PLL ticks     : %d\n", pll_ticks);
-		
+
 		/* Half a minute of correct phase */
 		for (int i = 0; i < 3; i++) {
-			
+
 			//printk("main: -- in PHASE -- \n");
 			/* Start the clock with the correct ticks */
-			uint32_t pll_ticks = midi1_pll_ticks_get_interval_ticks();
+			uint32_t pll_ticks =
+			    midi1_pll_ticks_get_interval_ticks();
 			midi1_clock_cntr_ticks_start(pll_ticks);
 			k_msleep(10000);
 			midi1_serial_start(&g_inst_uart3);
 		}
 #if 0
 		/* shifting phase */
-		for (int phases = 5000 ; phases <= 50000; phases += 2000) {
+		for (int phases = 5000; phases <= 50000; phases += 2000) {
 			printk("main: shifting phase: %u\n", phases);
 			/* Start the clock with the phase shifted ticks */
-			uint32_t pll_ticks = midi1_pll_ticks_get_interval_ticks();
+			uint32_t pll_ticks =
+			    midi1_pll_ticks_get_interval_ticks();
 			midi1_clock_cntr_ticks_start(pll_ticks - phases);
 			k_msleep(5000);
 		}
 #endif
 		midi1_serial_stop(&g_inst_uart3);
 	}
- 
 
 	return 0;
 }

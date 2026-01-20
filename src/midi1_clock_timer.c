@@ -38,7 +38,7 @@ static void midi1_timer_handler(struct k_timer *t)
 {
 	const struct device *midi1_dev = k_timer_user_data_get(t);
 	/* Also toggle a pin somewhere so we can measure the phase lock */
-	
+
 	if (!atomic_get(&g_midi1_running)) {
 		return;
 	}
@@ -71,14 +71,13 @@ void midi1_clock_start(uint32_t interval_us)
 	k_timer_start(&g_midi1_timer, K_USEC(interval_us), K_USEC(interval_us));
 }
 
-
 /*
  * Start the clock based on Scaled BPM.
  */
-void midi1_clock_start_sbpm(uint16_t sbpm) {
+void midi1_clock_start_sbpm(uint16_t sbpm)
+{
 	midi1_clock_start(sbpm_to_24pqn(sbpm));
 }
-
 
 /* Stop the clock */
 void midi1_clock_stop(void)
@@ -86,8 +85,5 @@ void midi1_clock_stop(void)
 	atomic_set(&g_midi1_running, 0);
 	k_timer_stop(&g_midi1_timer);
 }
-
-
-
 
 /* EOF */

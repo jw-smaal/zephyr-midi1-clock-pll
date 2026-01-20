@@ -75,5 +75,5 @@ uint16_t midi1_clock_adj_get_sbpm(void);
  */
 bool midi1_clock_adj_is_running(void);
 
-#endif				/* MIDI1_CLOCK_TIMER_ADJUSTABLE */
+#endif                          /* MIDI1_CLOCK_TIMER_ADJUSTABLE */
 /* EOF */

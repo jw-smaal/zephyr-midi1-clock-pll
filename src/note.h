@@ -67,5 +67,5 @@ float noteToFreq(uint8_t midinote);
  */
 uint8_t freqToMidiNote(float freq);
 
-#endif				/* NOTE_H */
+#endif                          /* NOTE_H */
 /* EOF */

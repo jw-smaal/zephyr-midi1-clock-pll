@@ -81,9 +81,9 @@ uint32_t midi1_clock_meas_get_us(void)
 
 void midi1_clock_meas_pulse(void)
 {
-	
+
 	uint32_t now_us = midi1_clock_meas_get_us();
-	
+
 	if (g_last_ts_us != 0u) {
 		/* wrap-safe in uint32_t */
 		uint32_t interval_us = now_us - g_last_ts_us;

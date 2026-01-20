@@ -58,4 +58,4 @@ uint32_t midi1_pll_ticks_get_interval_us(void);
  */
 int32_t midi1_pll_ticks_get_interval_ticks(void);
 
-#endif				/* MIDI1_CLOCK_PLL_TICKS_H */
+#endif                          /* MIDI1_CLOCK_PLL_TICKS_H */

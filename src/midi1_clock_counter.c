@@ -27,13 +27,11 @@
  * the oscilloscope
  */
 #include <zephyr/drivers/gpio.h>
-#endif 
-
+#endif
 
 /* MIDI helpers by J-W Smaal*/
 #include "midi1.h"
 #include "midi1_clock_counter.h"
-
 
 /* TODO: put this in a struct */
 static atomic_t g_midi1_running_cntr = ATOMIC_INIT(0);
@@ -43,25 +41,24 @@ static const struct device *g_midi1_dev;
 const struct device *g_counter_dev;
 static bool g_midi1_clk_count_up_clk = false;
 
-
-
 /*
  * MIDI clock measurement on a PIN.
  * I used PTC8 on the FRDM_MCXC242 scope confirms correct implementation.  
  */
 #if MIDI_CLOCK_ON_PIN
 #define CLOCK_FREQ_OUT DT_NODELABEL(freq_out)
-static const struct gpio_dt_spec clock_pin = GPIO_DT_SPEC_GET(CLOCK_FREQ_OUT, gpios);
+static const struct gpio_dt_spec clock_pin =
+GPIO_DT_SPEC_GET(CLOCK_FREQ_OUT, gpios);
 
 static void midi1_debug_gpio_init(void)
 {
-	int ret = gpio_pin_configure_dt(&clock_pin, GPIO_OUTPUT_INACTIVE); 
-	if (ret < 0){
+	int ret = gpio_pin_configure_dt(&clock_pin, GPIO_OUTPUT_INACTIVE);
+	if (ret < 0) {
 		printk("Error configing pin\n");
-		return; 
+		return;
 	}
 }
-#endif 
+#endif
 
 /* 
  * This is the ISR/callback TODO: check if usbd_midi_send is non-blocking
@@ -79,38 +76,37 @@ static void midi1_cntr_handler(const struct device *dev, void *midi1_dev_arg)
 	if (g_midi1_dev) {
 		usbd_midi_send(g_midi1_dev, midi1_timing_clock());
 	}
-	return; 
+	return;
 }
 
-uint32_t midi1_clock_cntr_cpu_frequency(void) 
+uint32_t midi1_clock_cntr_cpu_frequency(void)
 {
-	return counter_get_frequency(g_counter_dev); 
+	return counter_get_frequency(g_counter_dev);
 }
 
 /*
  * Initialize MIDI clock subsystem with the MIDI device handle. Call
  * once at startup before starting the clock.
  */
-void midi1_clock_cntr_init(const struct device *midi1_dev_arg){
+void midi1_clock_cntr_init(const struct device *midi1_dev_arg)
+{
 	atomic_set(&g_midi1_running_cntr, 0);
 	/* g_counter_dev = DEVICE_DT_GET(DT_NODELABEL(COUNTER_DEVICE)); */
 	g_counter_dev = DEVICE_DT_GET(DT_ALIAS(COUNTER_DEVICE));
-	
+
 	if (!device_is_ready(g_counter_dev)) {
 		printk("Counter device not ready\n");
 		return;
 	}
 	/* PIT0 counts down, ctimer0 counts up and cannot be changed */
 	g_midi1_clk_count_up_clk = counter_is_counting_up(g_counter_dev);
-	
-	
+
 	g_midi1_dev = midi1_dev_arg;
 #if MIDI_CLOCK_ON_PIN
 	midi1_debug_gpio_init();
 #endif
 	return;
 }
-
 
 /*
  * Start periodic MIDI clock. ticks must be > 0.
@@ -127,7 +123,7 @@ void midi1_clock_cntr_ticks_start(uint32_t ticks)
 #endif
 	struct counter_top_cfg top_cfg = {
 		.callback = midi1_cntr_handler,
-		.user_data = (void *) g_midi1_dev,
+		.user_data = (void *)g_midi1_dev,
 		.ticks = ticks,
 		.flags = 0,
 	};
@@ -153,9 +149,9 @@ void midi1_clock_cntr_update_ticks(uint32_t new_ticks)
 		.callback = midi1_cntr_handler,
 		.user_data = (void *)g_midi1_dev,
 		.ticks = new_ticks,
-		.flags = COUNTER_TOP_CFG_DONT_RESET,   /* <-- KEY */
+		.flags = COUNTER_TOP_CFG_DONT_RESET,    /* <-- KEY */
 	};
-	
+
 	int err = counter_set_top_value(g_counter_dev, &top_cfg);
 	if (err != 0) {
 		printk("Failed to set top value: %d\n", err);
@@ -175,7 +171,7 @@ void midi1_clock_cntr_start(uint32_t interval_us)
 	}
 	atomic_set(&g_midi1_running_cntr, 1);
 
-	uint32_t ticks = counter_us_to_ticks(g_counter_dev, interval_us); 
+	uint32_t ticks = counter_us_to_ticks(g_counter_dev, interval_us);
 	g_sbpm = us_interval_to_sbpm(interval_us);
 
 	/*
@@ -184,7 +180,7 @@ void midi1_clock_cntr_start(uint32_t interval_us)
 	 */
 	struct counter_top_cfg top_cfg = {
 		.callback = midi1_cntr_handler,
-		.user_data = (void *) g_midi1_dev,
+		.user_data = (void *)g_midi1_dev,
 		.ticks = ticks,
 		.flags = 0,
 	};
@@ -209,34 +205,32 @@ void midi1_clock_cntr_stop(void)
 	atomic_set(&g_midi1_running_cntr, 0);
 }
 
-
 /**
  * @brief Generate MIDI1.0 clock
  */
-void midi1_clock_cntr_gen(const struct device *midi_ptr, uint16_t sbpm) {
+void midi1_clock_cntr_gen(const struct device *midi_ptr, uint16_t sbpm)
+{
 	midi1_clock_cntr_stop();
 	midi1_clock_cntr_init(midi_ptr);
-	
-	uint32_t ticks = sbpm_to_ticks(
-				       sbpm,
-				       midi1_clock_cntr_cpu_frequency()
-				       );
-	
+
+	uint32_t ticks = sbpm_to_ticks(sbpm,
+	                               midi1_clock_cntr_cpu_frequency()
+	    );
+
 	midi1_clock_cntr_ticks_start(ticks);
 }
 
+void midi1_clock_cntr_gen_sbpm(uint16_t sbpm)
+{
+	uint32_t ticks = sbpm_to_ticks(sbpm,
+	                               midi1_clock_cntr_cpu_frequency());
 
-void midi1_clock_cntr_gen_sbpm(uint16_t sbpm) {
-	uint32_t ticks = sbpm_to_ticks(
-				sbpm,
-				midi1_clock_cntr_cpu_frequency());
-	
 	midi1_clock_cntr_ticks_start(ticks);
 }
 
-uint16_t midi1_clock_cntr_get_sbpm() {
+uint16_t midi1_clock_cntr_get_sbpm()
+{
 	return g_sbpm;
 }
-
 
 /* EOF */

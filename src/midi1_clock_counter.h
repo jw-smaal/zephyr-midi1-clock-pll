@@ -9,10 +9,10 @@
  * @date 20251214
  * license SPDX-License-Identifier: Apache-2.0
  */
-#include <zephyr/kernel.h>	/* k_timer */
-#include <zephyr/sys/atomic.h>	/* atomic_t, atomic_get/set */
-#include <stdint.h>		/* uint32_t, uint16_t */
-#include <stddef.h>		/* NULL */
+#include <zephyr/kernel.h>      /* k_timer */
+#include <zephyr/sys/atomic.h>  /* atomic_t, atomic_get/set */
+#include <stdint.h>             /* uint32_t, uint16_t */
+#include <stddef.h>             /* NULL */
 
 #ifndef COUNTER_DEVICE
 /* #define COUNTER_DEVICE pit0_channel0 */
@@ -82,6 +82,5 @@ void midi1_clock_cntr_gen_sbpm(uint16_t sbpm);
  */
 uint16_t midi1_clock_cntr_get_sbpm();
 
-
-#endif /* MIDI1_CLOCK_TIMER */
+#endif                          /* MIDI1_CLOCK_TIMER */
 /* EOF */

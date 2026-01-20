@@ -19,8 +19,8 @@ const char *noteToTextWithOctave(uint8_t midinote, bool flats)
 {
 	static char notestring[5];
 	snprintf(notestring,
-		 sizeof(notestring),
-		 "%s%d", noteToText(midinote, flats), noteToOct(midinote));
+	         sizeof(notestring),
+	         "%s%d", noteToText(midinote, flats), noteToOct(midinote));
 	return &notestring[0];
 }
 
@@ -109,22 +109,20 @@ uint8_t freqToMidiNote(float freq)
 {
 	int min = 0;
 	int max = 127;
-	
+
 	while (min <= max) {
 		int mid = (min + max) / 2;
-		
+
 		if (freq > midi_freq_table[mid]) {
 			min = mid + 1;
-		}
-		else if (freq < midi_freq_table[mid]) {
+		} else if (freq < midi_freq_table[mid]) {
 			max = mid - 1;
-		}
-		else {
+		} else {
 			/* exact match */
 			return mid;
 		}
 	}
-	
+
 	/*  min is now the first note with freq_table[min] > freq */
 	if (min == 0) {
 		return 0;
@@ -132,11 +130,11 @@ uint8_t freqToMidiNote(float freq)
 	if (min > 127) {
 		return 127;
 	}
-	
+
 	/* pick closest of min and min-1 */
-	float low  = midi_freq_table[min - 1];
+	float low = midi_freq_table[min - 1];
 	float high = midi_freq_table[min];
-	
+
 	return (freq - low < high - freq) ? (min - 1) : min;
 }
 

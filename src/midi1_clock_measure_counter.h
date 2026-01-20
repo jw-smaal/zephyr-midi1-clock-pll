@@ -23,7 +23,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-
 /**
  * @note We are using PIT0 channel 1 one the FRDM MCXC242 development board
  * In the device-tree overlay make sure it's enabled !
@@ -96,5 +95,5 @@ uint32_t midi1_clock_meas_cntr_clock_freq(void);
  */
 uint32_t midi1_clock_meas_cntr_interval_us(void);
 
-#endif /* MIDI1_CLOCK_MEAS_CNTR_H */
+#endif                          /* MIDI1_CLOCK_MEAS_CNTR_H */
 /* EOF */
