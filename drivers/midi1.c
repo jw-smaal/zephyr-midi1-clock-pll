@@ -17,29 +17,26 @@
 struct midi_ump midi1_note_on(uint8_t channel, uint8_t key, uint8_t velocity)
 {
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
-				       UMP_MIDI_NOTE_ON,
-				       channel & 0x0F,
-				       key & MIDI_DATA,
-				       velocity & MIDI_DATA);
+	                               UMP_MIDI_NOTE_ON,
+	                               channel & 0x0F,
+	                               key & MIDI_DATA, velocity & MIDI_DATA);
 }
 
 struct midi_ump midi1_note_off(uint8_t channel, uint8_t key, uint8_t velocity)
 {
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
-				       UMP_MIDI_NOTE_OFF,
-				       channel & 0x0F,
-				       key & MIDI_DATA,
-				       velocity & MIDI_DATA);
+	                               UMP_MIDI_NOTE_OFF,
+	                               channel & 0x0F,
+	                               key & MIDI_DATA, velocity & MIDI_DATA);
 }
 
 struct midi_ump midi1_controlchange(uint8_t channel,
-				    uint8_t controller, uint8_t val)
+                                    uint8_t controller, uint8_t val)
 {
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
-				       UMP_MIDI_CONTROL_CHANGE,
-				       channel & 0x0F,
-				       controller & MIDI_DATA,
-				       val & MIDI_DATA);
+	                               UMP_MIDI_CONTROL_CHANGE,
+	                               channel & 0x0F,
+	                               controller & MIDI_DATA, val & MIDI_DATA);
 }
 
 /*
@@ -48,10 +45,8 @@ struct midi_ump midi1_controlchange(uint8_t channel,
 struct midi_ump midi1_channelaftertouch(uint8_t channel, uint8_t val)
 {
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
-				       UMP_MIDI_CHAN_AFTERTOUCH,
-				       channel & 0x0F,
-				       val & MIDI_DATA,
-				       0);
+	                               UMP_MIDI_CHAN_AFTERTOUCH,
+	                               channel & 0x0F, val & MIDI_DATA, 0);
 }
 
 /*
@@ -61,10 +56,9 @@ struct midi_ump midi1_channelaftertouch(uint8_t channel, uint8_t val)
 struct midi_ump midi1_polyaftertouch(uint8_t channel, uint8_t key, uint8_t val)
 {
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
-				       UMP_MIDI_AFTERTOUCH,
-				       channel & 0x0F,
-				       key & MIDI_DATA,
-				       val & MIDI_DATA);
+	                               UMP_MIDI_AFTERTOUCH,
+	                               channel & 0x0F,
+	                               key & MIDI_DATA, val & MIDI_DATA);
 }
 
 /**
@@ -95,10 +89,9 @@ struct midi_ump midi1_modwheellsb(uint8_t channel, uint8_t val)
 struct midi_ump midi1_pitchwheel(uint8_t channel, uint16_t val)
 {
 	return UMP_MIDI1_CHANNEL_VOICE(UMP_CHANNEL_GROUP,
-				       UMP_MIDI_PITCH_BEND,
-				       channel & 0x0F,
-				       val & MIDI_DATA,
-				       (val >> 7) & MIDI_DATA);
+	                               UMP_MIDI_PITCH_BEND,
+	                               channel & 0x0F,
+	                               val & MIDI_DATA, (val >> 7) & MIDI_DATA);
 }
 
 /**
@@ -171,13 +164,10 @@ uint32_t sbpm_to_us_interval(uint16_t sbpm)
 		return 0u;
 	} else {
 		uint64_t numer = (uint64_t) US_PER_SECOND * 60u * BPM_SCALE;
-		//uint64_t res = (numer + (sbpm / 2u)) / (uint64_t) sbpm;
-		// Removed rounding due to double rounding  
-		uint64_t res = numer  / (uint64_t) sbpm;
+		uint64_t res = numer / (uint64_t) sbpm;
 		return (uint32_t) res;
 	}
 }
-
 
 /* 
  * Formula:
@@ -194,14 +184,13 @@ uint32_t sbpm_to_ticks(uint16_t sbpm, uint32_t clock_hz)
 		return 0u;
 	}
 
-	
-	const uint64_t numer = (uint64_t)clock_hz * 5ULL * 100ULL;
-	const uint64_t denom = (uint64_t)sbpm * 2ULL;
+	const uint64_t numer = (uint64_t) clock_hz * 5ULL * 100ULL;
+	const uint64_t denom = (uint64_t) sbpm * 2ULL;
 
 	/* Rounded division */
 	uint64_t ticks = (numer + (denom / 2ULL)) / denom;
 
-	return (uint32_t)ticks;
+	return (uint32_t) ticks;
 }
 
 uint16_t us_interval_to_sbpm(uint32_t interval)
@@ -247,7 +236,7 @@ uint16_t pqn24_to_sbpm(uint32_t pqn24)
 	if (pqn24 == 0u) {
 		return 0u;
 	}
-	
+
 	/* pqn24 = microseconds per tick
 	 * quarter-note interval = pqn24 * 24
 	 * SBPM = (60,000,000 * 100) / quarter-note interval
@@ -256,18 +245,17 @@ uint16_t pqn24_to_sbpm(uint32_t pqn24)
 	return us_interval_to_sbpm(qn_interval_us);
 }
 
-
 const char *sbpm_to_str(uint16_t sbpm)
 {
 	/* Enough for "12345.67" + null */
 	static char buf[16];
-	
+
 	uint32_t whole = sbpm / 100u;   /* integer BPM */
-	uint32_t frac  = sbpm % 100u;   /* fractional part */
-	
+	uint32_t frac = sbpm % 100u;    /* fractional part */
+
 	/* Format:  whole.frac  (e.g. 120.00) */
 	snprintf(buf, sizeof(buf), "%03u.%02u", whole, frac);
-	
+
 	return buf;
 }
 

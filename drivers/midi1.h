@@ -25,29 +25,29 @@
 #define PITCHWHEEL_CENTER 8192
 
 /* MIDI channel/mode masks */
-#define CHANNEL_VOICE_MASK      0x80	/*  Bit 7 == 1 */
+#define CHANNEL_VOICE_MASK      0x80    /*  Bit 7 == 1 */
 #define CHANNEL_MODE_MASK       0xB0
 #define SYSTEM_EXCLUSIVE_MASK   0xF0
 #define SYSTEM_REALTIME_MASK    0XF8
 #define SYSTEM_COMMON_MASK      0XF0
-#define MIDI_DATA               0x7F	/*  Bit 7 == 0 */
+#define MIDI_DATA               0x7F    /*  Bit 7 == 0 */
 
 /* System messages */
 enum midi_sysex {
 	SYSTEM_EXCLUSIVE_START = 0xF0,
-	SYSTEM_TUNE_REQUEST    = 0xF6,
-	SYSTEM_EXCLUSIVE_END   = 0xF7
+	SYSTEM_TUNE_REQUEST = 0xF6,
+	SYSTEM_EXCLUSIVE_END = 0xF7
 };
-	
+
 /* MIDI channel voice commands */
 enum midi_channel_commands {
-	C_NOTE_ON        	= 0x90,
-	C_NOTE_OFF       	= 0x80,
+	C_NOTE_ON = 0x90,
+	C_NOTE_OFF = 0x80,
 	C_POLYPHONIC_AFTERTOUCH = 0xA0,
-	C_CHANNEL_AFTERTOUCH   	= 0xD0,
-	C_PITCH_WHEEL        	= 0xE0,
-	C_CONTROL_CHANGE     	= 0xB0,
-	C_PROGRAM_CHANGE     	= 0xC0
+	C_CHANNEL_AFTERTOUCH = 0xD0,
+	C_PITCH_WHEEL = 0xE0,
+	C_CONTROL_CHANGE = 0xB0,
+	C_PROGRAM_CHANGE = 0xC0
 };
 
 /* Channel mode messages defined here in decimals as the
@@ -55,16 +55,15 @@ enum midi_channel_commands {
  */
 #define C_CHANNEL_MODE 0xB0
 enum midi_channel_mode {
-	C_MODE_ALL_SOUNDS_OFF 		= 120U,
-	C_MODE_RESET_ALL_CONTROLLERS 	= 121U,
-	C_MODE_LOCAL_CONTROl 		= 122U,
-	C_MODE_ALL_NOTES_OFF		= 123U,
-	C_MODE_OMNI_OFF			= 124U,
-	C_MODE_OMNI_ON			= 125U,
-	C_MODE_MONO_ON			= 126U,
-	C_MODE_POLY_ON			= 127U
+	C_MODE_ALL_SOUNDS_OFF = 120U,
+	C_MODE_RESET_ALL_CONTROLLERS = 121U,
+	C_MODE_LOCAL_CONTROl = 122U,
+	C_MODE_ALL_NOTES_OFF = 123U,
+	C_MODE_OMNI_OFF = 124U,
+	C_MODE_OMNI_ON = 125U,
+	C_MODE_MONO_ON = 126U,
+	C_MODE_POLY_ON = 127U
 };
-
 
 enum midi_channel {
 	CH1 = 0x00,
@@ -162,20 +161,19 @@ enum midi_control_change {
 
 /* System Real Time commands */
 enum midi_real_time {
-	RT_TIMING_CLOCK       = 0xF8,
-	RT_START              = 0xFA,
-	RT_CONTINUE           = 0xFB,
-	RT_STOP               = 0xFC,
-	RT_ACTIVE_SENSING     = 0xFE,
-	RT_RESET              = 0xFF
+	RT_TIMING_CLOCK = 0xF8,
+	RT_START = 0xFA,
+	RT_CONTINUE = 0xFB,
+	RT_STOP = 0xFC,
+	RT_ACTIVE_SENSING = 0xFE,
+	RT_RESET = 0xFF
 };
- 
+
 /*
  * TODO: Maybe change this later to be an extra argument to the
  * TODO: functions.  For now assume UMP channel group = 0.
  */
 #define UMP_CHANNEL_GROUP 0
-
 
 /**
  * -- == Channel messages == --
@@ -206,7 +204,7 @@ struct midi_ump midi1_note_off(uint8_t channel, uint8_t key, uint8_t velocity);
  * @return midi_ump universal MIDI1.0 packet
  */
 struct midi_ump midi1_controlchange(uint8_t channel,
-				    uint8_t controller, uint8_t val);
+                                    uint8_t controller, uint8_t val);
 
 /**
  * @brief create a MIDI1.0 UMP message for a PITCH WHEEL
@@ -280,7 +278,6 @@ struct midi_ump midi1_active_sensing(void);
  * @return midi_ump universal MIDI1.0 packet
  */
 struct midi_ump midi1_reset(void);
-
 
 /*
  *------------------------------------------------------------------------------
