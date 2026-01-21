@@ -124,6 +124,7 @@ struct midi1_serial_data {
 	/* TX running status */
 	uint8_t running_status_tx;
 	uint8_t running_status_tx_count;
+	uint64_t last_status_tx_time;
 	
 	/* Message queue filled by the ISR routine */
 	struct k_msgq msgq;

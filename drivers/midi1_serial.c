@@ -137,7 +137,7 @@ int midi1_serial_init(struct midi1_serial_inst *inst)
 }
 
 /**
- * Inits the serial USART with MIDI clock speed and
+ * Inits the serial USART ISR routine so we start processing incoming MIDI.
  */
 int midi_serial_init(const struct device *dev)
 {
@@ -255,6 +255,7 @@ void midi_serial_note_on(const struct device *dev,
 	const struct midi1_serial_config *cfg = dev->config;
 	struct midi1_serial_data *data = dev->data;
 	
+#if 0
 	/* If we have sent 16 times without a status byte; send a status byte */
 	if (data->running_status_tx_count >= 16) {
 		data->running_status_tx_count = 0;
@@ -266,6 +267,21 @@ void midi_serial_note_on(const struct device *dev,
 		uart_poll_out(cfg->uart, C_NOTE_ON | channel);
 		data->running_status_tx = C_NOTE_ON | channel;
 		data->running_status_tx_count = 0;
+	}
+#endif
+	int64_t now = k_uptime_get();
+	bool need_status =
+		/* 1. Timeout expired */
+		(now - data->last_status_tx_time > 300) ||
+		/* 2. Status changed */
+		((C_NOTE_ON | channel) != data->running_status_tx) ||
+		/* 3. Too many data bytes without status */
+		(data->running_status_tx_count >= 16);
+	if (need_status) {
+		uart_poll_out(cfg->uart, C_NOTE_ON | channel);
+		data->running_status_tx = C_NOTE_ON | channel;
+		data->running_status_tx_count = 0;
+		data->last_status_tx_time = now;
 	}
 	uart_poll_out(cfg->uart, key);
 	uart_poll_out(cfg->uart, velocity);
@@ -520,7 +536,6 @@ void midi1_sysex_stop(struct midi1_serial_inst *inst)
  * @param device device pointer
  * @param user_data user data (in our case the instance struct)
  * @note we use a Message Queue FIFO buffer to store the incoming MIDI messages
- * @note TODO: _NEW_ implementation needs testing
  */
 static void midi1_serial_isr_callback(const struct device *dev, void *user_data)
 {
@@ -531,7 +546,6 @@ static void midi1_serial_isr_callback(const struct device *dev, void *user_data)
 	if (!uart_irq_update(inst->uart)) {
 		return;
 	}
-	
 	if (!uart_irq_rx_ready(inst->uart)) {
 		return;
 	}
@@ -539,19 +553,63 @@ static void midi1_serial_isr_callback(const struct device *dev, void *user_data)
 	/* read until FIFO empty */
 	while (uart_fifo_read(inst->uart, &c, 1) == 1) {
 		if (k_msgq_put(&inst->msgq, &c, K_NO_WAIT) != 0) {
-			/* Message queue is full, TODO: maybe handle overflow */
+			/*
+			 * Message queue is full
+			 * TODO: add ERROR logging
+			 * right now we drop MIDI packets
+			 * as the application is not processing
+			 * the incoming packets.  We can't keep
+			 * buffering forever so we drop messages.
+			 */
 		}
 	}
 }
 
+static void midi_serial_isr_callback(const struct device *dev, void *user_data)
+{
+	uint8_t c;
+	
+	/*
+	 * We can take the pointer to the uart from both 'dev' and 'user_data'
+	 * decided for readability to take it from the 'midi1_serial_config'
+	 * struct as we use that throughout the driver.
+	 */
+	const struct device *midi1_serial = (const struct device *)user_data;
+	const struct midi1_serial_config *cfg = midi1_serial->config;
+	struct midi1_serial_data *data = midi1_serial->data;
+	
+	if (!uart_irq_update(cfg->uart)) {
+		return;
+	}
+	if (!uart_irq_rx_ready(cfg->uart)) {
+		return;
+	}
+	
+	/* read until FIFO empty */
+	while (uart_fifo_read(cfg->uart, &c, 1) == 1) {
+		if (k_msgq_put(&data->msgq, &c, K_NO_WAIT) != 0) {
+			/*
+			 * Message queue is full
+			 * TODO: add ERROR logging
+			 * right now we drop MIDI packets
+			 * as the application is not processing
+			 * the incoming packets.  We can't keep
+			 * buffering forever so we drop messages.
+			 */
+		}
+	}
+}
+
+
 /**
  * @brief Parse one byte at a time for the MIDI parsing.
  *
- * Then callback functions are called for each complete MIDI message.
+ * Callback functions are called for each complete MIDI message.
  *
  * This function is long as the MIDI1.0 spec suggest how to implement the
- * parsing is also quite lenghty.  MIDI1.0 specification has this statemachine
- * listed on page A-3.
+ * parsing is also quite lenghty and we want to stay as close to the spec
+ * as possible.  MIDI1.0 specification has this statemachine listed on
+ * page A-3.
  */
 void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 {
@@ -600,23 +658,14 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 			inst->third_byte_flag = 0;
 			/* Is this a tune request */
 			if (c == SYSTEM_TUNE_REQUEST) {
-				inst->midi_c2 = c;	/*  Store in FIFO. */
+				inst->midi_c2 = c;
 				/* TODO: Process something. */
 				return;
 			} else if(c == SYSTEM_EXCLUSIVE_START) {
-				/*
-				 * TODO: set internal state so we interpret the
-				 * remaining databytes as sysex and not channel
-				 * common/voice data.
-				 */
 				inst->in_sysex = true;
 				inst->sysex_start();
 				return;
 			} else if(c == SYSTEM_EXCLUSIVE_END) {
-				/*
-				 * TODO: set internal state so we stop
-				 * processing sysex data bytes.
-				 */
 				inst->in_sysex = false;
 				inst->sysex_stop();
 				return;
@@ -626,7 +675,7 @@ void midi1_serial_receiveparser(struct midi1_serial_inst *inst)
 			 */
 			return;
 		}
-	} else {		/* Bit 7 == 0   (data) */
+	} else { /* Bit 7 == 0   (data) */
 		if (inst->in_sysex) {
 			inst->sysex_data(c);
 			/* Stop processing the rest when in SysEx */
@@ -761,7 +810,7 @@ static const struct midi1_serial_config midi1_serial_config_##inst = {     \
 .uart = DEVICE_DT_GET(DT_INST_PROP(inst, uart)),                           \
 };                                                                         \
 DEVICE_DT_INST_DEFINE(inst,                                                \
-midi_serial_init,                                                         \
+midi_serial_init,                                                          \
 NULL,                                                                      \
 &midi1_serial_data_##inst,                                                 \
 &midi1_serial_config_##inst,                                               \
