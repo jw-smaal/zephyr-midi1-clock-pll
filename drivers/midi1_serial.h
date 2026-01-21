@@ -162,8 +162,11 @@ struct midi1_serial_data {
 	/* Set when processing sysex data */
 	bool in_sysex;
 
-	/* Must be filled bu the application after init */
-	const struct midi1_serial_callbacks *cb;
+	/*
+	 * Must be filled bu the application after init not const
+	 * because it may change after init or runtime
+	 */
+	struct midi1_serial_callbacks *cb;
 #if 1
 	/*
 	 * Callback delegates
@@ -198,7 +201,7 @@ struct midi1_serial_data {
 struct midi1_serial_api {
 	/* -- == Receive  == --   */
 	int (*register_callbacks)(const struct device * dev,
-	                          const struct midi1_serial_callbacks * cb);
+				  struct midi1_serial_callbacks * cb);
 	/* -- == Transmit == --   */
 
 	/* Channel mode messages */

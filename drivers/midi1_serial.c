@@ -257,7 +257,7 @@ int midi_serial_init(const struct device *dev)
 
 /* TODO: add to driver public API */
 int midi1_serial_register_callbacks_old(const struct device *dev,
-                                    const struct midi1_serial_callbacks *cb)
+                                         struct midi1_serial_callbacks *cb)
 {
 	struct midi1_serial_data *data = dev->data;
 	/* TODO: check all callbacks and assign a NOOP function if the user left it empty */ 
@@ -269,26 +269,53 @@ int midi1_serial_register_callbacks_old(const struct device *dev,
 	}
 }
 
-
+/*
+ * So the assumption is that the 'init' has assigned NOOP functions.
+ * so we won't repeat that here.
+ */
 int midi1_serial_register_callbacks(const struct device *dev,
-                                    const struct midi1_serial_callbacks *cb)
+                                    struct midi1_serial_callbacks *cb)
 {
 	if (!cb) {
 		return -EINVAL;
 	}
 
 	struct midi1_serial_data *data = dev->data;
-#if 0
-	/* We want to do a deep check */ 
-	if (cb->note_on)              data->cb.note_on = cb->note_on;
-	if (cb->note_off)             data->cb.note_off = cb->note_off;
-	if (cb->control_change)       data->cb.control_change = cb->control_change;
-	if (cb->pitchwheel)           data->cb.pitchwheel = cb->pitchwheel;
-	if (cb->program_change)       data->cb.program_change = cb->program_change;
-	if (cb->channel_aftertouch)   data->cb.channel_aftertouch = cb->channel_aftertouch;
-	if (cb->poly_aftertouch)      data->cb.poly_aftertouch = cb->poly_aftertouch;
-	/* TODO: add missing callbacks. */ 
-#endif 
+
+	/* We want to do a deep check on every callback */
+	if (cb->note_on){
+		(data->cb)->note_on = cb->note_on;
+	}
+	if (cb->note_off) {
+		(data->cb)->note_off = cb->note_off;
+	}
+	if (cb->control_change){
+		(data->cb)->control_change = cb->control_change;
+	}
+	if (cb->pitchwheel){
+		(data->cb)->pitchwheel = cb->pitchwheel;
+	}
+	if (cb->program_change){
+		(data->cb)->program_change = cb->program_change;
+	}
+	if (cb->channel_aftertouch){
+		(data->cb)->channel_aftertouch = cb->channel_aftertouch;
+	}
+	if (cb->poly_aftertouch){
+		(data->cb)->poly_aftertouch = cb->poly_aftertouch;
+	}
+	if (cb->realtime){
+		(data->cb)->realtime = cb->realtime;
+	}
+	if (cb->sysex_start){
+		(data->cb)->sysex_start = cb->sysex_start;
+	}
+	if (cb->sysex_data){
+		(data->cb)->sysex_data = cb->sysex_data;
+	}
+	if (cb->sysex_stop){
+		(data->cb)->sysex_stop = cb->sysex_stop;
+	}
 
 	return 0;
 }
