@@ -7,10 +7,12 @@
  * to note.
  *
  * Created in 2014 for ATMEL AVR MCU's ported
- * to Zephyr RTOS in 2024 mainly for ARM based MCU's. 
+ * to Zephyr RTOS in 2024 mainly for ARM based MCU's.
+ *
  * @author Jan-Willem Smaal <usenet@gispen.org>
  * updated 20241224
  * @date 20252810  -> for Zephyr use with USB.
+ *
  * license SPDX-License-Identifier: Apache-2.0
  */
 #ifndef MIDI1_H
@@ -21,8 +23,10 @@
 #include <zephyr/audio/midi.h>
 
 /*-----------------------------------------------------------------------*/
-/*  Defines specific for the MIDI protocol */
+/*  Define's specific for the MIDI protocol */
 #define PITCHWHEEL_CENTER 8192
+/* 16384 is the 2^14 which is the maximum pitch bend value */
+#define PITCHWHEEL_MAX 16384
 
 /* MIDI channel/mode masks */
 #define CHANNEL_VOICE_MASK      0x80    /*  Bit 7 == 1 */
@@ -170,8 +174,7 @@ enum midi_real_time {
 };
 
 /*
- * TODO: Maybe change this later to be an extra argument to the
- * TODO: functions.  For now assume UMP channel group = 0.
+ * TODO: For now assume UMP channel group = 0 when using MIDI1.0
  */
 #define UMP_CHANNEL_GROUP 0
 

@@ -220,26 +220,10 @@ void sysex_stop_handler(void)
  * functions pointers that are null are given a NOOP function pointer during
  * midi1_serial_init.
  */
-#define MIDI1_UART3 DT_ALIAS(midi)
-static struct midi1_serial_inst g_inst_uart3 = {
-	.uart = DEVICE_DT_GET(MIDI1_UART3),
-	.note_on = &note_on_handler,
-	.note_off = &note_off_handler,
-	.control_change = &control_change_handler,
-	.realtime = &realtime_handler,
-	.pitchwheel = &pitchwheel_handler,
-	.sysex_start = &sysex_start_handler,
-	.sysex_data = &sysex_data_handler,
-	.sysex_stop = &sysex_stop_handler,
 
-};
-
-int main_midi1_init(struct midi1_serial_inst *inst)
+int main_midi1_init()
 {
 	struct usbd_context *sample_usbd;
-
-	/* Needs to be called to ensure a proper state of the parser */
-	midi1_serial_init(&g_inst_uart3);
 
 	if (led0.port && led2.port) {
 		if (gpio_pin_configure_dt(&led0, GPIO_OUTPUT)) {
@@ -278,27 +262,6 @@ int main_midi1_init(struct midi1_serial_inst *inst)
 	/* We init the PLL with something and adjust from there */
 	midi1_pll_ticks_init(12000, midi1_clock_meas_cntr_clock_freq());
 
-	/*
-	 * Send example MIDI messages to test the DIN5 MIDI1.0
-	 * TODO: this is not working (yet).
-	 */
-#define TEST_MIDI_OUTPUT 1
-#if TEST_MIDI_OUTPUT
-	for (int j = 15; j < 16; j++) {
-		for (int i = 0; i < 128; i++) {
-			/* Don't use printk it will go out the MIDI port ! */
-			midi1_serial_note_on(inst, j, i, i);
-			k_msleep(100);
-		}
-		for (int i = 0; i < 128; i++) {
-			/* printk("MIDI1.0 serial NoteOFF (velocity=0)\n"); */
-			/* Don't use printk it will go out the MIDI port ! */
-			midi1_serial_note_off(inst, j, i, i);
-			k_msleep(100);
-		}
-		k_msleep(2000);
-	}
-#endif
 	return 0;
 }
 
@@ -368,8 +331,9 @@ void midi1_serial_receive_thread(void)
 	/* Let's wait a little untill things are settled */
 	k_msleep(100);
 	while (1) {
+		k_msleep(100);
 		/* This one is blocking */
-		midi1_serial_receiveparser(&g_inst_uart3);
+		//midi1_serial_receiveparser(&g_inst_uart3);
 	}
 }
 
@@ -474,7 +438,7 @@ K_THREAD_DEFINE(led_display_tid, 512,
 int main(void)
 {
 	/* Init the USB MIDI and the rest of the MIDI processes */
-	if (main_midi1_init(&g_inst_uart3)) {
+	if (main_midi1_init()) {
 		printk("Failed to main_midi1_init()\n");
 		return -1;
 	}
@@ -526,7 +490,7 @@ int main(void)
 			    midi1_pll_ticks_get_interval_ticks();
 			midi1_clock_cntr_ticks_start(pll_ticks);
 			k_msleep(10000);
-			midi1_serial_start(&g_inst_uart3);
+			//midi1_serial_start(&g_inst_uart3);
 		}
 #if 0
 		/* shifting phase */
@@ -539,7 +503,7 @@ int main(void)
 			k_msleep(5000);
 		}
 #endif
-		midi1_serial_stop(&g_inst_uart3);
+		//midi1_serial_stop(&g_inst_uart3);
 	}
 
 	return 0;

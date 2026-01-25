@@ -103,12 +103,12 @@
 / {
 	midi0: midi0 {
 		status = "okay";
-		compatible = "midi1serial";
+		compatible = "midi1_serial";
 		uart = <&lpuart0>;
 	};
 	midi1: midi1 {
 		status = "okay";
-		compatible = "midi1serial";
+		compatible = "midi1_serial";
 		uart = <&lpuart1>;
 	};
 	usb_midi: usb_midi {
