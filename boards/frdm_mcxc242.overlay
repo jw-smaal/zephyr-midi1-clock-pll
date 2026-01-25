@@ -68,6 +68,10 @@
 	status = "okay";
 };
 
+/*
+ * i2c0 does not work due to missing pin control.  i2c1 is the the Arduino
+ * header
+ */
 &i2c1 {
 	status = "okay";
 	clock-frequency = <I2C_BITRATE_FAST>;

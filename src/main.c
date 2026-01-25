@@ -214,12 +214,10 @@ void sysex_stop_handler(void)
 	printk("\nsysex_stop_handler()\n");
 }
 
-/* ------------------------- INIT functions -------------------------------- */
 /*
- * Init all the USB MIDI stuff in main.
- * functions pointers that are null are given a NOOP function pointer during
- * midi1_serial_init.
+ * Init all the MIDI stuff (USB + DIN MIDI)
  */
+const struct device *midi0 = DEVICE_DT_GET(DT_NODELABEL(midi0));
 
 int main_midi1_init()
 {
@@ -235,10 +233,14 @@ int main_midi1_init()
 			memset(&led2, 0, sizeof(led2));
 		}
 	}
+	if (!device_is_ready(midi0)) {
+		printk("Serial MIDI1 device not ready\n");
+		return 0;
+	}
+
 #if RX_MIDI_CLOCK_ON_PIN
 	main_rx_midi_clk_gpio_init();
 #endif
-
 	if (!device_is_ready(midi)) {
 		//LOG_ERR("MIDI device not ready");
 		return -1;
@@ -315,25 +317,39 @@ int main_display_init(void)
 }
 
 /* ---------------------------- THREADS ------------------------------------ */
-/* g_inst_uart3 is global because we need the reference in multiple threads */
-
 /*
  * MIDI1.0 5PIN DIN serial receive parser thread.
- * uses g_inst_uart3 global
  */
 void midi1_serial_receive_thread(void)
 {
+	if (!device_is_ready(midi0)) {
+		printk("receive_thread Serial MIDI1 device not ready\n");
+		return;
+	}
+	/* You can either use the pointer to the API or the public interface */
+	const struct midi1_serial_api *mid = midi0->api;
+	
+	/*
+	 * Set the callbacks in the driver to our own callbacks.  Pointers
+	 * left null are not used in the callbacks.
+	 * e.g. right now the aftertouch is not handled.
+	 */
+	struct midi1_serial_callbacks my_cb = {
+		.note_on = note_on_handler,
+		.note_off = note_off_handler,
+		.control_change = control_change_handler,
+		.pitchwheel = pitchwheel_handler,
+		.sysex_start = sysex_start_handler,
+		.sysex_data = sysex_data_handler,
+		.sysex_stop = sysex_stop_handler
+	};
+	mid->register_callbacks(midi0, &my_cb);
 
-	/* Initialize the MIDI1 parser with the callbacks */
-	/* Moved this to main as we need to also send stuff */
-	/* midi1_serial_init(&g_inst_uart3); */
-
-	/* Let's wait a little untill things are settled */
+	/* Let's wait a little untill things are settled after bootup */
 	k_msleep(100);
 	while (1) {
-		k_msleep(100);
-		/* This one is blocking */
-		//midi1_serial_receiveparser(&g_inst_uart3);
+		/* As this call is blocking no need to sleep in between */
+		mid->receiveparser(midi0);
 	}
 }
 
@@ -442,13 +458,14 @@ int main(void)
 		printk("Failed to main_midi1_init()\n");
 		return -1;
 	}
-
-	/* Sleep for 6 seconds so we can get some measurements intervals */
-	k_msleep(6000);
-	printk("--== Clock glitch testing by Jan-Willem Smaal v0.5 ==-- \n\n");
-	printk("main: MIDI ready entering main() loop\n");
-	printk("midi1_clock_cntr_get_sbpm: %s\n",
-	       sbpm_to_str(midi1_clock_cntr_get_sbpm()));
+	/* You can either use the pointer to the API or the public interface */
+	const struct midi1_serial_api *mid = midi0->api;
+	
+	/* Sleep for 3 seconds so we can get some measurements intervals */
+	k_msleep(3000);
+	printk("MIDI1.0 clock and parser ready\n");
+	//printk("midi1_clock_cntr_get_sbpm: %s\n",
+	//       sbpm_to_str(midi1_clock_cntr_get_sbpm()));
 	printk("midi1_clock_cntr_cpu_frequency: %u\n",
 	       midi1_clock_cntr_cpu_frequency());
 
@@ -466,6 +483,8 @@ int main(void)
 	   printk("Failed to main_display_init()\n");
 	   }
 	 */
+	
+
 
 	while (1) {
 		/*  measure incoming interval. */
@@ -492,7 +511,7 @@ int main(void)
 			k_msleep(10000);
 			//midi1_serial_start(&g_inst_uart3);
 		}
-#if 0
+#if MAIN_CLOCK_SHIFTING
 		/* shifting phase */
 		for (int phases = 5000; phases <= 50000; phases += 2000) {
 			printk("main: shifting phase: %u\n", phases);
@@ -503,7 +522,16 @@ int main(void)
 			k_msleep(5000);
 		}
 #endif
-		//midi1_serial_stop(&g_inst_uart3);
+		/* Send some test notes on the MIDI1.0  DIN port */
+		for (int i = 60; i < 80; i++ ) {
+			mid->note_on(midi0, CH12, i, 100);
+			k_msleep(100);
+		}
+		k_msleep(1000);
+		/* Turn them off all at once. */
+		for (int i = 60; i < 80; i++ ) {
+			mid->note_off(midi0, CH12, i, 100);
+		}
 	}
 
 	return 0;
